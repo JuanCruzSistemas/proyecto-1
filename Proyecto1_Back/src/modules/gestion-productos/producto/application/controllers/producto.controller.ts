@@ -54,6 +54,7 @@ export class ProductoController {
   @Get('find-all-for-marcas/select')
   @Roles(
     'Root',
+    'Admin',
     'Administrador',
     'Empleado',
     'Repartidor',
