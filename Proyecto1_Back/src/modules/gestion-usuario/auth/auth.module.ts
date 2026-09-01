@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { StringValue } from 'ms';
 import { AuthService } from './application/services/auth.service';
 import { AuthController } from './application/controllers/auth.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -21,7 +22,7 @@ import { RolModule } from '../rol/rol.module';
         // Se intenta leer del .env, si falla se usa la clave fija
         secret: configService.get<string>('JWT_SECRET'),
         signOptions: { 
-          expiresIn: configService.get<string>('JWT_EXPIRATION_ACCESS') 
+          expiresIn: configService.get<string>('JWT_EXPIRATION_ACCESS') as StringValue
         },
       }),
     }),

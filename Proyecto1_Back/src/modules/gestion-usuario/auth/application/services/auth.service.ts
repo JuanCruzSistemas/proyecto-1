@@ -5,6 +5,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { StringValue } from 'ms';
 import { RegistrarUsuarioDto } from '../../dto/register.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -81,10 +82,10 @@ export class AuthService {
     };  
 
     const accessToken = this.jwtService.sign(payload, {
-      expiresIn: accessTokenExp,
+      expiresIn: accessTokenExp as StringValue,
     });
     const refreshToken = this.jwtService.sign(payload, {
-      expiresIn: refreshTokenExp,
+      expiresIn: refreshTokenExp as StringValue,
     });
 
     return {
@@ -157,10 +158,10 @@ export class AuthService {
     );
 
     const accessToken = this.jwtService.sign(payloadJwt, {
-      expiresIn: accessTokenExp,
+      expiresIn: accessTokenExp as StringValue,
     });
     const refreshToken = this.jwtService.sign(payloadJwt, {
-      expiresIn: refreshTokenExp,
+      expiresIn: refreshTokenExp as StringValue,
     });
 
     return {
