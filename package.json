@@ -2,13 +2,13 @@
   "name": "proyecto1-root",
   "private": true,
   "scripts": {
-    "docker:up": "docker compose -f Proyecto1_Back/docker-compose.yml up -d",
-    "docker:down": "docker compose -f Proyecto1_Back/docker-compose.yml down",
-    "docker:clean": "docker compose -f Proyecto1_Back/docker-compose.yml down -v",
-    "build:back": "yarn --cwd Proyecto1_Back build",
+    "docker:up": "docker compose -f Proyecto1_Back/proyecto/docker-compose.yml up -d",
+    "docker:down": "docker compose -f Proyecto1_Back/proyecto/docker-compose.yml down",
+    "docker:clean": "docker compose -f Proyecto1_Back/proyecto/docker-compose.yml down -v",
+    "build:back": "yarn --cwd Proyecto1_Back/proyecto build",
     "build:front": "yarn --cwd Proyecto1_Front build",
     "build": "yarn build:back && yarn build:front",
-    "dev:back": "yarn --cwd Proyecto1_Back start:dev",
+    "dev:back": "yarn --cwd Proyecto1_Back/proyecto start:dev",
     "dev:front": "yarn --cwd Proyecto1_Front dev",
     "dev": "yarn docker:up && concurrently -n back,front -c blue,green \"yarn dev:back\" \"yarn dev:front\""
   },
