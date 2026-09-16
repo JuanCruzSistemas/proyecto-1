@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProvinciaController } from './provincia.controller';
-import { ProvinciaService } from '../services/provincia.serviceervice';
+import { ProvinciaService } from '../services/provincia.service';
 
 describe('ProvinciaController', () => {
   let controller: ProvinciaController;
