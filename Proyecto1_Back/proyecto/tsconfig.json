@@ -10,7 +10,6 @@
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
-    // TS 6 ya no incluye node_modules/@types automaticamente: los globals van listados.
     "types": ["node", "jest", "multer"],
     "paths": {
       "src/*": ["src/*"]
