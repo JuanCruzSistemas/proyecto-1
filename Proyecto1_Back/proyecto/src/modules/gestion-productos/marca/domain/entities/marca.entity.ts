@@ -9,7 +9,7 @@ import {
   OneToMany,
   Index,
 } from 'typeorm';
-import { Producto } from '../../../producto/domain/entities/producto.entity';
+import { Producto } from '../../../producto/infraestructure/persistence/entities/producto.orm-entity';
 
 @Entity('marca')
 @Index(['denominacion', 'deletedAt'], { unique: true })

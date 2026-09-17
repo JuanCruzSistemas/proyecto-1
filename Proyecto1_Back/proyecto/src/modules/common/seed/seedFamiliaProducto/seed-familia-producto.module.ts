@@ -5,7 +5,7 @@ import { Marca } from 'src/modules/gestion-productos/marca/domain/entities/marca
 
 import { SeedFamiliaProductoService } from './seed-familia-producto.service';
 import { SeedFamiliaProductoController } from './seed-familia-producto.controller';
-import { Producto } from 'src/modules/gestion-productos/producto/domain/entities/producto.entity';
+import { Producto } from 'src/modules/gestion-productos/producto/infraestructure/persistence/entities/producto.orm-entity';
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
 
 import { Proveedor } from 'src/modules/organizacion/proveedor/domain/entities/proveedor.entity';

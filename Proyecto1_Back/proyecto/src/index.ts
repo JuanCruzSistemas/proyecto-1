@@ -1,7 +1,7 @@
 import { Linea } from "./modules/gestion-productos/linea/domain/entities/linea.entity";
 import { Marca } from "./modules/gestion-productos/marca/domain/entities/marca.entity";
-import { ProductoOperacion } from "./modules/gestion-productos/producto-operacion/entities/producto-operacion.entity";
-import { Producto } from "./modules/gestion-productos/producto/domain/entities/producto.entity";
+import { MovimientoStock } from "./modules/gestion-productos/movimiento-stock/entities/movimiento-stock.entity";
+import { ProductoEntity } from "./modules/gestion-productos/producto/infraestructure/persistence/entities/producto.orm-entity";
 import { Auditoria } from "./modules/gestion-sistema/auditoria/entities/auditoria.entity";
 import { ConfiguracionSistema } from "./modules/gestion-sistema/configuracion-sistema/domain/entities/configuracion-sistema.entity";
 import { Rol } from "./modules/gestion-usuario/rol/domain/entities/rol.entity";
@@ -12,20 +12,18 @@ import { Localidad } from "./modules/gutil/localidad/domain/entities/localidad.e
 import { Provincia } from "./modules/gutil/provincia/domain/entities/provincia.entity";
 import { Cliente } from "./modules/organizacion/cliente/domain/entities/cliente.entity";
 import { Empresa } from "./modules/organizacion/empresa/domain/entities/empresa.entity";
-import { AlicuotaIva } from "./modules/organizacion/enums/alicuota-iva.enum";
 import { Personal } from "./modules/organizacion/personal/domain/entities/personal.entity";
 import { Proveedor } from "./modules/organizacion/proveedor/domain/entities/proveedor.entity";
 
 
 export const entities = [Marca,
                         Linea, 
-                        Producto,
-                        ProductoOperacion,
+                        ProductoEntity,
+                        MovimientoStock,
                         Auditoria,
                         ConfiguracionSistema,
                         Rol,
                         Usuario,
-                        AlicuotaIva,
                         CondicionIva,
                         Domicilio, 
                         Localidad,

@@ -1,9 +1,9 @@
 import { Logger } from '@nestjs/common';
-import { Producto } from '../domain/entities/producto.entity';
-import { GetProductoDto } from '../dto/get-producto.dto';
-import { UpdatePrecioDto } from '../dto/update-precio.dto';
+import { Producto } from '../infraestructure/persistence/entities/producto.orm-entity';
+import { GetProductoDto } from '../application/dto/get-producto.dto';
+import { UpdatePrecioDto } from '../application/dto/update-precio.dto';
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
-import { ProductoDto } from '../dto/producto.dto';
+import { ProductoDto } from '../application/dto/producto.dto';
 
 import {
   toReferenciaDto,

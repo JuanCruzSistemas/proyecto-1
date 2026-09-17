@@ -8,11 +8,11 @@ import { Linea } from 'src/modules/gestion-productos/linea/domain/entities/linea
 import { Marca } from 'src/modules/gestion-productos/marca/domain/entities/marca.entity';
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
 import { Repository, IsNull, DataSource } from 'typeorm';
-import { Producto } from '../../domain/entities/producto.entity';
+import { Producto } from '../persistence/entities/producto.orm-entity';
 import { IProductoRepository } from '../../domain/interfaces/producto.repository-interface';
-import { CreateProductoDto } from '../../dto/create-producto.dto';
-import { UpdatePrecioDto } from '../../dto/update-precio.dto';
-import { UpdateProductoDto } from '../../dto/update-producto.dto';
+import { CreateProductoDto } from '../../application/dto/create-producto.dto';
+import { UpdatePrecioDto } from '../../application/dto/update-precio.dto';
+import { UpdateProductoDto } from '../../application/dto/update-producto.dto';
 import { ProductoMapper } from '../../mappers/producto.mapper';
 
 
