@@ -1,21 +1,4 @@
-export interface MarcaCreateParams {
-  denominacion: string;
-  observacion: string | null;
-  usuarioCreatedId: number;
-}
-
-export interface MarcaReconstituteParams {
-  id: number;
-  denominacion: string;
-  observacion: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
-  usuarioCreatedId: number | null;
-  usuarioUpdatedId: number | null;
-  usuarioDeletedId: number | null;
-  sistema: number;
-}
+import { MarcaCreateParams, MarcaReconstituteParams } from "./marca.types";
 
 export class Marca {
   private constructor(
@@ -28,10 +11,12 @@ export class Marca {
     private usuarioCreatedId: number | null,
     private usuarioUpdatedId: number | null,
     private usuarioDeletedId: number | null,
-    private sistema: number,
+    private sistema: number
   ) {}
 
-  /** Fábrica para una Marca NUEVA — valida invariantes de creación. */
+  /**
+   * Fábrica para una Marca NUEVA, valida invariantes.
+   */
   public static create(params: MarcaCreateParams): Marca {
     return new Marca(
       null,
@@ -43,11 +28,13 @@ export class Marca {
       params.usuarioCreatedId,
       null,
       null,
-      0,
+      0
     );
   }
 
-  /** Fábrica para REHIDRATAR desde persistencia — la usa SOLO el mapper de infraestructura. */
+  /**
+   * Fábrica para REHIDRATAR desde persistencia, la usa solamente el mapper de infraestructura.
+   */
   public static reconstitute(params: MarcaReconstituteParams): Marca {
     return new Marca(
       params.id,
@@ -59,7 +46,7 @@ export class Marca {
       params.usuarioCreatedId,
       params.usuarioUpdatedId,
       params.usuarioDeletedId,
-      params.sistema,
+      params.sistema
     );
   }
 

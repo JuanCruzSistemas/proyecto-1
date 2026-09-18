@@ -1,16 +1,14 @@
-import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Transactional } from 'src/modules/common/decorators/transactional.decoratos';
 import { DatabaseConnectionException } from 'src/modules/common/exceptions/database-connection.exception';
 import { EntityNotFoundException } from 'src/modules/common/exceptions/entity-notFound-exceptions';
-import { IUnitOfWork, UNIT_OF_WORK_TOKEN } from 'src/modules/common/unit-of-work/iunit-of-work.';
+import { IUnitOfWork } from 'src/modules/common/unit-of-work/iunit-of-work.';
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
-import { Repository, IsNull, DataSource } from 'typeorm';
-import { ProductoEntity } from '../persistence/entities/producto.orm-entity';
-import { IProductoRepository } from '../../domain/interfaces/producto.repository-interface';
-import { Producto } from '../../domain/entities/producto.entity';
-import { UpdatePrecioDto } from '../../application/dto/update-precio.dto';
-import { ProductoMapper } from '../persistence/mappers/producto.mapper';
+import { Repository, IsNull } from 'typeorm';
+import { ProductoEntity } from '../entities/producto.orm-entity';
+import { IProductoRepository } from '../../../domain/interfaces/producto.repository-interface';
+import { Producto } from '../../../domain/entities/producto.entity';
+import { ProductoMapper } from '../mappers/producto.mapper';
 
 
 @Injectable()
@@ -22,19 +20,15 @@ export class ProductoRepository implements IProductoRepository {
   constructor(
     @InjectRepository(ProductoEntity)
     private readonly repository: Repository<ProductoEntity>,
-    private readonly dataSource: DataSource,
-    @Inject(UNIT_OF_WORK_TOKEN) public readonly uow: IUnitOfWork,
   ) {}
 
 
-  @Transactional()
   async create(data: Producto): Promise<Producto> {
-    const repo = this.uow.getRepository(ProductoEntity);
     this.logger.log(`Creando un nuevo ${this.ENTITY_NAME}`);
 
     try {
-      const nuevaEntity = repo.create(ProductoMapper.toOrm(data));
-      const entityGuardada = await repo.save(nuevaEntity);
+      const nuevaEntity = this.repository.create(ProductoMapper.toOrm(data));
+      const entityGuardada = await this.repository.save(nuevaEntity);
 
       this.logger.log(
         `${this.ENTITY_NAME} creado exitosamente con ID: ${entityGuardada.id}`,
@@ -115,17 +109,15 @@ export class ProductoRepository implements IProductoRepository {
     }
   }
 
-  @Transactional()
   async update(id: number, data: Producto): Promise<Producto> {
-    const repo = this.uow.getRepository(ProductoEntity);
     try {
-      const existente = await repo.findOne({ where: { id } });
+      const existente = await this.repository.findOne({ where: { id } });
 
       if (!existente) {
         throw new NotFoundException(`El producto con ID ${id} no encontrado`);
       }
 
-      const entityActualizada = await repo.save(ProductoMapper.toOrm(data, existente));
+      const entityActualizada = await this.repository.save(ProductoMapper.toOrm(data, existente));
 
       return ProductoMapper.toDomain(entityActualizada);
     } catch (error) {
@@ -143,12 +135,7 @@ export class ProductoRepository implements IProductoRepository {
   }
 
   async remove(producto: Producto, usuario: Usuario): Promise<Producto> {
-    if (producto.getDeletedAt()) {
-      throw new NotFoundException('Entidad  ya eliminada.');
-    }
-
     try {
-      producto.marcarComoEliminado(usuario);
       const existente = await this.repository.findOne({ where: { id: producto.getId()! } });
       const guardada = await this.repository.save(ProductoMapper.toOrm(producto, existente ?? undefined));
       return ProductoMapper.toDomain(guardada);
@@ -282,21 +269,6 @@ export class ProductoRepository implements IProductoRepository {
     }
 
     return query.getExists();
-  }
-
-  @Transactional()
-  async actualizarPrecio(id: number, dto: UpdatePrecioDto, usuario: Usuario) {
-    const repo = this.uow.getRepository(ProductoEntity);
-    const entity = await repo.findOne({ where: { id } });
-
-    if (!entity) {
-      throw new NotFoundException('Producto no encontrado');
-    }
-
-    const producto = ProductoMapper.toDomain(entity);
-    ProductoMapper.aplicarActualizacionPrecio(producto, dto, usuario);
-
-    await repo.save(ProductoMapper.toOrm(producto, entity));
   }
 
   async findByDenominacion(denominacion: string): Promise<Producto | null> {

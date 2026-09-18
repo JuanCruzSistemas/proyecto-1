@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { LineaController } from './linea.controller';
-import { LineaService } from '../services/linea.service';
+import { LineaService } from '../../../application/services/linea.service';
 
 describe('LineaController', () => {
   let controller: LineaController;

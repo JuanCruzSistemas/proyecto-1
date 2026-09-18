@@ -21,10 +21,10 @@ import { Roles } from 'src/modules/gestion-usuario/auth/roles.decorator';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { NormalizeDenominacionSearchPipe } from 'src/modules/common/pipes/normalize-denominations-search.pipe';
 import { AuditoriaDto } from 'src/modules/gestion-sistema/auditoria/dto/auditoria.dto';
-import { LineaService } from '../services/linea.service';
-import { CreateLineaDto } from '../../dto/create-linea.dto';
-import { LineaDto } from '../../dto/linea.dto';
-import { UpdateLineaDto } from '../../dto/update-linea.dto';
+import { LineaService } from '../../../application/services/linea.service';
+import { CreateLineaDto } from '../../../application/dto/create-linea.dto';
+import { LineaDto } from '../../../application/dto/linea.dto';
+import { UpdateLineaDto } from '../../../application/dto/update-linea.dto';
 
 @ApiTags('Gestion Productos')
 @Controller('linea')

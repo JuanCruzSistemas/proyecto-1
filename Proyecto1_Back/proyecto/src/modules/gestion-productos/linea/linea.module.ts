@@ -1,17 +1,25 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { LineaEntity } from './infraestructure/persistence/entities/linea.orm-entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { LineaPersistenceAdapter } from './infraestructure/repositories/linea.persistence-adapter';
 import { NormalizeDenominacionPipe } from 'src/modules/common/pipes/normalize-denominations.pipe';
-import { LineaRepository } from './infraestructure/repositories/linea.repository';
+import { LineaRepository } from './infraestructure/persistence/repositories/linea.repository';
 import { DataSource } from 'typeorm';
 import { IUnitOfWork } from 'src/modules/common/unit-of-work/iunit-of-work.';
 import { TypeOrmUnitOfWork } from 'src/modules/common/unit-of-work/type-orm-unit-of-works1';
 import { UsuarioModule } from 'src/modules/gestion-usuario/usuario/usuario.module';
-import { LineaController } from './application/controllers/linea.controller';
+import { LineaController } from './infraestructure/presentation/controllers/linea.controller';
 import { LineaService } from './application/services/linea.service';
 import { ProductoModule } from '../producto/producto.module';
 import { PoliticaEliminacionLinea } from './domain/services/politica-eliminacion-linea.service';
+import { LINEA_REPOSITORY_TOKEN } from './domain/interfaces/linea.repository.interface';
+import { LineaUniquenessValidator } from './infraestructure/validators/linea-uniqueness.validator';
+import { CreateLineaUseCase } from './application/use-cases/create-linea.use-case';
+import { UpdateLineaUseCase } from './application/use-cases/update-linea.use-case';
+import { FindLineaUseCase } from './application/use-cases/find-linea.use-case';
+import { FindDtoByIdLineaUseCase } from './application/use-cases/find-dto-by-id-linea.use-case';
+import { FindEntityByIdLineaUseCase } from './application/use-cases/find-entity-by-id-linea.use-case';
+import { FindByIdConAuditoriaLineaUseCase } from './application/use-cases/find-by-id-auditoria-linea.use-case';
+import { RemoveLineaUseCase } from './application/use-cases/remove-linea.use-case';
 
 @Module({
   imports: [
@@ -23,8 +31,16 @@ import { PoliticaEliminacionLinea } from './domain/services/politica-eliminacion
   providers: [
     LineaService,
     PoliticaEliminacionLinea,
+    LineaUniquenessValidator,
+    CreateLineaUseCase,
+    UpdateLineaUseCase,
+    FindLineaUseCase,
+    FindDtoByIdLineaUseCase,
+    FindEntityByIdLineaUseCase,
+    FindByIdConAuditoriaLineaUseCase,
+    RemoveLineaUseCase,
     {
-      provide: 'ILineaRepository',
+      provide: LINEA_REPOSITORY_TOKEN,
       useClass: LineaRepository,
     },
 
@@ -36,13 +52,11 @@ import { PoliticaEliminacionLinea } from './domain/services/politica-eliminacion
       inject: [DataSource],
     },
     NormalizeDenominacionPipe,
-    LineaPersistenceAdapter,
   ],
   exports: [
     TypeOrmModule,
     LineaService,
-    LineaPersistenceAdapter,
-    'ILineaRepository',
+    LINEA_REPOSITORY_TOKEN,
   ],
 })
 export class LineaModule {}

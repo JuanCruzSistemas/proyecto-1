@@ -31,7 +31,6 @@ export class MovimientoStock {
     private creadoEn: Date,
   ) {}
 
-  /** Fábrica para un MovimientoStock NUEVO. */
   public static create(params: MovimientoStockCreateParams): MovimientoStock {
     return new MovimientoStock(
       null,
@@ -42,7 +41,6 @@ export class MovimientoStock {
     );
   }
 
-  /** Fábrica para REHIDRATAR desde persistencia — la usa SOLO el mapper de infraestructura. */
   public static reconstitute(params: MovimientoStockReconstituteParams): MovimientoStock {
     return new MovimientoStock(
       params.id,

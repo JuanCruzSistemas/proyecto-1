@@ -1,7 +1,6 @@
 import { IUnitOfWork } from 'src/modules/common/unit-of-work/iunit-of-work.';
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
 import { Producto } from '../entities/producto.entity';
-import { UpdatePrecioDto } from '../../application/dto/update-precio.dto';
 
 export const PRODUCTO_REPOSITORY_TOKEN = 'IProductoRepository';
 
@@ -38,11 +37,6 @@ export interface IProductoRepository {
 
   updateEntity(uow: IUnitOfWork, data: Producto): Promise<Producto>;
 
-  actualizarPrecio(
-    id: number,
-    dto: UpdatePrecioDto,
-    usuario: Usuario,
-  ): Promise<void>;
   remove(data: Producto, usuario: Usuario): Promise<Producto>;
 
   isCodigoProveedorDuplicado(

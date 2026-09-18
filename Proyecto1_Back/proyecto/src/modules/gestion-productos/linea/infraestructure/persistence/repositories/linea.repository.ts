@@ -1,47 +1,31 @@
-import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DatabaseConnectionException } from 'src/modules/common/exceptions/database-connection.exception';
 import { EntityNotFoundException } from 'src/modules/common/exceptions/entity-notFound-exceptions';
-import { Repository, DataSource } from 'typeorm';
-import { Linea } from '../../domain/entities/linea.entity';
-import { LineaEntity } from '../persistence/entities/linea.orm-entity';
-import { ILineaRepository } from '../../domain/interfaces/linea.repository.interface';
-import { IUnitOfWork } from 'src/modules/common/unit-of-work/iunit-of-work.';
-import { Transactional } from 'src/modules/common/decorators/transactional.decoratos';
+import { Repository } from 'typeorm';
+import { Linea } from '../../../domain/entities/linea.entity';
+import { LineaEntity } from '../entities/linea.orm-entity';
+import { ILineaRepository } from '../../../domain/interfaces/linea.repository.interface';
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
 import { AuditoriaDto } from 'src/modules/gestion-sistema/auditoria/dto/auditoria.dto';
 import { FechaUtils } from 'src/modules/common/utils/date/fecha-utils';
 import { QueryBuilderHelper } from 'src/modules/common/query-builders/query-builder-helpers';
-import { BasePersistenceAdapter } from 'src/modules/common/persistence/base-persistence.adapter';
 import { handleDatabaseError } from 'src/modules/common/query-builders/database-error.helper';
-import { LineaOrmMapper } from '../persistence/mappers/linea.mapper';
+import { LineaOrmMapper } from '../mappers/linea.mapper';
 
 @Injectable()
-export class LineaPersistenceAdapter
-  extends BasePersistenceAdapter<LineaEntity>
-  implements ILineaRepository
-{
-  private readonly logger = new Logger(LineaPersistenceAdapter.name);
-
-  protected readonly ALIAS = 'linea';
+export class LineaRepository implements ILineaRepository {
+  private readonly logger = new Logger(LineaRepository.name);
 
   constructor(
     @InjectRepository(LineaEntity)
-    repository: Repository<LineaEntity>,
+    private readonly repository: Repository<LineaEntity>,
+  ) {}
 
-    private readonly dataSource: DataSource,
-    @Inject('UnitOfWork') public readonly uow: IUnitOfWork,
-  ) {
-    super(repository);
-  }
-
-  @Transactional()
   async create(data: Linea): Promise<Linea> {
-    const repo = this.uow.getRepository(LineaEntity);
-
     try {
-      const nuevaEntity = repo.create(LineaOrmMapper.toOrm(data));
-      const entityGuardada = await repo.save(nuevaEntity);
+      const nuevaEntity = this.repository.create(LineaOrmMapper.toOrm(data));
+      const entityGuardada = await this.repository.save(nuevaEntity);
 
       return LineaOrmMapper.toDomain(entityGuardada);
     } catch (error) {
@@ -52,11 +36,8 @@ export class LineaPersistenceAdapter
     }
   }
 
-  @Transactional()
   async update(id: number, data: Linea): Promise<Linea> {
-    const repo = this.uow.getRepository(LineaEntity);
-
-    const entity = await repo.findOne({
+    const entity = await this.repository.findOne({
       where: { id }
     });
 
@@ -64,7 +45,7 @@ export class LineaPersistenceAdapter
       throw new NotFoundException(`Línea con ID ${id} no encontrada`);
     }
 
-    const entityActualizada = await repo.save(LineaOrmMapper.toOrm(data, entity));
+    const entityActualizada = await this.repository.save(LineaOrmMapper.toOrm(data, entity));
 
     return LineaOrmMapper.toDomain(entityActualizada);
   }
@@ -95,8 +76,10 @@ export class LineaPersistenceAdapter
 
   async findAllListado(): Promise<Linea[]> {
     try {
-      const query = this.baseQuery();
-      QueryBuilderHelper.applyOrder(query, this.ALIAS, 'denominacion', 'ASC');
+      const query = this.repository
+        .createQueryBuilder('linea')
+        .where('linea.deletedAt IS NULL');
+      QueryBuilderHelper.applyOrder(query, 'linea', 'denominacion', 'ASC');
       const rows = await query.getMany();
       return rows.map(LineaOrmMapper.toDomain);
     } catch (error) {
@@ -149,15 +132,20 @@ export class LineaPersistenceAdapter
     incluirEliminados = false,
   ): Promise<{ data: Linea[]; total: number }> {
     try {
-      const query = this.baseQuery(incluirEliminados)
+      const query = this.repository.createQueryBuilder('linea');
+      if (incluirEliminados) {
+        query.withDeleted();
+      } else {
+        query.where('linea.deletedAt IS NULL');
+      }
 
       if (denominacion) {
-        query.andWhere(`UPPER(${this.ALIAS}.denominacion) LIKE :denominacion`, {
+        query.andWhere('UPPER(linea.denominacion) LIKE :denominacion', {
           denominacion: `%${denominacion.toUpperCase()}%`,
         });
       }
 
-      QueryBuilderHelper.applyOrder(query, this.ALIAS, 'denominacion', 'ASC');
+      QueryBuilderHelper.applyOrder(query, 'linea', 'denominacion', 'ASC');
       QueryBuilderHelper.applyPagination(query, skip, take);
 
       const [data, total] = await query.getManyAndCount();
@@ -169,12 +157,14 @@ export class LineaPersistenceAdapter
 
   async findAllFor(denominacion: string): Promise<Linea[]> {
     try {
-      const query = this.baseQuery()
-      query.andWhere('UPPER(linea.denominacion) LIKE :denominacion', {
-        denominacion: `%${denominacion.toUpperCase()}%`,
-      });
+      const query = this.repository
+        .createQueryBuilder('linea')
+        .where('linea.deletedAt IS NULL')
+        .andWhere('UPPER(linea.denominacion) LIKE :denominacion', {
+          denominacion: `%${denominacion.toUpperCase()}%`,
+        });
 
-      QueryBuilderHelper.applyOrder(query, this.ALIAS, 'denominacion', 'ASC');
+      QueryBuilderHelper.applyOrder(query, 'linea', 'denominacion', 'ASC');
       const rows = await query.getMany();
       return rows.map(LineaOrmMapper.toDomain);
     } catch (error) {
@@ -204,13 +194,14 @@ export class LineaPersistenceAdapter
     }
   }
 
-  @Transactional()
+  /**
+   * Persiste una línea que el caso de uso ya marcó como eliminada
+   * (`Linea.marcarComoEliminado()`) — ver `LineaService.remove()`. El repositorio no
+   * decide si corresponde eliminarla ni muta el dominio, solo guarda.
+   */
   async remove(entity: Linea, usuario: Usuario): Promise<Linea> {
-    const repo = this.uow.getRepository(LineaEntity);
-
-    entity.marcarComoEliminado(usuario.id);
-    const existente = await repo.findOneBy({ id: entity.getId()! });
-    const guardada = await repo.save(LineaOrmMapper.toOrm(entity, existente ?? undefined));
+    const existente = await this.repository.findOneBy({ id: entity.getId()! });
+    const guardada = await this.repository.save(LineaOrmMapper.toOrm(entity, existente ?? undefined));
 
     return LineaOrmMapper.toDomain(guardada);
   }

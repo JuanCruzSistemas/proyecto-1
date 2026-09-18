@@ -1,4 +1,5 @@
 import { Producto } from '../../domain/entities/producto.entity';
+import { ProductoFactory } from '../../domain/factories/producto.factory';
 import { Linea } from 'src/modules/gestion-productos/linea/domain/entities/linea.entity';
 import { Marca } from 'src/modules/gestion-productos/marca/domain/entities/marca.entity';
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
@@ -44,7 +45,7 @@ export class ProductoDtoMapper {
     marca: Marca,
     usuarioCreated: Usuario,
   ): Producto {
-    return Producto.create({
+    return ProductoFactory.create({
       denominacion: dto.denominacion,
       codigoBarra: dto.codigoBarra ?? null,
       proveedor: null,
@@ -54,9 +55,6 @@ export class ProductoDtoMapper {
       utilizaStockMinimoPorEmpresa: false,
       stockMinimo: dto.stockMinimo ?? 0,
       costo: dto.costo ?? 0,
-      // `porcentaje` llega como porcentaje (ej.: 30 = 30%); el dominio espera una
-      // fracción (0-1). `dto.precio` no se usa: el precio es un VO derivado de
-      // costo y margen, nunca un dato de entrada independiente.
       margen: (dto.porcentaje ?? 0) / 100, // el porcentaje llega como, por ejemplo, 30 (30%), la entidad lo usa como 0.30
       destacado: dto.destacado ?? false,
       envioGratis: dto.envioGratis ?? false,

@@ -2,6 +2,8 @@ import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usu
 import { Linea } from '../entities/linea.entity';
 import { AuditoriaDto } from 'src/modules/gestion-sistema/auditoria/dto/auditoria.dto';
 
+export const LINEA_REPOSITORY_TOKEN = 'ILineaRepository';
+
 export interface ILineaRepository {
 
   create(data: Linea): Promise<Linea>;

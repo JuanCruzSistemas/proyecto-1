@@ -12,12 +12,21 @@ import { ProveedorModule } from 'src/modules/organizacion/proveedor/proveedor.mo
 import { UsuarioModule } from 'src/modules/gestion-usuario/usuario/usuario.module';
 import { CommonModule } from 'src/modules/common/common.module';
 import { ProductoService } from './application/services/producto.service';
-import { ProductoRepository } from './infraestructure/repositories/producto.repository';
+import { ProductoRepository } from './infraestructure/persistence/repositories/producto.repository';
 import { ProductoUniquenessValidator } from './infraestructure/validators/producto-uniqueness.validator';
 import { ProductoRelatedEntitiesValidator } from './infraestructure/validators/producto-related-entities.validator';
 import { ProductoValidationService } from './domain/services/producto-validation.service';
 import { ProductoIntrinsicValidationService } from './domain/services/producto-intrinsic-validation.service';
 import { PRODUCTO_REPOSITORY_TOKEN } from './domain/interfaces/producto.repository-interface';
+import { CreateProductoUseCase } from './application/use-cases/create-producto.use-case';
+import { UpdateProductoUseCase } from './application/use-cases/update-producto.use-case';
+import { FindByProductoUseCase } from './application/use-cases/find-by-producto.use-case';
+import { FindByIdConAuditoria } from './application/use-cases/find-by-id-auditoria.use-case';
+import { FindDtoByIdUseCase } from './application/use-cases/find-dto-by-id.use-case';
+import { FindEntityByIdUseCase } from './application/use-cases/find-entity-by-id.use-case';
+import { RemoveProductoUseCase } from './application/use-cases/remove-producto.use-case';
+import { FindByDenominacionUseCase } from './application/use-cases/find-by-denominiacion.use-case';
+import { UpdatePrecioUseCase } from './application/use-cases/update-precio.use-case';
 
 @Module({
   imports: [
@@ -37,6 +46,15 @@ import { PRODUCTO_REPOSITORY_TOKEN } from './domain/interfaces/producto.reposito
     ProductoValidationService,
     ProductoRelatedEntitiesValidator,
     ProductoUniquenessValidator,
+    CreateProductoUseCase,
+    UpdateProductoUseCase,
+    FindByProductoUseCase,
+    FindByIdConAuditoria,
+    FindDtoByIdUseCase,
+    FindEntityByIdUseCase,
+    RemoveProductoUseCase,
+    FindByDenominacionUseCase,
+    UpdatePrecioUseCase,
     {
       provide: PRODUCTO_REPOSITORY_TOKEN,
       useClass: ProductoRepository,

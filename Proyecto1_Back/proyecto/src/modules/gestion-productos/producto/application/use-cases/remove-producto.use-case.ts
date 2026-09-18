@@ -31,6 +31,11 @@ export class RemoveProductoUseCase {
             throw new NotFoundException(`Usuario con ID ${usuarioId} no encontrado.`);
         }
 
+        if (entity.getDeletedAt()) {
+            throw new NotFoundException(`${this.ENTITY_NAME} ya eliminado.`);
+        }
+        entity.marcarComoEliminado(usuario);
+
         await this.repository.remove(entity, usuario);
         return MessageFrontUtils.createSimple(
             `${this.ENTITY_NAME}`,

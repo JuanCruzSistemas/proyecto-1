@@ -1,25 +1,4 @@
-export interface LineaCreateParams {
-  denominacion: string;
-  observacion: string | null;
-  utilizaStockMinimo: boolean;
-  stockMinimo: number;
-  usuarioCreatedId: number;
-}
-
-export interface LineaReconstituteParams {
-  id: number;
-  denominacion: string;
-  observacion: string | null;
-  utilizaStockMinimo: boolean;
-  stockMinimo: number;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
-  usuarioCreatedId: number | null;
-  usuarioUpdatedId: number | null;
-  usuarioDeletedId: number | null;
-  sistema: number;
-}
+import { LineaCreateParams, LineaReconstituteParams } from "./linea.types";
 
 export class Linea {
   private constructor(
@@ -34,10 +13,12 @@ export class Linea {
     private usuarioCreatedId: number | null,
     private usuarioUpdatedId: number | null,
     private usuarioDeletedId: number | null,
-    private sistema: number,
+    private sistema: number
   ) {}
 
-  /** Fábrica para una Línea NUEVA — valida invariantes de creación. */
+  /**
+   * Fábrica para una Línea NUEVA, valida invariantes
+   */
   public static create(params: LineaCreateParams): Linea {
     return new Linea(
       null,
@@ -51,11 +32,13 @@ export class Linea {
       params.usuarioCreatedId,
       null,
       null,
-      0,
+      0
     );
   }
 
-  /** Fábrica para REHIDRATAR desde persistencia — la usa SOLO el mapper de infraestructura. */
+  /**
+   * Fábrica para REHIDRATAR desde persistencia, la usa el mapper de infraestructura.
+   */
   public static reconstitute(params: LineaReconstituteParams): Linea {
     return new Linea(
       params.id,
@@ -69,7 +52,7 @@ export class Linea {
       params.usuarioCreatedId,
       params.usuarioUpdatedId,
       params.usuarioDeletedId,
-      params.sistema,
+      params.sistema
     );
   }
 

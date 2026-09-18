@@ -1,74 +1,60 @@
-import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { DataSource, IsNull, Repository } from 'typeorm';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { IsNull, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IMarcaRepository } from '../../domain/interfaces/marca.repository.interface';
-import { Marca } from '../../domain/entities/marca.entity';
-import { MarcaEntity } from '../persistence/entities/marca.orm-entity';
+import { IMarcaRepository } from '../../../domain/interfaces/marca.repository.interface';
+import { Marca } from '../../../domain/entities/marca.entity';
+import { MarcaEntity } from '../entities/marca.orm-entity';
 import { DatabaseConnectionException } from 'src/modules/common/exceptions/database-connection.exception';
 import { EntityNotFoundException } from 'src/modules/common/exceptions/entity-notFound-exceptions';
-import { Transactional } from 'src/modules/common/decorators/transactional.decoratos';
-import { IUnitOfWork } from 'src/modules/common/unit-of-work/iunit-of-work.';
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
 import { AuditoriaDto } from 'src/modules/gestion-sistema/auditoria/dto/auditoria.dto';
 import { FechaUtils } from 'src/modules/common/utils/date/fecha-utils';
-import { BasePersistenceAdapter } from 'src/modules/common/persistence/base-persistence.adapter';
 import { QueryBuilderHelper } from 'src/modules/common/query-builders/query-builder-helpers';
 import { handleDatabaseError } from 'src/modules/common/query-builders/database-error.helper';
-import { MarcaOrmMapper } from '../persistence/mappers/marca.mapper';
+import { MarcaOrmMapper } from '../mappers/marca.mapper';
 
 @Injectable()
-export class MarcaPersistenceAdapter
-  extends BasePersistenceAdapter<MarcaEntity>
-  implements IMarcaRepository
-{
-  private readonly logger = new Logger(MarcaPersistenceAdapter.name);
-
-  protected readonly ALIAS = 'marca';
+export class MarcaRepository implements IMarcaRepository {
+  private readonly logger = new Logger(MarcaRepository.name);
 
   constructor(
     @InjectRepository(MarcaEntity)
-    repository: Repository<MarcaEntity>,
-    private readonly dataSource: DataSource,
-    @Inject('UnitOfWork') public readonly uow: IUnitOfWork,
-  ) {
-    super(repository);
-  }
+    private readonly repository: Repository<MarcaEntity>,
+  ) {}
 
-  @Transactional()
   async create(data: Marca): Promise<Marca> {
-    const repo = this.uow.getRepository(MarcaEntity);
-    const nueva = repo.create(MarcaOrmMapper.toOrm(data));
-    const guardada = await repo.save(nueva);
+    const nueva = this.repository.create(MarcaOrmMapper.toOrm(data));
+    const guardada = await this.repository.save(nueva);
     return MarcaOrmMapper.toDomain(guardada);
   }
 
   async findAllFor(denominacion: string): Promise<Marca[]> {
     try {
-      const query = this.baseQuery().andWhere(
-        `UPPER(${this.ALIAS}.denominacion) LIKE :denominacion`,
-        {
+      const query = this.repository
+        .createQueryBuilder('marca')
+        .where('marca.deletedAt IS NULL')
+        .andWhere('UPPER(marca.denominacion) LIKE :denominacion', {
           denominacion: `%${denominacion.toUpperCase()}%`,
-        },
-      );
-      QueryBuilderHelper.applyOrder(query, this.ALIAS, 'denominacion', 'ASC');
+        });
+      QueryBuilderHelper.applyOrder(query, 'marca', 'denominacion', 'ASC');
       const rows = await query.getMany();
       return rows.map(MarcaOrmMapper.toDomain);
     } catch (error) {
       handleDatabaseError(this.logger, 'findAllFor', error);
     }
-
   }
 
   async findAllListado(): Promise<Marca[]> {
     try {
-      const query = this.baseQuery();
-      QueryBuilderHelper.applyOrder(query, this.ALIAS, 'denominacion', 'ASC');
+      const query = this.repository
+        .createQueryBuilder('marca')
+        .where('marca.deletedAt IS NULL');
+      QueryBuilderHelper.applyOrder(query, 'marca', 'denominacion', 'ASC');
       const rows = await query.getMany();
       return rows.map(MarcaOrmMapper.toDomain);
     } catch (error) {
       handleDatabaseError(this.logger, 'findAllListado', error);
     }
-
   }
 
   async findAllSinSistemaFor(denominacion: string): Promise<Marca[]> {
@@ -154,16 +140,20 @@ export class MarcaPersistenceAdapter
     incluirEliminados = false,
   ): Promise<{ data: Marca[]; total: number }> {
     try {
-      const query = this.baseQuery(incluirEliminados);
+      const query = this.repository.createQueryBuilder('marca');
+      if (incluirEliminados) {
+        query.withDeleted();
+      } else {
+        query.where('marca.deletedAt IS NULL');
+      }
 
       if (denominacion) {
-        query.andWhere(`UPPER(${this.ALIAS}.denominacion) LIKE :denominacion`, {
+        query.andWhere('UPPER(marca.denominacion) LIKE :denominacion', {
           denominacion: `%${denominacion.toUpperCase()}%`,
         });
       }
 
-      QueryBuilderHelper.applyOrder(query, this.ALIAS, 'denominacion', 'ASC');
-
+      QueryBuilderHelper.applyOrder(query, 'marca', 'denominacion', 'ASC');
       QueryBuilderHelper.applyPagination(query, skip, take);
 
       const [data, total] = await query.getManyAndCount();
@@ -233,24 +223,16 @@ export class MarcaPersistenceAdapter
     }
   }
 
-  @Transactional()
   async update(id: number, data: Marca): Promise<Marca> {
-    const repo = this.uow.getRepository(MarcaEntity);
-    const existente = await repo.findOneBy({ id });
+    const existente = await this.repository.findOneBy({ id });
     if (!existente) throw new NotFoundException('Marca no encontrada');
-    const guardada = await repo.save(MarcaOrmMapper.toOrm(data, existente));
+    const guardada = await this.repository.save(MarcaOrmMapper.toOrm(data, existente));
     return MarcaOrmMapper.toDomain(guardada);
   }
-
-  @Transactional()
+  
   async remove(entity: Marca, usuario: Usuario): Promise<Marca> {
-    const repo = this.uow.getRepository(MarcaEntity);
-    if (entity.getDeletedAt()) {
-      throw new NotFoundException('Entidad ya eliminada.');
-    }
-    entity.marcarComoEliminado(usuario.id);
-    const existente = await repo.findOneBy({ id: entity.getId()! });
-    const guardada = await repo.save(MarcaOrmMapper.toOrm(entity, existente ?? undefined));
+    const existente = await this.repository.findOneBy({ id: entity.getId()! });
+    const guardada = await this.repository.save(MarcaOrmMapper.toOrm(entity, existente ?? undefined));
     return MarcaOrmMapper.toDomain(guardada);
   }
 

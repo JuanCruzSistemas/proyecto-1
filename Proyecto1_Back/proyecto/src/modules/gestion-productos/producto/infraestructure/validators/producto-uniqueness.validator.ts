@@ -1,7 +1,7 @@
 // infrastructure/validators/producto-uniqueness.validator.ts
 import { Injectable, ConflictException, Logger } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
-import { IProductoRepository } from '../../domain/interfaces/producto.repository-interface';
+import { IProductoRepository, PRODUCTO_REPOSITORY_TOKEN } from '../../domain/interfaces/producto.repository-interface';
 
 
 @Injectable()
@@ -10,7 +10,7 @@ export class ProductoUniquenessValidator {
   private readonly logger = new Logger(ProductoUniquenessValidator.name);
 
   constructor(
-    @Inject('IProductoRepository')
+    @Inject(PRODUCTO_REPOSITORY_TOKEN)
     private readonly repository: IProductoRepository,
   ) {}
 

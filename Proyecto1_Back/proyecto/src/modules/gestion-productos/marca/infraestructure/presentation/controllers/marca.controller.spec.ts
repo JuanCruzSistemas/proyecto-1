@@ -5,7 +5,7 @@ import { Reflector } from '@nestjs/core';
 import { AuthGuard } from 'src/modules/gestion-usuario/auth/auth.guard';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { MarcaService } from '../services/marca.service';
+import { MarcaService } from '../../../application/services/marca.service';
 
 
 

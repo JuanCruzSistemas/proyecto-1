@@ -2,6 +2,8 @@ import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usu
 import { Marca } from '../entities/marca.entity';
 import { AuditoriaDto } from 'src/modules/gestion-sistema/auditoria/dto/auditoria.dto';
 
+export const MARCA_REPOSITORY_TOKEN = 'IMarcaRepository';
+
 export interface IMarcaRepository {
   create(data: Marca): Promise<Marca>;
   findAllFor(denominacion: string): Promise<Marca[]>;

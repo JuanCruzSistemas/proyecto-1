@@ -1,4 +1,4 @@
-import { Producto } from './producto.entity';
+import { ProductoFactory } from '../factories/producto.factory';
 import { Linea } from '../../../linea/domain/entities/linea.entity';
 import { Marca } from '../../../marca/domain/entities/marca.entity';
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
@@ -21,8 +21,8 @@ describe('Producto (dominio)', () => {
     usuarioCreatedId: 1,
   });
 
-  const crearProducto = (overrides: Partial<Parameters<typeof Producto.create>[0]> = {}) =>
-    Producto.create({
+  const crearProducto = (overrides: Partial<Parameters<typeof ProductoFactory.create>[0]> = {}) =>
+    ProductoFactory.create({
       denominacion: 'Aceite de girasol 1.5L',
       codigoBarra: null,
       proveedor: null,
@@ -80,7 +80,7 @@ describe('Producto (dominio)', () => {
 
   describe('reconstitute()', () => {
     it('rehidrata conservando el id y recalcula el precio a partir de costo/margen', () => {
-      const producto = Producto.reconstitute({
+      const producto = ProductoFactory.reconstitute({
         id: 42,
         denominacion: 'Producto existente',
         codigoBarra: null,

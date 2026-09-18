@@ -1,16 +1,15 @@
 import { Producto } from '../../../domain/entities/producto.entity';
+import { ProductoFactory } from '../../../domain/factories/producto.factory';
 import { ProductoEntity } from '../entities/producto.orm-entity';
 import { GetProductoDto } from '../../../application/dto/get-producto.dto';
 import { ProductoDto } from '../../../application/dto/producto.dto';
-import { UpdatePrecioDto } from '../../../application/dto/update-precio.dto';
-import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
 import { MarcaOrmMapper } from 'src/modules/gestion-productos/marca/infraestructure/persistence/mappers/marca.mapper';
 import { LineaOrmMapper } from 'src/modules/gestion-productos/linea/infraestructure/persistence/mappers/linea.mapper';
 import { MovimientoStockOrmMapper } from 'src/modules/gestion-productos/movimiento-stock/infraestructure/persistence/mappers/movimiento-stock.mapper';
 
 export class ProductoMapper {
   static toDomain(orm: ProductoEntity): Producto {
-    return Producto.reconstitute({
+    return ProductoFactory.reconstitute({
       id: orm.id,
       denominacion: orm.denominacion,
       codigoBarra: orm.codigoBarra ?? null,
@@ -109,41 +108,6 @@ export class ProductoMapper {
     }
 
     return target;
-  }
-
-  /**
-   * Aplica una actualización de precio/costo sobre un Producto de dominio ya
-   * reconstituido, reutilizando `actualizarDatos()` con el resto de los campos sin
-   * cambios. Migrado del mapper viejo (`producto/mappers/producto.mapper.ts`), que
-   * operaba directo sobre la fila ORM — ver MODIFICACIONES.md, Tarea 3.
-   */
-  static aplicarActualizacionPrecio(
-    producto: Producto,
-    dto: UpdatePrecioDto,
-    usuario: Usuario,
-  ): void {
-    producto.actualizarDatos({
-      denominacion: producto.getDenominacion(),
-      codigoBarra: producto.getCodigoBarra(),
-      codigoProveedor: producto.getCodigoProveedor(),
-      stock: producto.getStock(),
-      utilizaStockMinimo: producto.getUtilizaStockMinimo(),
-      utilizaStockMinimoPorEmpresa: producto.getUtilizaStockMinimoPorEmpresa(),
-      stockMinimo: producto.getStockMinimo(),
-      costo: dto.costo,
-      margen: dto.porcentaje / 100,
-      destacado: producto.isDestacado(),
-      envioGratis: producto.hasEnvioGratis(),
-      observacion: producto.getObservacion(),
-      linea: producto.getLinea(),
-      marca: producto.getMarca(),
-      utilizaPack: producto.getUtilizaPack(),
-      cantidadPorPack: producto.getCantidadPorPack(),
-      imagen: producto.getImagen(),
-      ubicacion: producto.getUbicacion(),
-      codigoReferencia: producto.getCodigoReferencia(),
-      usuarioUpdated: usuario,
-    });
   }
 
   static toBusquedaDto(producto: Producto): GetProductoDto {

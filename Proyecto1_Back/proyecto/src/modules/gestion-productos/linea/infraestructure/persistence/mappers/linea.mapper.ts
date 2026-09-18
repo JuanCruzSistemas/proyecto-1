@@ -1,9 +1,8 @@
 import { Linea } from '../../../domain/entities/linea.entity';
 import { LineaEntity } from '../entities/linea.orm-entity';
+import { LineaDto } from '../../../application/dto/linea.dto';
 
-/** Mapper dominio <-> ORM de Línea. Ver ARCHITECTURE.md §3.3 e IMPLEMENTATION.md §3.2. */
 export class LineaOrmMapper {
-  /** SIEMPRE reconstitute() al leer de infraestructura — nunca create(). */
   static toDomain(orm: LineaEntity): Linea {
     return Linea.reconstitute({
       id: orm.id,
@@ -17,7 +16,7 @@ export class LineaOrmMapper {
       usuarioCreatedId: orm.usuarioCreatedId ?? null,
       usuarioUpdatedId: orm.usuarioUpdatedId ?? null,
       usuarioDeletedId: orm.usuarioDeletedId ?? null,
-      sistema: orm.sistema,
+      sistema: orm.sistema
     });
   }
 
@@ -25,6 +24,7 @@ export class LineaOrmMapper {
     if (linea.getId() !== null) {
       target.id = linea.getId()!;
     }
+
     target.denominacion = linea.getDenominacion();
     target.observacion = linea.getObservacion() ?? undefined;
     target.utilizaStockMinimo = linea.getUtilizaStockMinimo();
@@ -33,16 +33,32 @@ export class LineaOrmMapper {
     target.usuarioUpdatedId = linea.getUsuarioUpdatedId() ?? undefined;
     target.usuarioDeletedId = linea.getUsuarioDeletedId() ?? undefined;
     target.sistema = linea.getSistema();
+
     const deletedAt = linea.getDeletedAt();
-    if (deletedAt) target.deletedAt = deletedAt;
+    if (deletedAt) {
+      target.deletedAt = deletedAt;
+    }
+
     return target;
   }
 
   /**
-   * Referencia liviana para asignar la relación `producto.linea` sin traer la fila
-   * completa: a TypeORM le alcanza con el `id` para resolver la FK al guardar.
+   * Referencia liviana para asignar la relación `producto.linea` sin traer la fila completa
    */
   static toOrmReference(linea: Linea): LineaEntity {
     return { id: linea.getId() } as LineaEntity;
+  }
+
+  static toDto(entity: Linea): LineaDto {
+    const deletedAt = entity.getDeletedAt();
+    return {
+      id: entity.getId() ?? 0,
+      denominacion: entity.getDenominacion(),
+      stockMinimo: entity.getStockMinimo(),
+      utilizaStockMinimo: entity.getUtilizaStockMinimo(),
+      observacion: entity.getObservacion() ?? '',
+      sistema: entity.getSistema(),
+      deletedAt: deletedAt ? deletedAt.toISOString() : null
+    };
   }
 }

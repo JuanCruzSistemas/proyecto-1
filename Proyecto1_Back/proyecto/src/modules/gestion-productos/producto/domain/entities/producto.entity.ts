@@ -7,92 +7,14 @@ import { Stock } from '../value-objects/stock.vo';
 import { Precio } from '../value-objects/precio.vo';
 import { Costo } from '../value-objects/costo.vo';
 import { Margen } from '../value-objects/margen.vo';
+import { ProductoActualizarDatosParams } from './producto.types';
 
-/** Datos necesarios para dar de alta un Producto nuevo. `margen` es una fracción (0-1). */
-export interface ProductoCreateParams {
-    denominacion: string;
-    codigoBarra: string | null;
-    proveedor: Proveedor | null;
-    codigoProveedor: string | null;
-    stock: number;
-    utilizaStockMinimo: boolean;
-    utilizaStockMinimoPorEmpresa: boolean;
-    stockMinimo: number;
-    costo: number;
-    margen: number;
-    destacado: boolean;
-    envioGratis: boolean;
-    observacion: string | null;
-    usuarioCreated: Usuario;
-    linea: Linea;
-    marca: Marca;
-    utilizaPack: boolean;
-    cantidadPorPack: number | null;
-    imagen: string | null;
-    ubicacion: string | null;
-    codigoReferencia: string | null;
-}
-
-/** Datos para rehidratar un Producto ya persistido. Uso exclusivo del mapper de infraestructura. */
-export interface ProductoReconstituteParams {
-    id: number;
-    denominacion: string;
-    codigoBarra: string | null;
-    proveedor: Proveedor | null;
-    codigoProveedor: string | null;
-    stock: number;
-    utilizaStockMinimo: boolean;
-    utilizaStockMinimoPorEmpresa: boolean;
-    stockMinimo: number;
-    costo: number;
-    margen: number;
-    fechaCosto: Date | null;
-    destacado: boolean;
-    envioGratis: boolean;
-    observacion: string | null;
-    createdAt: Date;
-    updatedAt: Date | null;
-    deletedAt: Date | null;
-    usuarioCreated: Usuario;
-    usuarioUpdated: Usuario | null;
-    usuarioDeleted: Usuario | null;
-    linea: Linea;
-    marca: Marca;
-    utilizaPack: boolean;
-    cantidadPorPack: number | null;
-    imagen: string | null;
-    ubicacion: string | null;
-    movimientosStock: MovimientoStock[];
-    sistema: number;
-    codigoReferencia: string | null;
-}
-
-/** Datos editables de un Producto ya existente (ver `actualizarDatos`). `margen` es una fracción (0-1). */
-export interface ProductoActualizarDatosParams {
-    denominacion: string;
-    codigoBarra: string | null;
-    codigoProveedor: string | null;
-    stock: number;
-    utilizaStockMinimo: boolean;
-    utilizaStockMinimoPorEmpresa: boolean;
-    stockMinimo: number;
-    costo: number;
-    margen: number;
-    destacado: boolean;
-    envioGratis: boolean;
-    observacion: string | null;
-    linea: Linea;
-    marca: Marca;
-    utilizaPack: boolean;
-    cantidadPorPack: number | null;
-    imagen: string | null;
-    ubicacion: string | null;
-    codigoReferencia: string | null;
-    usuarioUpdated: Usuario;
-}
-
+/**
+ * No instanciar directamente. Usar siempre `ProductoFactory.create()` /
+ * `ProductoFactory.reconstitute()`
+ */
 export class Producto {
-    private constructor(
+    constructor(
         private id: number | null,
         private denominacion: string,
         private codigoBarra: string | null,
@@ -142,96 +64,6 @@ export class Producto {
         private codigoReferencia: string | null,
     ) {}
 
-    /** Fábrica para un Producto NUEVO — valida invariantes de creación. */
-    public static create(params: ProductoCreateParams): Producto {
-        const costo = Costo.create(params.costo);
-        const margen = Margen.create(params.margen);
-        const precio = Precio.create(costo.getValue(), margen.getValue());
-
-        return new Producto(
-            null,
-            params.denominacion,
-            params.codigoBarra,
-            params.proveedor,
-            params.codigoProveedor,
-            Stock.create(params.stock),
-            params.utilizaStockMinimo,
-            params.utilizaStockMinimoPorEmpresa,
-            Stock.create(params.stockMinimo),
-            costo,
-            precio,
-            margen,
-            new Date(),
-            params.destacado,
-            params.envioGratis,
-            params.observacion,
-            new Date(),
-            null,
-            null,
-            params.usuarioCreated,
-            null,
-            null,
-            params.linea,
-            params.marca,
-            params.utilizaPack,
-            params.cantidadPorPack,
-            params.imagen,
-            params.ubicacion,
-            [],
-            0,
-            params.codigoReferencia,
-        );
-    }
-
-    /** Fábrica para REHIDRATAR desde persistencia — la usa SOLO el mapper de infraestructura. */
-    public static reconstitute(params: ProductoReconstituteParams): Producto {
-        const costo = Costo.create(params.costo);
-        const margen = Margen.create(params.margen);
-        // El precio se deriva siempre de costo y margen (ver calcularPrecio()); no se
-        // confía en un valor de precio persistido que pudiera haber quedado desalineado.
-        const precio = Precio.create(costo.getValue(), margen.getValue());
-
-        return new Producto(
-            params.id,
-            params.denominacion,
-            params.codigoBarra,
-            params.proveedor,
-            params.codigoProveedor,
-            Stock.create(params.stock),
-            params.utilizaStockMinimo,
-            params.utilizaStockMinimoPorEmpresa,
-            Stock.create(params.stockMinimo),
-            costo,
-            precio,
-            margen,
-            params.fechaCosto ?? new Date(),
-            params.destacado,
-            params.envioGratis,
-            params.observacion,
-            params.createdAt,
-            params.updatedAt,
-            params.deletedAt,
-            params.usuarioCreated,
-            params.usuarioUpdated,
-            params.usuarioDeleted,
-            params.linea,
-            params.marca,
-            params.utilizaPack,
-            params.cantidadPorPack,
-            params.imagen,
-            params.ubicacion,
-            params.movimientosStock,
-            params.sistema,
-            params.codigoReferencia,
-        );
-    }
-
-    /**
-     * Actualiza los datos editables de un producto ya existente. No es una fábrica:
-     * muta la instancia y revalida las mismas invariantes que `create()` a través de
-     * los Value Objects. Análogo a `actualizarPrecio()` en el precedente arquitectónico
-     * pero cubriendo el resto de los campos editables del formulario de edición.
-     */
     public actualizarDatos(params: ProductoActualizarDatosParams): void {
         const costo = Costo.create(params.costo);
         const margen = Margen.create(params.margen);
