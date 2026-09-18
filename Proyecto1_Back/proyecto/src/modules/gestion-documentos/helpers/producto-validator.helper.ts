@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Producto } from 'src/modules/gestion-productos/producto/domain/entities/producto.entity';
+import { Producto } from 'src/modules/gestion-productos/producto/infraestructure/persistence/entities/producto.orm-entity';
 import { ProductoService } from 'src/modules/gestion-productos/producto/application/services/producto.service';
 
 @Injectable()

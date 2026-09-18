@@ -2,7 +2,7 @@ import { forwardRef, Module } from '@nestjs/common';
 import { ProductoController } from './application/controllers/producto.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { NormalizeDenominacionPipe } from 'src/modules/common/pipes/normalize-denominations.pipe';
-import { Producto } from './domain/entities/producto.entity';
+import { Producto } from './infraestructure/persistence/entities/producto.orm-entity';
 import { ProductoRepository } from './infraestructure/repositories/producto.repository';
 import { LineaModule } from '../linea/linea.module';
 import { MarcaModule } from '../marca/marca.module';

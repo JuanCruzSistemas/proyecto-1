@@ -9,7 +9,7 @@ import {
   Index,
 } from 'typeorm';
 
-import { Producto } from '../../../producto/domain/entities/producto.entity';
+import { Producto } from '../../../producto/infraestructure/persistence/entities/producto.orm-entity';
 import { CantidadColumn } from 'src/modules/common/decorators/cantidad-column.decorator';
 
 @Entity('linea')

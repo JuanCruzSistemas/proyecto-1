@@ -1,4 +1,4 @@
-import { Producto } from 'src/modules/gestion-productos/producto/domain/entities/producto.entity';
+import { Producto } from 'src/modules/gestion-productos/producto/infraestructure/persistence/entities/producto.orm-entity';
 import { AuditoriaDto } from '../dto/auditoria.dto';
 import { FechaUtils } from 'src/modules/common/utils/date/fecha-utils';
 import { Marca } from 'src/modules/gestion-productos/marca/domain/entities/marca.entity';

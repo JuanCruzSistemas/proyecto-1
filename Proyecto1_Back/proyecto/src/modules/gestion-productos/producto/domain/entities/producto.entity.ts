@@ -1,175 +1,202 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-  ManyToOne,
-  Index,
-  JoinColumn,
-} from 'typeorm';
 import { Linea } from '../../../linea/domain/entities/linea.entity';
 import { Marca } from '../../../marca/domain/entities/marca.entity';
-import { AlicuotaIva } from 'src/modules/organizacion/enums/alicuota-iva.enum';
-import { ApiProperty } from '@nestjs/swagger';
-import { ProductoOperacion } from '../../../producto-operacion/entities/producto-operacion.entity';
+import { MovimientoStock } from '../../../movimiento-stock/entities/movimiento-stock.entity';
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
-import { MonetarioColumn } from 'src/modules/common/decorators/monetario-column.decorator';
-import { CantidadColumn } from 'src/modules/common/decorators/cantidad-column.decorator';
-import { PorcentajeColumn } from 'src/modules/common/decorators/porcentaje-column.decorator';
 import { Proveedor } from 'src/modules/organizacion/proveedor/domain/entities/proveedor.entity';
+import { Stock } from '../value-objects/stock.vo';
+import { Precio } from '../value-objects/precio.vo';
+import { Costo } from '../value-objects/costo.vo';
+import { Margen } from '../value-objects/margen.vo';
 
-@Entity('producto')
 export class Producto {
-  @ApiProperty()
-  @PrimaryGeneratedColumn()
-  id: number;
+    constructor(
+        private id: number | null,
+        private denominacion: string,
+        private codigoBarra: string | null,
 
-  @ApiProperty()
-  @Column({ type: 'text' })
-  denominacion: string;
+        // ======= Proveedor ========
+        private proveedor: Proveedor,
+        private codigoProveedor: string | null,
 
-  @Index()
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  codigoProveedor?: string | null;
+        private stock: Stock,
+        private utilizaStockMinimo: boolean = false,
+        private utilizaStockMinimoPorEmpresa: boolean = false,
+        private stockMinimo: Stock,
 
-  @Column({ type: 'text', nullable: true })
-  codigoBarra?: string | null;
+        private costo: Costo,
+        private precio: Precio,
+        private margen: Margen,
+        private fechaCosto: Date,
 
-  // ========== PROVEEDOR ==========
-  @ManyToOne(() => Proveedor, (pro) => pro.proveedoresOperacion, {
-    eager: true,
-  })
-  @JoinColumn({ name: 'proveedor_id' })
-  @Index()
-  proveedor: Proveedor;
+        private destacado: boolean = false,
+        private envioGratis: boolean = false,
 
-  @Column({ type: 'int', nullable: true })
-  proveedorId?: number;
+        private observacion: string | null,
 
-  /*
-  Nota: No usar el enum alciculta iva en @Column
-        sino no anda el importar precios 
-  */
-  @PorcentajeColumn(21.0)
-  alicuotaIva: AlicuotaIva;
+        private createdAt: Date,
+        private updatedAt: Date | null,
+        private deletedAt: Date | null,
 
-  // Stock: cantidades reales, admite fracciones (1.5 kg, 0.25 lts)
-  @CantidadColumn()
-  stock: number;
+        private usuarioCreated: Usuario,
+        private usuarioUpdated: Usuario | null,
+        private usuarioDeleted: Usuario | null,
 
-  @Column('boolean', { default: false })
-  utilizaStockMinimo: boolean;
+        // ==========  Línea ==========
+        private linea: Linea,
 
-  @Column('boolean', { default: false })
-  utilizaStockMinimoPorEmpresa: boolean;
+        // ==========  MARCA ==========
+        private marca: Marca,
 
-  @CantidadColumn()
-  stockMinimo: number;
+        private utilizaPack: boolean = false,
+        private cantidadPorPack: number | null,
 
-  @MonetarioColumn()
-  costo?: number;
+        private imagen: string | null,
+        private ubicacion: string | null,
 
-  @MonetarioColumn()
-  costoDolar?: number;
+        private movimientosStock: MovimientoStock[],
 
-  /*
-  Ultima cotizacion dolar por el cambio de precio si producto posee costo dolar
-  */
-  @MonetarioColumn()
-  cotizacionDolar?: number;
-  //se utiliza en las importaciones;
+        private sistema: number = 0,
+        private codigoReferencia: string | null,
+    ) {}
 
-  @MonetarioColumn()
-  precioDolar?: number;
-  // Precio de venta
+    public calcularPrecio(): void {
+        this.precio = Precio.create(
+            this.costo.getValue(),
+            this.margen.getValue()
+        );
+    }
 
-  @MonetarioColumn()
-  precio?: number;
+    public estaBajoMinimo(): boolean {
+        return this.stock.getValue() < this.stockMinimo.getValue();
+    }
 
-  @PorcentajeColumn()
-  porcentaje?: number;
+    public ajustarStock(cantidad: number, motivo: string): void {
+        // const movimientoStock = MovimientoStockFactory.create(productId, cantidad, motivo);
+        const nuevoStock = Stock.create(this.stock.getValue() + cantidad);
+        this.stock = nuevoStock;
+    }
 
-  @Column({ type: 'timestamp', nullable: true })
-  fechaCosto?: Date;
+    public getId(): number | null {
+        return this.id;
+    }
 
-  @Column('boolean', { default: false })
-  costoEnDolar?: boolean;
+    public getDenominacion(): string {
+        return this.denominacion;
+    }
 
-  @Column({ type: 'timestamp', nullable: true })
-  fechaCostoDolar?: Date;
+    public getCodigoBarra(): string | null {
+        return this.codigoBarra;
+    }
 
+    public getProveedor(): Proveedor {
+        return this.proveedor;
+    }
 
-  @Column('boolean', { default: false })
-  destacado?: boolean;
+    public getCodigoProveedor(): string | null {
+        return this.codigoProveedor;
+    }
 
-  @Column('boolean', { default: false })
-  envioGratis?: boolean;
+    public getStock(): number {
+        return this.stock.getValue();
+    }
 
-  @Column({ type: 'text', nullable: true })
-  observacion?: string;
+    public getUtilizaStockMinimo(): boolean {
+        return this.utilizaStockMinimo;
+    }
 
-  @CreateDateColumn()
-  createdAt: Date;
+    public getUtilizaStockMinimoPorEmpresa(): boolean {
+        return this.utilizaStockMinimoPorEmpresa;
+    }
 
-  @UpdateDateColumn()
-  updatedAt: Date;
+    public getStockMinimo(): number {
+        return this.stockMinimo.getValue();
+    }
 
-  @Column({ type: 'timestamp', nullable: true })
-  @Index()
-  deletedAt?: Date;
+    public getCosto(): number {
+        return this.costo.getValue();
+    }
 
-  @ManyToOne(() => Usuario)
-  @JoinColumn({ name: 'usuario_created_id' })
-  usuarioCreated: Usuario;
+    public getPrecio(): number {
+        return this.precio.getValue();
+    }
 
-  @ManyToOne(() => Usuario)
-  @JoinColumn({ name: 'usuario_updated_id' })
-  usuarioUpdated: Usuario;
+    public getMargen(): number {
+        return this.margen.getValue();
+    }
 
-  @ManyToOne(() => Usuario)
-  @JoinColumn({ name: 'usuario_deleted_id' })
-  usuarioDeleted: Usuario;
+    public getFechaCosto(): Date | null {
+        return this.fechaCosto;
+    }
 
+    public isDestacado(): boolean {
+        return this.destacado;
+    }
 
-  // ========== LINEA ==========
-  @ManyToOne(() => Linea, (linea) => linea.productos)
-  @JoinColumn({ name: 'linea_id' })
-  linea: Linea;
+    public hasEnvioGratis(): boolean {
+        return this.envioGratis;
+    }
 
-  @Column({ type: 'int', nullable: true })
-  lineaId?: number;
+    public getObservacion(): string | null {
+        return this.observacion;
+    }
 
+    public getCreatedAt(): Date {
+        return this.createdAt;
+    }
 
- // ==========  MARCA ==========
-  @ManyToOne(() => Marca, (marca) => marca.productos)
-  @JoinColumn({ name: 'marca_id' })
-  marca: Marca;
+    public getUpdatedAt(): Date | null {
+        return this.updatedAt;
+    }
 
-  @Column({ type: 'int', nullable: true })
-  marcaId?: number;
+    public getDeletedAt(): Date | null {
+        return this.deletedAt;
+    }
 
+    public getUsuarioCreated(): Usuario {
+        return this.usuarioCreated;
+    }
 
-  @Column({ default: false })
-  utilizaPack: boolean;
+    public getUsuarioUpdated(): Usuario | null {
+        return this.usuarioUpdated;
+    }
 
-  @Column({ type: 'int', nullable: true })
-  cantidadPorPack: number | null;
+    public getUsuarioDeleted(): Usuario | null {
+        return this.usuarioDeleted;
+    }
 
-  @Column({ type: 'text', nullable: true })
-  imagen?: string;
+    public getLinea(): Linea {
+        return this.linea;
+    }
 
+    public getMarca(): Marca {
+        return this.marca;
+    }
 
-  @Column({ type: 'text', nullable: true })
-  ubicacion?: string;
+    public getUtilizaPack(): boolean {
+        return this.utilizaPack;
+    }
 
-  @ManyToOne(() => Producto, (producto) => producto.productosOperacion)
-  productosOperacion: ProductoOperacion;
+    public getCantidadPorPack(): number | null {
+        return this.cantidadPorPack;
+    }
 
+    public getImagen(): string | null {
+        return this.imagen;
+    }
 
-  @Column({ type: 'int', default: 0 })
-  sistema: number;
+    public getUbicacion(): string | null {
+        return this.ubicacion;
+    }
 
-  @Column({ type: 'text', nullable: true })
-  codigoReferencia?: string | null;
+    public getMovimientosStock(): MovimientoStock[] {
+        return this.movimientosStock;
+    }
+
+    public getSistema(): number {
+        return this.sistema;
+    }
+
+    public getCodigoReferencia(): string | null {
+        return this.codigoReferencia;
+    }
 }

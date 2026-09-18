@@ -1,15 +1,15 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { Producto } from "../../producto/domain/entities/producto.entity";
+import { ProductoEntity } from "../../producto/infraestructure/persistence/entities/producto.orm-entity";
 
 @Entity('producto_operacion')
-export class ProductoOperacion {
+export class MovimientoStock {
 
 
       @PrimaryGeneratedColumn()
       id: number;
     
-      @ManyToOne(() => Producto, (pro) => pro.productosOperacion, { eager: true })
-      producto: Producto;
+      @ManyToOne(() => ProductoEntity, (pro) => pro.movimientosStock, { eager: true })
+      producto: ProductoEntity;
     
       @Column()
       operacionId: number;

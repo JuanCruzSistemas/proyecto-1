@@ -1,15 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { CreateProductoDto } from '../../dto/create-producto.dto';
-import { Producto } from '../../domain/entities/producto.entity';
+import { CreateProductoDto } from '../../application/dto/create-producto.dto';
+import { Producto } from '../persistence/entities/producto.orm-entity';
 import { IProductoRepository } from '../../domain/interfaces/producto.repository-interface';
 import { ProductoPersistenceAdapter } from './producto.persistence-adapters';
 import { Linea } from '../../../linea/domain/entities/linea.entity';
 import { Marca } from '../../../marca/domain/entities/marca.entity';
-import { UpdateProductoDto } from '../../dto/update-producto.dto';
+import { UpdateProductoDto } from '../../application/dto/update-producto.dto';
 import { DatabaseConnectionException } from 'src/modules/common/exceptions/database-connection.exception';
 import { IUnitOfWork } from 'src/modules/common/unit-of-work/iunit-of-work.';
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
-import { UpdatePrecioDto } from '../../dto/update-precio.dto';
+import { UpdatePrecioDto } from '../../application/dto/update-precio.dto';
 
 @Injectable()
 export class ProductoRepository implements IProductoRepository {

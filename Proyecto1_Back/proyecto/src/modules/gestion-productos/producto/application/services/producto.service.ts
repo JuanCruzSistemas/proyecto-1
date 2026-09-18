@@ -13,11 +13,11 @@ import { UsuarioService } from 'src/modules/gestion-usuario/usuario/application/
 import { ensureNotSistemaEntity } from 'src/modules/common/utils/atrituto-sistema';
 import { AuditoriaMapper } from 'src/modules/gestion-sistema/auditoria/mappers/auditoria.mapper';
 import { MessageFrontUtils } from 'src/modules/common/utils/message/message-front.util';
-import { Producto } from '../../domain/entities/producto.entity';
+import { Producto } from '../../infraestructure/persistence/entities/producto.orm-entity';
 import { IProductoRepository } from '../../domain/interfaces/producto.repository-interface';
-import { CreateProductoDto } from '../../dto/create-producto.dto';
-import { GetProductoDto } from '../../dto/get-producto.dto';
-import { UpdateProductoDto } from '../../dto/update-producto.dto';
+import { CreateProductoDto } from '../dto/create-producto.dto';
+import { GetProductoDto } from '../dto/get-producto.dto';
+import { UpdateProductoDto } from '../dto/update-producto.dto';
 import { ProductoMapper } from '../../mappers/producto.mapper';
 import { LineaService } from 'src/modules/gestion-productos/linea/application/services/linea.service';
 import { MarcaService } from 'src/modules/gestion-productos/marca/application/services/marca.service';
