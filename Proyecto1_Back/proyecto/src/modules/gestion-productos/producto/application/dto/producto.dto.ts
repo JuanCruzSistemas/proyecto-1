@@ -8,7 +8,6 @@ import {
   IsEnum,
   ValidateNested,
 } from 'class-validator';
-import { AlicuotaIva } from 'src/modules/organizacion/enums/alicuota-iva.enum';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { ReferenciaDto } from 'src/modules/common/dto/referencia.dto';
 /*
@@ -58,22 +57,6 @@ export class ProductoDto {
 
   @ApiProperty()
   @IsBoolean()
-  costoEnDolar: boolean;
-
-  @ApiProperty()
-  @IsNumber()
-  costoDolar: number;
-
-  @ApiProperty()
-  @IsNumber()
-  cotizacionDolar: number;
-
-  @Type(() => Number)
-  @IsNumber()
-  precioDolar: number;
-
-  @ApiProperty()
-  @IsBoolean()
   destacado: boolean;
 
   @ApiProperty()
@@ -98,7 +81,6 @@ export class ProductoDto {
   @Type(() => ReferenciaDto)
   marca?: ReferenciaDto;
 
-
   @ApiProperty({
     type: () => ReferenciaDto,
     description: 'proveedor asociada al producto',
@@ -107,18 +89,6 @@ export class ProductoDto {
   @ValidateNested()
   @Type(() => ReferenciaDto)
   proveedor?: ReferenciaDto;
-
-  @ApiProperty({
-    enum: AlicuotaIva,
-    enumName: 'AlicuotaIva',
-  })
-  @IsEnum(AlicuotaIva)
-  @Transform(({ value }) =>
-    typeof value === 'string'
-      ? AlicuotaIva[value.toUpperCase() as keyof typeof AlicuotaIva]
-      : value,
-  )
-  alicuotaIva: AlicuotaIva;
 
   @ApiProperty()
   @IsString()

@@ -8,10 +8,10 @@ import {
   Index,
   JoinColumn,
 } from 'typeorm';
-import { Linea } from '../../../../linea/domain/entities/linea.entity';
-import { Marca } from '../../../../marca/domain/entities/marca.entity';
+import { LineaEntity } from '../../../../linea/infraestructure/persistence/entities/linea.orm-entity';
+import { MarcaEntity } from '../../../../marca/infraestructure/persistence/entities/marca.orm-entity';
 import { ApiProperty } from '@nestjs/swagger';
-import { MovimientoStock } from '../../../../movimiento-stock/entities/movimiento-stock.entity';
+import { MovimientoStockEntity } from '../../../../movimiento-stock/infraestructure/persistence/entities/movimiento-stock.orm-entity';
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
 import { MonetarioColumn } from 'src/modules/common/decorators/monetario-column.decorator';
 import { CantidadColumn } from 'src/modules/common/decorators/cantidad-column.decorator';
@@ -104,18 +104,18 @@ export class ProductoEntity {
 
 
   // ========== LINEA ==========
-  @ManyToOne(() => Linea, (linea) => linea.productos)
+  @ManyToOne(() => LineaEntity, (linea) => linea.productos)
   @JoinColumn({ name: 'linea_id' })
-  linea: Linea;
+  linea: LineaEntity;
 
   @Column({ type: 'int', nullable: true })
   lineaId?: number;
 
 
   // ==========  MARCA ==========
-  @ManyToOne(() => Marca, (marca) => marca.productos)
+  @ManyToOne(() => MarcaEntity, (marca) => marca.productos)
   @JoinColumn({ name: 'marca_id' })
-  marca: Marca;
+  marca: MarcaEntity;
 
   @Column({ type: 'int', nullable: true })
   marcaId?: number;
@@ -135,7 +135,7 @@ export class ProductoEntity {
   ubicacion?: string;
 
   @ManyToOne(() => ProductoEntity, (producto) => producto.movimientosStock)
-  movimientosStock: MovimientoStock[];
+  movimientosStock: MovimientoStockEntity[];
 
 
   @Column({ type: 'int', default: 0 })

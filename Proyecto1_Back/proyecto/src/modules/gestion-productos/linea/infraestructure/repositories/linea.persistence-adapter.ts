@@ -3,10 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DatabaseConnectionException } from 'src/modules/common/exceptions/database-connection.exception';
 import { EntityNotFoundException } from 'src/modules/common/exceptions/entity-notFound-exceptions';
 import { Repository, DataSource } from 'typeorm';
-import { CreateLineaDto } from '../../dto/create-linea.dto';
 import { Linea } from '../../domain/entities/linea.entity';
+import { LineaEntity } from '../persistence/entities/linea.orm-entity';
 import { ILineaRepository } from '../../domain/interfaces/linea.repository.interface';
-import { UpdateLineaDto } from '../../dto/update-linea.dto';
 import { IUnitOfWork } from 'src/modules/common/unit-of-work/iunit-of-work.';
 import { Transactional } from 'src/modules/common/decorators/transactional.decoratos';
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
@@ -15,10 +14,11 @@ import { FechaUtils } from 'src/modules/common/utils/date/fecha-utils';
 import { QueryBuilderHelper } from 'src/modules/common/query-builders/query-builder-helpers';
 import { BasePersistenceAdapter } from 'src/modules/common/persistence/base-persistence.adapter';
 import { handleDatabaseError } from 'src/modules/common/query-builders/database-error.helper';
+import { LineaOrmMapper } from '../persistence/mappers/linea.mapper';
 
 @Injectable()
 export class LineaPersistenceAdapter
-  extends BasePersistenceAdapter<Linea>
+  extends BasePersistenceAdapter<LineaEntity>
   implements ILineaRepository
 {
   private readonly logger = new Logger(LineaPersistenceAdapter.name);
@@ -26,8 +26,8 @@ export class LineaPersistenceAdapter
   protected readonly ALIAS = 'linea';
 
   constructor(
-    @InjectRepository(Linea)
-    repository: Repository<Linea>,
+    @InjectRepository(LineaEntity)
+    repository: Repository<LineaEntity>,
 
     private readonly dataSource: DataSource,
     @Inject('UnitOfWork') public readonly uow: IUnitOfWork,
@@ -36,23 +36,14 @@ export class LineaPersistenceAdapter
   }
 
   @Transactional()
-  async create(data: CreateLineaDto): Promise<Linea> {
-    const repo = this.uow.getRepository(Linea);
+  async create(data: Linea): Promise<Linea> {
+    const repo = this.uow.getRepository(LineaEntity);
 
     try {
-      // Creamos la entidad sin sublíneas
-      const nuevaEntity = repo.create({
-        denominacion: data.denominacion,
-        utilizaStockMinimo: data.utilizaStockMinimo,
-        stockMinimo: data.stockMinimo,
-        usuarioCreatedId: data.usuarioCreatedId,
-        observacion: data.observacion,
-      });
-
+      const nuevaEntity = repo.create(LineaOrmMapper.toOrm(data));
       const entityGuardada = await repo.save(nuevaEntity);
 
-
-      return entityGuardada;
+      return LineaOrmMapper.toDomain(entityGuardada);
     } catch (error) {
       this.logger.error(`Error al conectar con la base de datos: ${error}`);
       throw new DatabaseConnectionException(
@@ -62,11 +53,8 @@ export class LineaPersistenceAdapter
   }
 
   @Transactional()
-  async update(
-    id: number,
-    data: UpdateLineaDto,
-  ): Promise<Linea> {
-    const repo = this.uow.getRepository(Linea);
+  async update(id: number, data: Linea): Promise<Linea> {
+    const repo = this.uow.getRepository(LineaEntity);
 
     const entity = await repo.findOne({
       where: { id }
@@ -76,16 +64,9 @@ export class LineaPersistenceAdapter
       throw new NotFoundException(`Línea con ID ${id} no encontrada`);
     }
 
-    // Actualizar datos simples
-    entity.denominacion = data.denominacion ?? entity.denominacion;
-    entity.utilizaStockMinimo = data.utilizaStockMinimo;
-    entity.stockMinimo = data.stockMinimo ?? 0;
-    entity.usuarioCreatedId = data.usuarioCreatedId;
+    const entityActualizada = await repo.save(LineaOrmMapper.toOrm(data, entity));
 
-    // Guardar entidad antes de procesar sublíneas (opcional según lógica de negocio)
-    const entityActualizada = await repo.save(entity);
-
-    return entityActualizada;
+    return LineaOrmMapper.toDomain(entityActualizada);
   }
 
   async findOne(id: number): Promise<Linea | null> {
@@ -96,13 +77,11 @@ export class LineaPersistenceAdapter
         .andWhere('linea.deletedAt IS NULL')
         .getOne();
 
-      this.logger.warn(`Entidad obtenida: ${JSON.stringify(entity)}`);
-
       if (!entity) {
         throw new EntityNotFoundException('Entidad no encontrada');
       }
 
-      return entity;
+      return LineaOrmMapper.toDomain(entity);
     } catch (error) {
       if (error instanceof EntityNotFoundException) {
         throw error;
@@ -118,7 +97,8 @@ export class LineaPersistenceAdapter
     try {
       const query = this.baseQuery();
       QueryBuilderHelper.applyOrder(query, this.ALIAS, 'denominacion', 'ASC');
-      return await query.getMany();
+      const rows = await query.getMany();
+      return rows.map(LineaOrmMapper.toDomain);
     } catch (error) {
       handleDatabaseError(this.logger, 'findAllListado', error);
     }
@@ -132,7 +112,7 @@ export class LineaPersistenceAdapter
         .andWhere('linea.deletedAt IS NULL')
         .getOne();
 
-      return entity;
+      return entity ? LineaOrmMapper.toDomain(entity) : null;
     } catch (error) {
       throw new DatabaseConnectionException(
         'Error al conectar con la base de datos.',
@@ -141,31 +121,22 @@ export class LineaPersistenceAdapter
   }
 
   async findByDenominacionWith(denominacion: string): Promise<Linea | null> {
-    this.logger.log(
-      `🔎 Buscando denominación (incluyendo borradas): ${denominacion}`,
-    );
     try {
       const normalizada = denominacion.trim().toUpperCase();
 
       const entity = await this.repository
         .createQueryBuilder('linea')
-        .withDeleted() //
+        .withDeleted()
         .where('UPPER(linea.denominacion) = :denominacion', {
           denominacion: normalizada,
         })
         .getOne();
 
       if (!entity) {
-        this.logger.log(
-          ` No encontrada línea (ni activa ni eliminada): ${normalizada}`,
-        );
         return null;
       }
 
-      this.logger.log(
-        `✅ Encontrada línea (puede estar activa o eliminada): ID=${entity.id}, denominación=${entity.denominacion}`,
-      );
-      return entity;
+      return LineaOrmMapper.toDomain(entity);
     } catch (error) {
       handleDatabaseError(this.logger, 'findByDenominacionWith', error);
     }
@@ -190,7 +161,7 @@ export class LineaPersistenceAdapter
       QueryBuilderHelper.applyPagination(query, skip, take);
 
       const [data, total] = await query.getManyAndCount();
-      return { data, total };
+      return { data: data.map(LineaOrmMapper.toDomain), total };
     } catch (error) {
       handleDatabaseError(this.logger, 'findBy', error);
     }
@@ -204,7 +175,8 @@ export class LineaPersistenceAdapter
       });
 
       QueryBuilderHelper.applyOrder(query, this.ALIAS, 'denominacion', 'ASC');
-      return await query.getMany();
+      const rows = await query.getMany();
+      return rows.map(LineaOrmMapper.toDomain);
     } catch (error) {
       handleDatabaseError(this.logger, 'findAllFor', error);
     }
@@ -223,7 +195,8 @@ export class LineaPersistenceAdapter
         });
       }
 
-      return await query.orderBy('linea.denominacion', 'ASC').getMany();
+      const rows = await query.orderBy('linea.denominacion', 'ASC').getMany();
+      return rows.map(LineaOrmMapper.toDomain);
     } catch (error) {
       throw new DatabaseConnectionException(
         'Error al conectar con la base de datos.',
@@ -233,13 +206,13 @@ export class LineaPersistenceAdapter
 
   @Transactional()
   async remove(entity: Linea, usuario: Usuario): Promise<Linea> {
-    const repo = this.uow.getRepository(Linea);
+    const repo = this.uow.getRepository(LineaEntity);
 
-    entity.deletedAt = new Date();
-    entity.usuarioDeletedId = usuario.id;
-    await repo.save(entity);
+    entity.marcarComoEliminado(usuario.id);
+    const existente = await repo.findOneBy({ id: entity.getId()! });
+    const guardada = await repo.save(LineaOrmMapper.toOrm(entity, existente ?? undefined));
 
-    return entity;
+    return LineaOrmMapper.toDomain(guardada);
   }
 
   async findByIdConAuditoria(id: number): Promise<AuditoriaDto | null> {
@@ -274,8 +247,6 @@ export class LineaPersistenceAdapter
         .where('linea.id = :id', { id })
         .getRawOne();
 
-      console.debug('RAW RESULTADO:', raw);
-
       if (!raw) return null;
 
       return {
@@ -297,7 +268,6 @@ export class LineaPersistenceAdapter
         usuarioDeleted: raw.usuarioDeleted_nombre ?? '',
       };
     } catch (error) {
-      console.error('ERROR EN findByIdConAuditoria:', error);
       throw new DatabaseConnectionException(
         'Error al conectar con la base de datos.',
       );

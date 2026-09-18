@@ -6,12 +6,13 @@ export class MarcaMapper {
   private static readonly logger = new Logger(MarcaMapper.name);
 
   static toDto(entity: Marca): MarcaDto {
+    const deletedAt = entity.getDeletedAt();
     return {
-      id: entity.id,
-      denominacion: entity.denominacion,
-      observacion: entity.observacion ?? "",
-      sistema: entity.sistema,
-      deletedAt: entity.deletedAt ? entity.deletedAt.toISOString() : null,
+      id: entity.getId() ?? 0,
+      denominacion: entity.getDenominacion(),
+      observacion: entity.getObservacion() ?? "",
+      sistema: entity.getSistema(),
+      deletedAt: deletedAt ? deletedAt.toISOString() : null,
     };
   }
 

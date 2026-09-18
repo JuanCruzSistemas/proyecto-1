@@ -13,8 +13,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-import { CreateProductoDto } from '../dto/create-producto.dto';
-import { UpdateProductoDto } from '../dto/update-producto.dto';
+import { CreateProductoDto } from '../../../application/dto/create-producto.dto';
+import { UpdateProductoDto } from '../../../application/dto/update-producto.dto';
 import { NormalizeDenominacionPipe } from 'src/modules/common/pipes/normalize-denominations.pipe';
 import { AuthGuard } from 'src/modules/gestion-usuario/auth/auth.guard';
 import { Roles } from 'src/modules/gestion-usuario/auth/roles.decorator';
@@ -23,14 +23,13 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { NormalizeCodigoProveedorPipe } from 'src/modules/common/pipes/normalize-codigo-proveedor.pipe';
-import { GetProductoDto } from '../dto/get-producto.dto';
-import { SearchProductoPaginationWithDto } from '../dto/search-producto-pagination-with.dto';
-import { ProductoDto } from '../dto/producto.dto';
+import { SearchProductoPaginationWithDto } from '../../../application/dto/search-producto-pagination-with.dto';
+import { ProductoDto } from '../../../application/dto/producto.dto';
 import { AuditoriaDto } from 'src/modules/gestion-sistema/auditoria/dto/auditoria.dto';
 import { NormalizeDenominacionSearchPipe } from 'src/modules/common/pipes/normalize-denominations-search.pipe';
 import { DenominacionBusquedaDto } from 'src/modules/common/dto/denominacion-busqueda.dto';
-import { SearchProductoRapidoDto } from '../dto/search-producto-rapido.dto';
-import { ProductoService } from '../services/producto.service';
+import { SearchProductoRapidoDto } from '../../../application/dto/search-producto-rapido.dto';
+import { ProductoService } from '../../../application/services/producto.service';
 
 
 @ApiTags('Gestion Productos')

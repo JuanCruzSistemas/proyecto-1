@@ -10,7 +10,6 @@ export class ProductoIntrinsicValidationService {
     denominacion: string;
     marcaId: number;
     lineaId: number;
-    alicuotaIva?: number;
     precioMayorista?: number;
     precioCliente?: number;
     precioOcasional?: number;
@@ -22,10 +21,6 @@ export class ProductoIntrinsicValidationService {
       datos.precioCliente,
       datos.precioOcasional,
     );
-    
-    if (datos.alicuotaIva !== undefined) {
-      this.validarAlicuotaIva(datos.alicuotaIva);
-    }
   }
 
   private validarDenominacion(denominacion: string): void {
@@ -97,14 +92,6 @@ export class ProductoIntrinsicValidationService {
           'El precio Mayorista no puede superar el precio Ocasional',
         );
       }
-    }
-  }
-
-  private validarAlicuotaIva(alicuotaIva: number): void {
-    if (alicuotaIva < 0 || alicuotaIva > 100) {
-      throw new BadRequestException(
-        'La alícuota IVA debe estar entre 0 y 100',
-      );
     }
   }
 }

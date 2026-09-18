@@ -11,7 +11,7 @@ export class Costo {
     }
 
     private static validate(value: number) {
-        if (value <= 0) throw new CostoInvalidoException(value);
+        if (value < 0) throw new CostoInvalidoException(value);
     }
 
     public getValue(): number {

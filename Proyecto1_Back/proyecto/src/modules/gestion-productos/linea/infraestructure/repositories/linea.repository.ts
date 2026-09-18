@@ -1,8 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ILineaRepository } from '../../domain/interfaces/linea.repository.interface';
-import { CreateLineaDto } from '../../dto/create-linea.dto';
 import { Linea } from '../../domain/entities/linea.entity';
-import { UpdateLineaDto } from '../../dto/update-linea.dto';
 import { DatabaseConnectionException } from 'src/modules/common/exceptions/database-connection.exception';
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
 import { AuditoriaDto } from 'src/modules/gestion-sistema/auditoria/dto/auditoria.dto';
@@ -16,7 +14,7 @@ export class LineaRepository implements ILineaRepository {
 
   private readonly ENTITY_NAME = 'Linea';
 
-  async create(data: CreateLineaDto): Promise<Linea> {
+  async create(data: Linea): Promise<Linea> {
     this.logger.log(`Creando un nuevo `);
     try {
       return await this.persistenceService.create(data);
@@ -30,7 +28,7 @@ export class LineaRepository implements ILineaRepository {
 
   async update(
     id: number,
-    data: UpdateLineaDto,
+    data: Linea,
   ): Promise<Linea> {
     return this.persistenceService.update(id, data);
   }

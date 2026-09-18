@@ -3,14 +3,14 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Producto } from 'src/modules/gestion-productos/producto/infraestructure/persistence/entities/producto.orm-entity';
+import { Producto } from 'src/modules/gestion-productos/producto/domain/entities/producto.entity';
 import { ProductoService } from 'src/modules/gestion-productos/producto/application/services/producto.service';
 
 @Injectable()
 export class ProductoValidator {
   constructor(
     private readonly productoService: ProductoService,
-    
+
   ) {}
 
 
@@ -22,7 +22,9 @@ export class ProductoValidator {
     }
 
     const productos = await this.productoService.findByIds(productosIds);
-    const productosMap = new Map(productos.map((p) => [p.id, p]));
+    const productosMap = new Map(
+      productos.map((p) => [p.getId() as number, p]),
+    );
 
     // Validar que todos los productos existen
     const productosNoEncontrados = productosIds.filter(

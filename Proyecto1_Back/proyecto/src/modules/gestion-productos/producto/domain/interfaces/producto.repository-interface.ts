@@ -1,16 +1,12 @@
-import { Linea } from '../../../linea/domain/entities/linea.entity';
-import { Marca } from '../../../marca/domain/entities/marca.entity';
 import { IUnitOfWork } from 'src/modules/common/unit-of-work/iunit-of-work.';
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
 import { Producto } from '../entities/producto.entity';
+import { UpdatePrecioDto } from '../../application/dto/update-precio.dto';
+
+export const PRODUCTO_REPOSITORY_TOKEN = 'IProductoRepository';
 
 export interface IProductoRepository {
-  create(
-    data: Producto,
-    linea: Linea,
-    marca: Marca,
-    usuario: Usuario,
-  ): Promise<Producto>;
+  create(data: Producto): Promise<Producto>;
 
   findOne(id: number): Promise<Producto | null>;
   findByIdConAuditoria(id: number): Promise<Producto | null>;
@@ -32,25 +28,19 @@ export interface IProductoRepository {
   findByRapido(
     codigo: string,
     exacto: boolean,
-    skip: any,
+    skip: number,
     take: number,
   ): Promise<{ data: Producto[]; total: number }>;
 
-  findByIdWithoutRelations(id: number): Promise<Producto | null> | undefined;
+  findByIdWithoutRelations(id: number): Promise<Producto | null>;
 
-  update(
-    id: number,
-    data: Producto,
-    linea: Linea,
-    marca: Marca,
-    usuario: Usuario,
-  ): Promise<Producto>;
+  update(id: number, data: Producto): Promise<Producto>;
 
   updateEntity(uow: IUnitOfWork, data: Producto): Promise<Producto>;
 
   actualizarPrecio(
     id: number,
-    dto: Producto,
+    dto: UpdatePrecioDto,
     usuario: Usuario,
   ): Promise<void>;
   remove(data: Producto, usuario: Usuario): Promise<Producto>;

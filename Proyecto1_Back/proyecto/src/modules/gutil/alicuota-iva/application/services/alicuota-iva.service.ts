@@ -43,7 +43,7 @@ export class AlicuotaIvaService {
   async update(id: number, dto: UpdateAlicuotaIvaDto) {
     this.logger.log(`Actualizando  ${this.ENTITY_NAME} con ID: ${id}`);
     const marca = await this.findEntityById(id);
-    ensureNotSistemaEntity(marca, 'Marca');
+    ensureNotSistemaEntity(marca.sistema, 'Marca');
 
     if (dto.denominacion)
       await this.checkDenominacionExists(dto.denominacion, id);
@@ -141,7 +141,7 @@ export class AlicuotaIvaService {
       );
     }
 
-    ensureNotSistemaEntity(entity, 'Marca');
+    ensureNotSistemaEntity(entity.sistema, 'Marca');
 
     const usuario = await this.usuarioService.findOne(usuarioId);
     if (!usuario) {

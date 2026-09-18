@@ -1,5 +1,5 @@
 import { forwardRef, Module } from '@nestjs/common';
-import { Linea } from './domain/entities/linea.entity';
+import { LineaEntity } from './infraestructure/persistence/entities/linea.orm-entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LineaPersistenceAdapter } from './infraestructure/repositories/linea.persistence-adapter';
 import { NormalizeDenominacionPipe } from 'src/modules/common/pipes/normalize-denominations.pipe';
@@ -15,7 +15,7 @@ import { PoliticaEliminacionLinea } from './domain/services/politica-eliminacion
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Linea]),
+    TypeOrmModule.forFeature([LineaEntity]),
     forwardRef(() => ProductoModule),
     UsuarioModule,
   ],

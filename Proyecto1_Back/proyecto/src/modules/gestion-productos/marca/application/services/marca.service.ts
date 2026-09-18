@@ -35,11 +35,16 @@ export class MarcaService {
       `Creando un nuevo ${this.ENTITY_NAME} con denominación: ${dto.denominacion} a: ${dto.denominacion}`,
     );
     await this.checkDenominacionExists(dto.denominacion, 0);
-    const entity = await this.repository.create(dto);
+    const nuevaMarca = Marca.create({
+      denominacion: dto.denominacion,
+      observacion: dto.observacion ?? null,
+      usuarioCreatedId: dto.usuarioCreatedId,
+    });
+    const entity = await this.repository.create(nuevaMarca);
 
     return MessageFrontUtils.createSimple(
       `${this.ENTITY_NAME}`,
-      dto.denominacion,
+      entity.getDenominacion(),
       'creada',
     );
   }
@@ -47,15 +52,21 @@ export class MarcaService {
   async update(id: number, dto: UpdateMarcaDto) {
     this.logger.log(`Actualizando  ${this.ENTITY_NAME} con ID: ${id}`);
     const marca = await this.findEntityById(id);
-    ensureNotSistemaEntity(marca, 'Marca');
+    ensureNotSistemaEntity(marca.getSistema(), 'Marca');
 
     if (dto.denominacion)
       await this.checkDenominacionExists(dto.denominacion, id);
 
-    const entity = await this.repository.update(id, dto);
+    marca.actualizarDatos({
+      denominacion: dto.denominacion ?? marca.getDenominacion(),
+      observacion: dto.observacion ?? marca.getObservacion(),
+      usuarioUpdatedId: dto.usuarioUpdatedId,
+    });
+
+    const entity = await this.repository.update(id, marca);
     return MessageFrontUtils.createSimple(
       `${this.ENTITY_NAME}`,
-      entity.denominacion,
+      entity.getDenominacion(),
       'editada',
     );
   }
@@ -142,7 +153,7 @@ export class MarcaService {
       );
     }
 
-    ensureNotSistemaEntity(entity, 'Marca');
+    ensureNotSistemaEntity(entity.getSistema(), 'Marca');
 
     const tieneProductosActivos =
       await this.validacionesService.tieneProductosActivosParaMarca(id);
@@ -161,14 +172,14 @@ export class MarcaService {
 
     return MessageFrontUtils.createSimple(
       `${this.ENTITY_NAME}`,
-      entity.denominacion,
+      entity.getDenominacion(),
       'eliminada',
     );
   }
 
   private async checkDenominacionExists(denominacion: string, id: number) {
     const exists = await this.repository.findByDenominacionWith(denominacion);
-    if (exists && exists.id !== id) {
+    if (exists && exists.getId() !== id) {
       this.logger.warn(
         `${this.ENTITY_NAME} Conflicto: denominación ya está en uso: ${denominacion}`,
       );
@@ -182,8 +193,6 @@ export class MarcaService {
       throw new NotFoundException(
         `${this.ENTITY_NAME} con ID ${id} no encontrado.`,
       );
-    this.logger.warn(`FindOne : ${JSON.stringify(entity)}.`);
-
     return entity;
   }
 

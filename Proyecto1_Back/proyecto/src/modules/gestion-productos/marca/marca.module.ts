@@ -1,7 +1,7 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { MarcaController } from './application/controllers/marca.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Marca } from './domain/entities/marca.entity';
+import { MarcaEntity } from './infraestructure/persistence/entities/marca.orm-entity';
 import { MarcaPersistenceAdapter } from './infraestructure/repositories/marca.persistence-adapters';
 import { NormalizeDenominacionPipe } from 'src/modules/common/pipes/normalize-denominations.pipe';
 import { MarcaRepository } from './infraestructure/repositories/marca.repository';
@@ -15,7 +15,7 @@ import { ProductoModule } from '../producto/producto.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Marca]),
+    TypeOrmModule.forFeature([MarcaEntity]),
     UsuarioModule,
     forwardRef(() => ProductoModule),
 

@@ -39,13 +39,20 @@ export class LineaService {
     );
     await this.checkDenominacionExists(dto.denominacion, 0);
 
+    const nuevaLinea = Linea.create({
+      denominacion: dto.denominacion,
+      observacion: dto.observacion ?? null,
+      utilizaStockMinimo: dto.utilizaStockMinimo,
+      stockMinimo: dto.stockMinimo ?? 0,
+      usuarioCreatedId: dto.usuarioCreatedId,
+    });
 
-    const entity = await this.repository.create(dto);
+    const entity = await this.repository.create(nuevaLinea);
 
 
     return MessageFrontUtils.createSimple(
       `${this.ENTITY_NAME}`,
-      entity.denominacion,
+      entity.getDenominacion(),
       'creada',
     );
   }
@@ -55,15 +62,22 @@ export class LineaService {
 
 
     const linea = await this.findEntityById(id); // Verifica existencia
-    ensureNotSistemaEntity(linea, 'Linea');
+    ensureNotSistemaEntity(linea.getSistema(), 'Linea');
     if (dto.denominacion)
       await this.checkDenominacionExists(dto.denominacion, id);
 
+    linea.actualizarDatos({
+      denominacion: dto.denominacion ?? linea.getDenominacion(),
+      observacion: dto.observacion ?? linea.getObservacion(),
+      utilizaStockMinimo: dto.utilizaStockMinimo,
+      stockMinimo: dto.stockMinimo ?? linea.getStockMinimo(),
+      usuarioUpdatedId: dto.usuarioUpdatedId,
+    });
 
-    const entity = await this.repository.update(id, dto);
+    const entity = await this.repository.update(id, linea);
     return MessageFrontUtils.createSimple(
       `${this.ENTITY_NAME}`,
-      entity.denominacion,
+      entity.getDenominacion(),
       'editada',
     );
   }
@@ -115,8 +129,6 @@ export class LineaService {
       throw new NotFoundException(
         `${this.ENTITY_NAME} con ID ${id} no encontrado.`,
       );
-    this.logger.warn(`FindOne : ${JSON.stringify(entity)}.`);
-
     return entity;
   }
 
@@ -147,7 +159,7 @@ export class LineaService {
       );
     }
 
-    ensureNotSistemaEntity(entity, 'Linea');
+    ensureNotSistemaEntity(entity.getSistema(), 'Linea');
 
     const usuario = await this.usuarioService.findOne(usuarioId);
     if (!usuario) {
@@ -166,7 +178,7 @@ export class LineaService {
     await this.repository.remove(entity, usuario);
     return MessageFrontUtils.createSimple(
       `${this.ENTITY_NAME}`,
-      entity.denominacion,
+      entity.getDenominacion(),
       'eliminada',
     );
   }
@@ -182,18 +194,12 @@ export class LineaService {
       denominacionNormalizada,
     );
 
-    this.logger.log(
-      `Resultado: ${exists ? `Encontrado ID ${exists.id}` : 'No encontrado'}`,
-    );
-
-    if (exists && exists.id !== id) {
+    if (exists && exists.getId() !== id) {
       this.logger.warn(
-        ` Conflicto: denominación ya está en uso: ${denominacionNormalizada} (ID existente: ${exists.id})`,
+        ` Conflicto: denominación ya está en uso: ${denominacionNormalizada} (ID existente: ${exists.getId()})`,
       );
       throw new ConflictException('Denominación ya en uso o esta eliminada.');
     }
-
-    this.logger.log(`✅ Denominación disponible`);
   }
 
 

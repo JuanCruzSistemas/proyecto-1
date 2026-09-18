@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { CreateMarcaDto } from '../../dto/create-marca.dto';
 import { Marca } from '../../domain/entities/marca.entity';
 import { IMarcaRepository } from '../../domain/interfaces/marca.repository.interface';
 import { DatabaseConnectionException } from 'src/modules/common/exceptions/database-connection.exception';
@@ -15,7 +14,7 @@ export class MarcaRepository implements IMarcaRepository {
 
   private readonly ENTITY_NAME = 'Marca';
 
-  async create(data: CreateMarcaDto): Promise<Marca> {
+  async create(data: Marca): Promise<Marca> {
     try {
       return await this.persistenceService.create(data);
     } catch (error) {
@@ -26,7 +25,7 @@ export class MarcaRepository implements IMarcaRepository {
     }
   }
 
-  async update(id: number, data: Partial<Marca>): Promise<Marca> {
+  async update(id: number, data: Marca): Promise<Marca> {
     return this.persistenceService.update(id, data);
   }
 

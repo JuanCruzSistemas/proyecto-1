@@ -8,23 +8,19 @@ export class ProductoValidationService {
   /**
    * Valida que las entidades relacionadas sean compatibles entre sí
    */
-  validarEntidadesRelacionadas(
-    marca: Marca,
-    linea: Linea,
-
-  ): void {
-    this.validarEntidadNoEsDeSistema(marca, 'Marca');
-    this.validarEntidadNoEsDeSistema(linea, 'Línea');
-
+  validarEntidadesRelacionadas(marca: Marca, linea: Linea): void {
+    this.validarEntidadNoEsDeSistema(marca.getId(), marca.getSistema(), 'Marca');
+    this.validarEntidadNoEsDeSistema(linea.getId(), linea.getSistema(), 'Línea');
   }
 
   private validarEntidadNoEsDeSistema(
-    entidad: { id: number; sistema?: number },
+    id: number | null,
+    sistema: number,
     tipo: string,
   ): void {
-    if (entidad.sistema === 1) {
+    if (sistema === 1) {
       throw new BadRequestException(
-        `${tipo} ${entidad.id} está marcada como del sistema y no puede usarse`,
+        `${tipo} ${id} está marcada como del sistema y no puede usarse`,
       );
     }
   }

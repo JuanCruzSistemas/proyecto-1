@@ -1,4 +1,4 @@
-import { DomainException } from "../../../../common/exceptions/domain.exception";
+import { DomainException } from "src/modules/common/exceptions/domain.exception";
 
 export class StockInvalidoException extends DomainException {
     constructor(value: number) {

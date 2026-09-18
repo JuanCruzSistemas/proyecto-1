@@ -1,4 +1,4 @@
-import { Producto } from 'src/modules/gestion-productos/producto/infraestructure/persistence/entities/producto.orm-entity';
+import { Producto } from 'src/modules/gestion-productos/producto/domain/entities/producto.entity';
 import { AuditoriaDto } from '../dto/auditoria.dto';
 import { FechaUtils } from 'src/modules/common/utils/date/fecha-utils';
 import { Marca } from 'src/modules/gestion-productos/marca/domain/entities/marca.entity';
@@ -11,16 +11,17 @@ export class AuditoriaMapper {
 
   static mapProductoToDto(entity: Producto): AuditoriaDto {
     const dto = new AuditoriaDto();
-    dto.id = entity.id;
-    dto.detalle = 'Producto ' + entity.denominacion;
-    dto.createdAt = FechaUtils.formatFechaHora(entity.createdAt) ?? '';
-    dto.updatedAt = FechaUtils.formatFechaHora(entity.updatedAt) ?? '';
-    dto.deletedAt = entity.deletedAt
-      ? FechaUtils.formatFechaHora(entity.deletedAt)
-      : '';
-    dto.usuarioCreated = entity.usuarioCreated.denominacion ?? '';
-    dto.usuarioUpdated = entity.usuarioUpdated?.denominacion ?? '';
-    dto.usuarioDeleted = entity.usuarioDeleted?.denominacion ?? '';
+    const updatedAt = entity.getUpdatedAt();
+    const deletedAt = entity.getDeletedAt();
+
+    dto.id = entity.getId() ?? 0;
+    dto.detalle = 'Producto ' + entity.getDenominacion();
+    dto.createdAt = FechaUtils.formatFechaHora(entity.getCreatedAt()) ?? '';
+    dto.updatedAt = updatedAt ? FechaUtils.formatFechaHora(updatedAt) : '';
+    dto.deletedAt = deletedAt ? FechaUtils.formatFechaHora(deletedAt) : '';
+    dto.usuarioCreated = entity.getUsuarioCreated()?.denominacion ?? '';
+    dto.usuarioUpdated = entity.getUsuarioUpdated()?.denominacion ?? '';
+    dto.usuarioDeleted = entity.getUsuarioDeleted()?.denominacion ?? '';
 
     return dto;
   }
@@ -75,16 +76,15 @@ export class AuditoriaMapper {
 
   static mapMarcaToDto(entity: Marca): AuditoriaDto {
     const dto = new AuditoriaDto();
-    dto.id = entity.id;
-    dto.detalle = 'MArca ' + entity.denominacion;
-    dto.createdAt = FechaUtils.formatFechaHora(entity.createdAt) ?? '';
-    dto.updatedAt = FechaUtils.formatFechaHora(entity.updatedAt) ?? '';
-    dto.deletedAt = entity.deletedAt
-      ? FechaUtils.formatFechaHora(entity.deletedAt)
-      : '';
-    dto.usuarioCreated ='';//"/ entity.usuarioCreated.denominacion ?? '';
-    dto.usuarioUpdated ='';//entity.usuarioUpdated?.denominacion ?? '';
-    dto.usuarioDeleted ='' ;//entity.usuarioDeleted?.denominacion ?? '';
+    const deletedAt = entity.getDeletedAt();
+    dto.id = entity.getId() ?? 0;
+    dto.detalle = 'MArca ' + entity.getDenominacion();
+    dto.createdAt = FechaUtils.formatFechaHora(entity.getCreatedAt()) ?? '';
+    dto.updatedAt = FechaUtils.formatFechaHora(entity.getUpdatedAt()) ?? '';
+    dto.deletedAt = deletedAt ? FechaUtils.formatFechaHora(deletedAt) : '';
+    dto.usuarioCreated = '';
+    dto.usuarioUpdated = '';
+    dto.usuarioDeleted = '';
 
     return dto;
   }

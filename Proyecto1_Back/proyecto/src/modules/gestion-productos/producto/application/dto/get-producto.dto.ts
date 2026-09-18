@@ -51,12 +51,6 @@ export class GetProductoDto {
   @Min(0)
   stock: number;
 
-  @ApiProperty({ example: 299.99, description: 'Precio base del producto' })
-  @Type(() => Number)
-  @IsNumber()
-  @Min(0)
-  alicuota: number;
-
   @ApiProperty({
     example: 299.99,
     description: 'Costo del producto',
@@ -74,15 +68,6 @@ export class GetProductoDto {
   @IsNumber()
   @Min(0)
   precio: number;
-
-  @ApiProperty({
-    example: 249.99,
-    description: 'Precio de oferta del producto (si aplica)',
-  })
-  @Type(() => Number)
-  @IsNumber()
-  @Min(0)
-  precioConIva: number;
 
 
 

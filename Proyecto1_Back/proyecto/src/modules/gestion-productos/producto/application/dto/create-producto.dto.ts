@@ -8,9 +8,7 @@ import {
   IsBoolean,
   IsNumber,
   IsInt,
-  IsEnum,
 } from 'class-validator';
-import { AlicuotaIva } from 'src/modules/organizacion/enums/alicuota-iva.enum';
 
 export class CreateProductoDto {
   @Transform(({ value }) => value.trim().toLowerCase())
@@ -61,11 +59,6 @@ export class CreateProductoDto {
   @IsOptional()
   @IsBoolean()
   @Transform(({ value }) => value === 'true' || value === true)
-  costoEnDolar?: boolean;
-
-  @IsOptional()
-  @IsBoolean()
-  @Transform(({ value }) => value === 'true' || value === true)
   destacado?: boolean;
 
   @IsOptional()
@@ -84,19 +77,13 @@ export class CreateProductoDto {
   @IsInt()
   cantidadPorPack?: number;
 
-  @IsOptional()
-  @IsNumber()
-  costoDolar?: number;
-
   @IsNotEmpty({ message: 'La linea es obligatoria.' })
   @IsInt({ message: 'La linea  debe ser un número entero.' })
   lineaId: number;
 
-
   @IsNotEmpty({ message: 'La marca es obligatoria.' })
   @IsInt({ message: 'La marca  debe ser un número entero.' })
   marcaId: number;
-
 
   @IsOptional()
   @IsNumber()
@@ -108,22 +95,7 @@ export class CreateProductoDto {
 
   createdAt?: Date;
 
-  @IsEnum(AlicuotaIva, {
-    message:
-      'tipo debe ser ALICUOTA_0  ALICUOTA_105, ALICUOTA_21, ALICUOTA_27,',
-  })
-  @Transform(({ value }) => {
-    // Si el valor es un string, lo convierte al valor numérico del enum
-    if (typeof value === 'string') {
-      return AlicuotaIva[value.toUpperCase() as keyof typeof AlicuotaIva];
-    }
-    return value;
-  })
-  alicuotaIva: AlicuotaIva;
-
   @IsNotEmpty({ message: 'El usuarioCreatedId es obligatorio.' })
   @IsInt({ message: 'El usuarioCreatedId debe ser un número entero.' })
   usuarioCreatedId: number;
-
-
 }

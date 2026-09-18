@@ -15,7 +15,12 @@ export default new DataSource({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
 
-  entities: [__dirname + '/src/**/*.entity.ts'],
+  // Mismo caso que en app.module.ts: `producto.orm-entity.ts` no matchea `*.entity.ts`.
+  // Ver MODIFICACIONES.md.
+  entities: [
+    __dirname + '/src/**/*.entity.ts',
+    __dirname + '/src/**/*.orm-entity.ts',
+  ],
   migrations: [__dirname + '/src/migrations/*{.ts,.js}'],
 
   synchronize: false,

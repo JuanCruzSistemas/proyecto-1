@@ -1,6 +1,6 @@
-import { Linea } from "./modules/gestion-productos/linea/domain/entities/linea.entity";
-import { Marca } from "./modules/gestion-productos/marca/domain/entities/marca.entity";
-import { MovimientoStock } from "./modules/gestion-productos/movimiento-stock/entities/movimiento-stock.entity";
+import { LineaEntity } from "./modules/gestion-productos/linea/infraestructure/persistence/entities/linea.orm-entity";
+import { MarcaEntity } from "./modules/gestion-productos/marca/infraestructure/persistence/entities/marca.orm-entity";
+import { MovimientoStockEntity } from "./modules/gestion-productos/movimiento-stock/infraestructure/persistence/entities/movimiento-stock.orm-entity";
 import { ProductoEntity } from "./modules/gestion-productos/producto/infraestructure/persistence/entities/producto.orm-entity";
 import { Auditoria } from "./modules/gestion-sistema/auditoria/entities/auditoria.entity";
 import { ConfiguracionSistema } from "./modules/gestion-sistema/configuracion-sistema/domain/entities/configuracion-sistema.entity";
@@ -16,10 +16,10 @@ import { Personal } from "./modules/organizacion/personal/domain/entities/person
 import { Proveedor } from "./modules/organizacion/proveedor/domain/entities/proveedor.entity";
 
 
-export const entities = [Marca,
-                        Linea, 
+export const entities = [MarcaEntity,
+                        LineaEntity,
                         ProductoEntity,
-                        MovimientoStock,
+                        MovimientoStockEntity,
                         Auditoria,
                         ConfiguracionSistema,
                         Rol,
