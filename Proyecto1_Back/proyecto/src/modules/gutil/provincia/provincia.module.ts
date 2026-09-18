@@ -4,7 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { NormalizeDenominacionPipe } from 'src/modules/common/pipes/normalize-denominations.pipe';
 import { ProvinciaPersistenceAdapter } from './infraestructure/repositories/provincia.pesistence-adapter';
 import { DataSource } from 'typeorm';
-import { IUnitOfWork } from 'src/modules/common/unit-of-work/iunit-of-work.';
+import { IUnitOfWork } from 'src/modules/common/unit-of-work/unit-of-work.interface';
 import { TypeOrmUnitOfWork } from 'src/modules/common/unit-of-work/type-orm-unit-of-works1';
 import { Provincia } from './domain/entities/provincia.entity';
 import { ProvinciaService } from './application/services/provincia.service';

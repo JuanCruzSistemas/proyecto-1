@@ -8,7 +8,7 @@ import { EntityNotFoundException } from 'src/modules/common/exceptions/entity-no
 import { UpdateClienteDto } from '../../dto/update-cliente.dto';
 import { DomicilioService } from 'src/modules/gutil/domicilio/domicilio.service';
 import { Localidad } from 'src/modules/gutil/localidad/domain/entities/localidad.entity';
-import { IUnitOfWork } from 'src/modules/common/unit-of-work/iunit-of-work.';
+import { IUnitOfWork } from 'src/modules/common/unit-of-work/unit-of-work.interface';
 import { Transactional } from 'src/modules/common/decorators/transactional.decoratos';
 import { Domicilio } from 'src/modules/gutil/domicilio/entities/domicilio.entity';
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';

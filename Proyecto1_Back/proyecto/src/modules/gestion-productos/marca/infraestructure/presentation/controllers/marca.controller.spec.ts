@@ -7,8 +7,6 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { MarcaService } from '../../../application/services/marca.service';
 
-
-
 describe('MarcaController - Decorators', () => {
   let controller: MarcaController;
   let service: MarcaService;

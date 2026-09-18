@@ -13,13 +13,11 @@ export class CreateLineaUseCase {
   constructor(
     @Inject(LINEA_REPOSITORY_TOKEN)
     private readonly repository: ILineaRepository,
-    private readonly uniquenessValidator: LineaUniquenessValidator,
+    private readonly uniquenessValidator: LineaUniquenessValidator
   ) {}
 
   async execute(dto: CreateLineaDto) {
-    this.logger.log(
-      `Creando un nuevo ${this.ENTITY_NAME} con denominación: ${dto.denominacion} a: ${dto.denominacion}`,
-    );
+    this.logger.log(`Creando un nuevo ${this.ENTITY_NAME} con denominación: ${dto.denominacion} a: ${dto.denominacion}`,);
     await this.uniquenessValidator.validarDenominacionUnica(dto.denominacion, 0);
 
     const nuevaLinea = Linea.create({
@@ -27,7 +25,7 @@ export class CreateLineaUseCase {
       observacion: dto.observacion ?? null,
       utilizaStockMinimo: dto.utilizaStockMinimo,
       stockMinimo: dto.stockMinimo ?? 0,
-      usuarioCreatedId: dto.usuarioCreatedId,
+      usuarioCreatedId: dto.usuarioCreatedId
     });
 
     const entity = await this.repository.create(nuevaLinea);
@@ -35,7 +33,7 @@ export class CreateLineaUseCase {
     return MessageFrontUtils.createSimple(
       `${this.ENTITY_NAME}`,
       entity.getDenominacion(),
-      'creada',
+      'creada'
     );
   }
 }

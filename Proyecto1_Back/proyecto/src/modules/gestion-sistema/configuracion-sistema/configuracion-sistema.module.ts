@@ -4,7 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfiguracionSistema } from './domain/entities/configuracion-sistema.entity';
 import { DataSource } from 'typeorm';
 import { TypeOrmUnitOfWork } from 'src/modules/common/unit-of-work/type-orm-unit-of-works1';
-import { IUnitOfWork } from 'src/modules/common/unit-of-work/iunit-of-work.';
+import { IUnitOfWork } from 'src/modules/common/unit-of-work/unit-of-work.interface';
 import { ConfiguracionSistemaService } from './application/services/configuracion-sistema.service';
 import { ConfiguracionSistemaRepository } from './infraestructure/repositories/configuracion-sistema.repository';
 import { ConfiguracionSistemaPersistenceAdapter } from './infraestructure/repositories/configuracion-sistema-adapters';

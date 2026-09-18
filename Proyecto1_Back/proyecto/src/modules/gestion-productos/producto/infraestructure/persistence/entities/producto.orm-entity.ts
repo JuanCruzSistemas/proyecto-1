@@ -7,6 +7,7 @@ import {
   ManyToOne,
   Index,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { LineaEntity } from '../../../../linea/infraestructure/persistence/entities/linea.orm-entity';
 import { MarcaEntity } from '../../../../marca/infraestructure/persistence/entities/marca.orm-entity';
@@ -134,7 +135,7 @@ export class ProductoEntity {
   @Column({ type: 'text', nullable: true })
   ubicacion?: string;
 
-  @ManyToOne(() => ProductoEntity, (producto) => producto.movimientosStock)
+  @OneToMany(() => MovimientoStockEntity, (movimiento) => movimiento.producto)
   movimientosStock: MovimientoStockEntity[];
 
 

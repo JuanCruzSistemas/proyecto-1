@@ -8,12 +8,6 @@ import { FindEntityByIdLineaUseCase } from '../use-cases/find-entity-by-id-linea
 import { FindByIdConAuditoriaLineaUseCase } from '../use-cases/find-by-id-auditoria-linea.use-case';
 import { RemoveLineaUseCase } from '../use-cases/remove-linea.use-case';
 
-/**
- * `LineaService` es una fachada delgada (Tarea 5, MODIFICACIONES.md). Antes de esta
- * tarea el spec hacía `providers: [LineaService]` sin mockear ninguna dependencia
- * (fallaba al compilar el módulo de test). Se reescribe con el mismo criterio que
- * `marca.service.spec.ts`/`producto.service.spec.ts`: verificar la delegación.
- */
 describe('LineaService', () => {
   let service: LineaService;
   let createLineaUseCase: jest.Mocked<Pick<CreateLineaUseCase, 'execute'>>;

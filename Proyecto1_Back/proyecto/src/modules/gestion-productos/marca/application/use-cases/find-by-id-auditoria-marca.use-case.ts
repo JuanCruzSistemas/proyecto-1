@@ -7,7 +7,7 @@ export class FindByIdConAuditoriaMarcaUseCase {
 
   constructor(
     @Inject(MARCA_REPOSITORY_TOKEN)
-    private readonly repository: IMarcaRepository,
+    private readonly repository: IMarcaRepository
   ) {}
 
   async execute(id: number) {
@@ -15,6 +15,7 @@ export class FindByIdConAuditoriaMarcaUseCase {
     if (!entity) {
       throw new NotFoundException(`${this.ENTITY_NAME} con ID ${id} no encontrado.`);
     }
+    
     return entity;
   }
 }

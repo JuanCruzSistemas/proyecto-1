@@ -4,7 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { NormalizeDenominacionPipe } from 'src/modules/common/pipes/normalize-denominations.pipe';
 import { LineaRepository } from './infraestructure/persistence/repositories/linea.repository';
 import { DataSource } from 'typeorm';
-import { IUnitOfWork } from 'src/modules/common/unit-of-work/iunit-of-work.';
+import { IUnitOfWork } from 'src/modules/common/unit-of-work/unit-of-work.interface';
 import { TypeOrmUnitOfWork } from 'src/modules/common/unit-of-work/type-orm-unit-of-works1';
 import { UsuarioModule } from 'src/modules/gestion-usuario/usuario/usuario.module';
 import { LineaController } from './infraestructure/presentation/controllers/linea.controller';

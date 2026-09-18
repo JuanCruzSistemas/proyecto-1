@@ -1,26 +1,4 @@
-/**
- * Entidad de dominio de MovimientoStock — separada de su forma ORM (ver
- * MODIFICACIONES.md, Tarea 3). Cubre únicamente los campos que ya existían en la
- * entidad ORM (`id`, `productoId`, `operacionId`, `tipoOperacion`, `creadoEn`).
- *
- * Pendiente (no implementado en esta tarea, ver sección "Pendiente" de
- * MODIFICACIONES.md): los campos documentados en el Análisis de Dominio que todavía
- * faltan (`cantidad`, `motivo`, `tipoMovimiento` enumerado) y la migración de base de
- * datos que los agregaría a la tabla `producto_operacion`.
- */
-export interface MovimientoStockCreateParams {
-  productoId: number;
-  operacionId: number;
-  tipoOperacion: string;
-}
-
-export interface MovimientoStockReconstituteParams {
-  id: number;
-  productoId: number;
-  operacionId: number;
-  tipoOperacion: string;
-  creadoEn: Date;
-}
+import { MovimientoStockCreateParams, MovimientoStockReconstituteParams } from "./movimiento-stock.types";
 
 export class MovimientoStock {
   private constructor(
@@ -28,7 +6,7 @@ export class MovimientoStock {
     private productoId: number,
     private operacionId: number,
     private tipoOperacion: string,
-    private creadoEn: Date,
+    private creadoEn: Date
   ) {}
 
   public static create(params: MovimientoStockCreateParams): MovimientoStock {
@@ -37,7 +15,7 @@ export class MovimientoStock {
       params.productoId,
       params.operacionId,
       params.tipoOperacion,
-      new Date(),
+      new Date()
     );
   }
 
@@ -47,7 +25,7 @@ export class MovimientoStock {
       params.productoId,
       params.operacionId,
       params.tipoOperacion,
-      params.creadoEn,
+      params.creadoEn
     );
   }
 

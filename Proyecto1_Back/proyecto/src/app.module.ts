@@ -41,19 +41,10 @@ import { BusquedasModule } from './modules/gestion-documentos/busquedas/busqueda
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
       timezone: '-03:00',
-
-      //  Auto-carga de entidades desde los módulos
-      // Las entidades se registran automáticamente cuando usás
-      // TypeOrmModule.forFeature([Entidad]) en tus módulos
-      // El refactor DDD renombró la entidad de producto a `producto.orm-entity.ts`, que
-      // NO matchea el patrón `*.entity{.ts,.js}`. Sin el segundo patrón, ProductoEntity
-      // nunca se carga en el DataSource y el boot muere con
-      // "Entity metadata for Linea#productos was not found". Ver MODIFICACIONES.md.
       entities: [
         __dirname + '/**/*.entity{.ts,.js}',
         __dirname + '/**/*.orm-entity{.ts,.js}',
       ],
-      // entities,
       synchronize: false,  
       ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false
     }),
@@ -87,4 +78,4 @@ import { BusquedasModule } from './modules/gestion-documentos/busquedas/busqueda
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

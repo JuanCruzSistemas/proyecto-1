@@ -5,7 +5,7 @@ import { DatabaseConnectionException } from "src/modules/common/exceptions/datab
 import { EntityNotFoundException } from "src/modules/common/exceptions/entity-notFound-exceptions";
 import { CreateProvinciaDto } from "../../dto/create-provincia.dto";
 import { IProvinciaRepository } from "../../domain/interfaces/provincia.repository.interface";
-import { IUnitOfWork } from "src/modules/common/unit-of-work/iunit-of-work.";
+import { IUnitOfWork } from "src/modules/common/unit-of-work/unit-of-work.interface";
 import { Transactional } from "src/modules/common/decorators/transactional.decoratos";
 import { Provincia } from "../../domain/entities/provincia.entity";
 

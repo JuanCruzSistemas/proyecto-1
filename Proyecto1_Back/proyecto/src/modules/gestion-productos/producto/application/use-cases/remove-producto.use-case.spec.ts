@@ -9,11 +9,6 @@ import { Linea } from 'src/modules/gestion-productos/linea/domain/entities/linea
 import { Marca } from 'src/modules/gestion-productos/marca/domain/entities/marca.entity';
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
 
-/**
- * Cubre el antipatrón 2 corregido en la Tarea 4 (MODIFICACIONES.md): la
- * comprobación de "ya eliminado" y la mutación de dominio (`marcarComoEliminado()`)
- * viven acá, no en el repositorio — que ahora solo persiste lo que se le pasa.
- */
 describe('RemoveProductoUseCase', () => {
   let useCase: RemoveProductoUseCase;
   let repository: jest.Mocked<IProductoRepository>;

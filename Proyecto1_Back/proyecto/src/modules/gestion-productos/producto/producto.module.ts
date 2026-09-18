@@ -7,7 +7,7 @@ import { LineaModule } from '../linea/linea.module';
 import { MarcaModule } from '../marca/marca.module';
 import { TypeOrmUnitOfWork } from 'src/modules/common/unit-of-work/type-orm-unit-of-works1';
 import { DataSource } from 'typeorm';
-import { IUnitOfWork, UNIT_OF_WORK_TOKEN } from 'src/modules/common/unit-of-work/iunit-of-work.';
+import { IUnitOfWork, UNIT_OF_WORK_TOKEN } from 'src/modules/common/unit-of-work/unit-of-work.interface';
 import { ProveedorModule } from 'src/modules/organizacion/proveedor/proveedor.module';
 import { UsuarioModule } from 'src/modules/gestion-usuario/usuario/usuario.module';
 import { CommonModule } from 'src/modules/common/common.module';

@@ -194,11 +194,6 @@ export class LineaRepository implements ILineaRepository {
     }
   }
 
-  /**
-   * Persiste una línea que el caso de uso ya marcó como eliminada
-   * (`Linea.marcarComoEliminado()`) — ver `LineaService.remove()`. El repositorio no
-   * decide si corresponde eliminarla ni muta el dominio, solo guarda.
-   */
   async remove(entity: Linea, usuario: Usuario): Promise<Linea> {
     const existente = await this.repository.findOneBy({ id: entity.getId()! });
     const guardada = await this.repository.save(LineaOrmMapper.toOrm(entity, existente ?? undefined));

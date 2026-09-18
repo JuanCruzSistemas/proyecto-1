@@ -6,7 +6,7 @@ import { NormalizeDenominacionPipe } from 'src/modules/common/pipes/normalize-de
 import { MarcaRepository } from './infraestructure/persistence/repositories/marca.repository';
 import { DataSource } from 'typeorm';
 import { TypeOrmUnitOfWork } from 'src/modules/common/unit-of-work/type-orm-unit-of-works1';
-import { IUnitOfWork } from 'src/modules/common/unit-of-work/iunit-of-work.';
+import { IUnitOfWork } from 'src/modules/common/unit-of-work/unit-of-work.interface';
 import { UsuarioModule } from 'src/modules/gestion-usuario/usuario/usuario.module';
 import { MarcaService } from './application/services/marca.service';
 import { PoliticaEliminacionMarca } from './domain/services/politica-eliminacion-marca.service';

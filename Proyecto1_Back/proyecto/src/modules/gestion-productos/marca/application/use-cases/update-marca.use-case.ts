@@ -13,7 +13,7 @@ export class UpdateMarcaUseCase {
   constructor(
     @Inject(MARCA_REPOSITORY_TOKEN)
     private readonly repository: IMarcaRepository,
-    private readonly uniquenessValidator: MarcaUniquenessValidator,
+    private readonly uniquenessValidator: MarcaUniquenessValidator
   ) {}
 
   async execute(id: number, dto: UpdateMarcaDto) {
@@ -23,7 +23,8 @@ export class UpdateMarcaUseCase {
     if (!marca) {
       throw new NotFoundException(`${this.ENTITY_NAME} con ID ${id} no encontrado.`);
     }
-    ensureNotSistemaEntity(marca.getSistema(), 'Marca');
+
+    ensureNotSistemaEntity(marca.getSistema(), this.ENTITY_NAME);
 
     if (dto.denominacion) {
       await this.uniquenessValidator.validarDenominacionUnica(dto.denominacion, id);
@@ -32,14 +33,14 @@ export class UpdateMarcaUseCase {
     marca.actualizarDatos({
       denominacion: dto.denominacion ?? marca.getDenominacion(),
       observacion: dto.observacion ?? marca.getObservacion(),
-      usuarioUpdatedId: dto.usuarioUpdatedId,
+      usuarioUpdatedId: dto.usuarioUpdatedId
     });
 
     const entity = await this.repository.update(id, marca);
     return MessageFrontUtils.createSimple(
       `${this.ENTITY_NAME}`,
       entity.getDenominacion(),
-      'editada',
+      'editada'
     );
   }
 }

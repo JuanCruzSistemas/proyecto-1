@@ -7,7 +7,7 @@ import { Usuario } from '../../domain/entities/usuario.entity';
 import { Rol } from '../../../rol/domain/entities/rol.entity';
 import { RegistrarUsuarioDto } from '../../../auth/dto/register.dto';
 import { UpdateUsuarioDto } from '../../dto/updateUsuario.dto';
-import { IUnitOfWork } from 'src/modules/common/unit-of-work/iunit-of-work.';
+import { IUnitOfWork } from 'src/modules/common/unit-of-work/unit-of-work.interface';
 import { Personal } from 'src/modules/organizacion/personal/domain/entities/personal.entity';
 import * as bcrypt from 'bcrypt';
 import { UsuarioPolicy } from './usuario-policy';
@@ -135,7 +135,7 @@ export class UsuarioPersistenceAdapter implements IUsuarioRepository {
     } catch (error) {
       await queryRunner.rollbackTransaction();
       this.logger.error(
-        `Error al conectar con la base de datos: ${error.message}`,
+        `Error al conectar con la base de datos: ${error}`,
       );
       throw new DatabaseConnectionException(
         'Error al guardar en la base de datos.',

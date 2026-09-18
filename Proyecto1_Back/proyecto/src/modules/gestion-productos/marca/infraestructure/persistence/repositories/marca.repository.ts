@@ -30,8 +30,7 @@ export class MarcaRepository implements IMarcaRepository {
 
   async findAllFor(denominacion: string): Promise<Marca[]> {
     try {
-      const query = this.repository
-        .createQueryBuilder('marca')
+      const query = this.repository.createQueryBuilder('marca')
         .where('marca.deletedAt IS NULL')
         .andWhere('UPPER(marca.denominacion) LIKE :denominacion', {
           denominacion: `%${denominacion.toUpperCase()}%`,
@@ -46,9 +45,8 @@ export class MarcaRepository implements IMarcaRepository {
 
   async findAllListado(): Promise<Marca[]> {
     try {
-      const query = this.repository
-        .createQueryBuilder('marca')
-        .where('marca.deletedAt IS NULL');
+      const query = this.repository.createQueryBuilder('marca')
+                                   .where('marca.deletedAt IS NULL');
       QueryBuilderHelper.applyOrder(query, 'marca', 'denominacion', 'ASC');
       const rows = await query.getMany();
       return rows.map(MarcaOrmMapper.toDomain);
@@ -59,11 +57,9 @@ export class MarcaRepository implements IMarcaRepository {
 
   async findAllSinSistemaFor(denominacion: string): Promise<Marca[]> {
     try {
-      const query = this.repository
-        .createQueryBuilder('marca')
-
-        .where('marca.deletedAt IS NULL')
-        .andWhere('marca.sistema = :sistema', { sistema: 0 });
+      const query = this.repository.createQueryBuilder('marca')
+                                   .where('marca.deletedAt IS NULL')
+                                   .andWhere('marca.sistema = :sistema', { sistema: 0 });
 
       query.andWhere('UPPER(marca.denominacion) LIKE :denominacion', {
         denominacion: `%${denominacion.toUpperCase()}%`,
@@ -80,12 +76,9 @@ export class MarcaRepository implements IMarcaRepository {
 
   async findAllSistemaFor(denominacion: string): Promise<Marca[]> {
     try {
-      const query = this.repository
-        .createQueryBuilder('marca')
-
-        .where('marca.deletedAt IS NULL')
-        .andWhere('marca.sistema = :sistema', { sistema: 1 });
-
+      const query = this.repository.createQueryBuilder('marca')
+                                   .where('marca.deletedAt IS NULL')
+                                   .andWhere('marca.sistema = :sistema', { sistema: 1 });
       query.andWhere('UPPER(marca.denominacion) LIKE :denominacion', {
         denominacion: `%${denominacion.toUpperCase()}%`,
       });
@@ -102,7 +95,7 @@ export class MarcaRepository implements IMarcaRepository {
   async findOne(id: number): Promise<Marca | null> {
     try {
       const entity = await this.repository.findOne({
-        where: { id, deletedAt: IsNull() },
+        where: { id, deletedAt: IsNull() }
       });
 
       if (!entity) {
@@ -114,9 +107,7 @@ export class MarcaRepository implements IMarcaRepository {
         throw error;
       }
 
-      throw new DatabaseConnectionException(
-        'Error al conectar con la base de datos.',
-      );
+      throw new DatabaseConnectionException('Error al conectar con la base de datos.');
     }
   }
 
@@ -127,9 +118,7 @@ export class MarcaRepository implements IMarcaRepository {
       });
       return entity ? MarcaOrmMapper.toDomain(entity) : null;
     } catch (error) {
-      throw new DatabaseConnectionException(
-        'Error al conectar con la base de datos.',
-      );
+      throw new DatabaseConnectionException('Error al conectar con la base de datos.',);
     }
   }
 

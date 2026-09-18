@@ -6,6 +6,8 @@ import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usu
 import { CreateProductoDto } from '../dto/create-producto.dto';
 import { UpdateProductoDto } from '../dto/update-producto.dto';
 import { ProductoDto } from '../dto/producto.dto';
+import { MarcaDtoMapper } from 'src/modules/gestion-productos/marca/application/mappers/marca-dto.mapper';
+import { LineaDtoMapper } from 'src/modules/gestion-productos/linea/application/mappers/linea-dto.mapper';
 
 export class ProductoDtoMapper {
   static toResponseDto(domainProducto: Producto): ProductoDto {
@@ -21,14 +23,8 @@ export class ProductoDtoMapper {
       porcentaje: domainProducto.getMargen() * 100,
       destacado: domainProducto.isDestacado(),
       envioGratis: domainProducto.hasEnvioGratis(),
-      linea: {
-        id: domainProducto.getLinea().getId() ?? 0,
-        denominacion: domainProducto.getLinea().getDenominacion(),
-      },
-      marca: {
-        id: domainProducto.getMarca().getId() ?? 0,
-        denominacion: domainProducto.getMarca().getDenominacion(),
-      },
+      linea: LineaDtoMapper.toReferenciaDto(domainProducto.getLinea()),
+      marca: MarcaDtoMapper.toReferenciaDto(domainProducto.getMarca()),
       ubicacion: domainProducto.getUbicacion() ?? '',
       utilizaStockMinimo: domainProducto.getUtilizaStockMinimo(),
       stockMinimo: domainProducto.getStockMinimo(),

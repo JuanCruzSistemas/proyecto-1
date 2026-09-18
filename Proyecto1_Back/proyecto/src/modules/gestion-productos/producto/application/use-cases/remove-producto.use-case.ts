@@ -24,7 +24,7 @@ export class RemoveProductoUseCase {
             );
         }
 
-        ensureNotSistemaEntity(entity.getSistema(), 'Producto');
+        ensureNotSistemaEntity(entity.getSistema(), this.ENTITY_NAME);
 
         const usuario = await this.usuarioService.findOne(usuarioId);
         if (!usuario) {

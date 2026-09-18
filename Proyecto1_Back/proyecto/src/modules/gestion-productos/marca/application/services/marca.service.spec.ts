@@ -8,13 +8,6 @@ import { FindEntityByIdMarcaUseCase } from '../use-cases/find-entity-by-id-marca
 import { FindByIdConAuditoriaMarcaUseCase } from '../use-cases/find-by-id-auditoria-marca.use-case';
 import { RemoveMarcaUseCase } from '../use-cases/remove-marca.use-case';
 
-/**
- * `MarcaService` es una fachada delgada (Tarea 5, MODIFICACIONES.md): cada método
- * delega en su Caso de Uso. Antes de esta tarea el spec estaba enteramente comentado
- * (no probaba nada) — se reescribe con el mismo criterio de
- * `producto.service.spec.ts` (Tarea 4): verificar la delegación, no la lógica de
- * negocio (esa se prueba, si corresponde, en el spec del caso de uso).
- */
 describe('MarcaService', () => {
   let service: MarcaService;
   let createMarcaUseCase: jest.Mocked<Pick<CreateMarcaUseCase, 'execute'>>;

@@ -8,6 +8,7 @@ import {
   IsString,
   Min,
 } from 'class-validator';
+
 /*
 Se Utiliza para la busqueda y llenado de la tabla
 */

@@ -13,7 +13,7 @@ export class UpdateLineaUseCase {
   constructor(
     @Inject(LINEA_REPOSITORY_TOKEN)
     private readonly repository: ILineaRepository,
-    private readonly uniquenessValidator: LineaUniquenessValidator,
+    private readonly uniquenessValidator: LineaUniquenessValidator
   ) {}
 
   async execute(id: number, dto: UpdateLineaDto) {
@@ -23,7 +23,7 @@ export class UpdateLineaUseCase {
     if (!linea) {
       throw new NotFoundException(`${this.ENTITY_NAME} con ID ${id} no encontrado.`);
     }
-    ensureNotSistemaEntity(linea.getSistema(), 'Linea');
+    ensureNotSistemaEntity(linea.getSistema(), this.ENTITY_NAME);
 
     if (dto.denominacion) {
       await this.uniquenessValidator.validarDenominacionUnica(dto.denominacion, id);
@@ -34,14 +34,14 @@ export class UpdateLineaUseCase {
       observacion: dto.observacion ?? linea.getObservacion(),
       utilizaStockMinimo: dto.utilizaStockMinimo,
       stockMinimo: dto.stockMinimo ?? linea.getStockMinimo(),
-      usuarioUpdatedId: dto.usuarioUpdatedId,
+      usuarioUpdatedId: dto.usuarioUpdatedId
     });
 
     const entity = await this.repository.update(id, linea);
     return MessageFrontUtils.createSimple(
       `${this.ENTITY_NAME}`,
       entity.getDenominacion(),
-      'editada',
+      'editada'
     );
   }
 }

@@ -13,7 +13,7 @@ export class RemoveMarcaUseCase {
     @Inject(MARCA_REPOSITORY_TOKEN)
     private readonly repository: IMarcaRepository,
     private readonly usuarioService: UsuarioService,
-    private readonly validacionesService: PoliticaEliminacionMarca,
+    private readonly validacionesService: PoliticaEliminacionMarca
   ) {}
 
   async execute(id: number, usuarioId: number) {
@@ -22,14 +22,11 @@ export class RemoveMarcaUseCase {
       throw new NotFoundException(`${this.ENTITY_NAME} con ID ${id} no encontrado.`);
     }
 
-    ensureNotSistemaEntity(entity.getSistema(), 'Marca');
+    ensureNotSistemaEntity(entity.getSistema(), this.ENTITY_NAME);
 
-    const tieneProductosActivos =
-      await this.validacionesService.tieneProductosActivosParaMarca(id);
+    const tieneProductosActivos = await this.validacionesService.tieneProductosActivosParaMarca(id);
     if (tieneProductosActivos) {
-      throw new ConflictException(
-        'No se puede eliminar la marca porque está asociada a productos activos.',
-      );
+      throw new ConflictException('No se puede eliminar la marca porque está asociada a productos activos.');
     }
 
     const usuario = await this.usuarioService.findOne(usuarioId);
@@ -37,19 +34,17 @@ export class RemoveMarcaUseCase {
       throw new NotFoundException(`Usuario con ID ${usuarioId} no encontrado.`);
     }
 
-    // Regla de negocio + mutación de dominio: le corresponden al caso de uso, no al
-    // repositorio (mismo criterio aplicado en Producto/Marca en la Tarea 4).
     if (entity.getDeletedAt()) {
       throw new NotFoundException(`${this.ENTITY_NAME} ya eliminada.`);
     }
-    entity.marcarComoEliminado(usuario.id);
 
+    entity.marcarComoEliminado(usuario.id);
     await this.repository.remove(entity, usuario);
 
     return MessageFrontUtils.createSimple(
       `${this.ENTITY_NAME}`,
       entity.getDenominacion(),
-      'eliminada',
+      'eliminada'
     );
   }
 }

@@ -4,7 +4,7 @@ import { Transactional } from 'src/modules/common/decorators/transactional.decor
 import { DatabaseConnectionException } from 'src/modules/common/exceptions/database-connection.exception';
 import { EntityNotFoundException } from 'src/modules/common/exceptions/entity-notFound-exceptions';
 import { BasePersistenceAdapter } from 'src/modules/common/persistence/base-persistence.adapter';
-import { IUnitOfWork } from 'src/modules/common/unit-of-work/iunit-of-work.';
+import { IUnitOfWork } from 'src/modules/common/unit-of-work/unit-of-work.interface';
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
 import { AuditoriaDto } from 'src/modules/gestion-sistema/auditoria/dto/auditoria.dto';
 import { AuditoriaQueryHelper } from 'src/modules/common/persistence/auditoria-query.helper';

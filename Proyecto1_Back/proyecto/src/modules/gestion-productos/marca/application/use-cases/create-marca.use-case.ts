@@ -13,26 +13,24 @@ export class CreateMarcaUseCase {
   constructor(
     @Inject(MARCA_REPOSITORY_TOKEN)
     private readonly repository: IMarcaRepository,
-    private readonly uniquenessValidator: MarcaUniquenessValidator,
+    private readonly uniquenessValidator: MarcaUniquenessValidator
   ) {}
 
   async execute(dto: CreateMarcaDto) {
-    this.logger.log(
-      `Creando un nuevo ${this.ENTITY_NAME} con denominación: ${dto.denominacion} a: ${dto.denominacion}`,
-    );
+    this.logger.log(`Creando un nuevo ${this.ENTITY_NAME} con denominación: ${dto.denominacion} a: ${dto.denominacion}`);
     await this.uniquenessValidator.validarDenominacionUnica(dto.denominacion, 0);
 
     const nuevaMarca = Marca.create({
       denominacion: dto.denominacion,
       observacion: dto.observacion ?? null,
-      usuarioCreatedId: dto.usuarioCreatedId,
+      usuarioCreatedId: dto.usuarioCreatedId
     });
     const entity = await this.repository.create(nuevaMarca);
 
     return MessageFrontUtils.createSimple(
       `${this.ENTITY_NAME}`,
       entity.getDenominacion(),
-      'creada',
+      'creada'
     );
   }
 }

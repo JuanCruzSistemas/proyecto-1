@@ -9,11 +9,6 @@ import { Marca } from 'src/modules/gestion-productos/marca/domain/entities/marca
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
 import { UpdatePrecioDto } from '../dto/update-precio.dto';
 
-/**
- * Cubre el antipatrón 3 corregido en la Tarea 4 (MODIFICACIONES.md): la regla de
- * negocio de actualización de precio vivía en `ProductoMapper.aplicarActualizacionPrecio()`
- * (infraestructura); ahora vive acá.
- */
 describe('UpdatePrecioUseCase', () => {
   let useCase: UpdatePrecioUseCase;
   let repository: jest.Mocked<IProductoRepository>;

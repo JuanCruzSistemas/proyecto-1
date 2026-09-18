@@ -7,7 +7,7 @@ export class FindByIdConAuditoriaLineaUseCase {
 
   constructor(
     @Inject(LINEA_REPOSITORY_TOKEN)
-    private readonly repository: ILineaRepository,
+    private readonly repository: ILineaRepository
   ) {}
 
   async execute(id: number) {
@@ -15,6 +15,7 @@ export class FindByIdConAuditoriaLineaUseCase {
     if (!entity) {
       throw new NotFoundException(`${this.ENTITY_NAME} con ID ${id} no encontrado.`);
     }
+    
     return entity;
   }
 }

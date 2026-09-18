@@ -16,15 +16,6 @@ import { FindEntityByIdUseCase } from '../use-cases/find-entity-by-id.use-case';
 import { RemoveProductoUseCase } from '../use-cases/remove-producto.use-case';
 import { FindByDenominacionUseCase } from '../use-cases/find-by-denominiacion.use-case';
 
-/**
- * `ProductoService` hoy es un dispatcher delgado: cada método público delega en el
- * caso de uso correspondiente (ver Tarea 3.5/4 en MODIFICACIONES.md — la migración a
- * Casos de Uso no estaba documentada cuando arrancó la Tarea 4). La lógica de negocio
- * de create/update/remove/actualizarPrecio se prueba en el spec de cada caso de uso,
- * no acá. Lo que sí sigue viviendo en el servicio (`incrementarStock`/
- * `decrementarStock`/`ajustarStockInterno`) se prueba acá porque es donde vive de
- * verdad.
- */
 describe('ProductoService', () => {
   let service: ProductoService;
   let repository: jest.Mocked<IProductoRepository>;

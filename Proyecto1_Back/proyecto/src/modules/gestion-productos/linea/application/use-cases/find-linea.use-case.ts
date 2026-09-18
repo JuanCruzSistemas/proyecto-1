@@ -11,7 +11,7 @@ export class FindLineaUseCase {
 
   constructor(
     @Inject(LINEA_REPOSITORY_TOKEN)
-    private readonly repository: ILineaRepository,
+    private readonly repository: ILineaRepository
   ) {}
 
   async findByDenominacionFiltered(
@@ -24,7 +24,7 @@ export class FindLineaUseCase {
       denominacion,
       skip,
       take,
-      incluirEliminados,
+      incluirEliminados
     );
     const data: LineaDto[] = result.data.map((linea) => LineaOrmMapper.toDto(linea));
     return { data, total: PaginacionUtils.totalItems(result.total) };

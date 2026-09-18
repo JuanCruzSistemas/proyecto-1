@@ -13,7 +13,7 @@ export class RemoveLineaUseCase {
     @Inject(LINEA_REPOSITORY_TOKEN)
     private readonly repository: ILineaRepository,
     private readonly usuarioService: UsuarioService,
-    private readonly validacionesService: PoliticaEliminacionLinea,
+    private readonly validacionesService: PoliticaEliminacionLinea
   ) {}
 
   async execute(id: number, usuarioId: number) {
@@ -22,7 +22,7 @@ export class RemoveLineaUseCase {
       throw new NotFoundException(`${this.ENTITY_NAME} con ID ${id} no encontrado.`);
     }
 
-    ensureNotSistemaEntity(entity.getSistema(), 'Linea');
+    ensureNotSistemaEntity(entity.getSistema(), this.ENTITY_NAME);
 
     const usuario = await this.usuarioService.findOne(usuarioId);
     if (!usuario) {
@@ -32,18 +32,16 @@ export class RemoveLineaUseCase {
     const tieneProductosActivos =
       await this.validacionesService.tieneProductosActivosParaLinea(id);
     if (tieneProductosActivos) {
-      throw new ConflictException(
-        'No se puede eliminar la marca porque está asociada a productos activos.',
-      );
+      throw new ConflictException('No se puede eliminar la marca porque está asociada a productos activos.');
     }
     
     entity.marcarComoEliminado(usuario.id);
-
     await this.repository.remove(entity, usuario);
+    
     return MessageFrontUtils.createSimple(
       `${this.ENTITY_NAME}`,
       entity.getDenominacion(),
-      'eliminada',
+      'eliminada'
     );
   }
 }

@@ -6,7 +6,7 @@ import {
   Repository,
   ObjectLiteral,
 } from "typeorm";
-import { IUnitOfWork } from "./iunit-of-work.";
+import { IUnitOfWork } from "./unit-of-work.interface";
 
 
 export class TypeOrmUnitOfWork implements IUnitOfWork {

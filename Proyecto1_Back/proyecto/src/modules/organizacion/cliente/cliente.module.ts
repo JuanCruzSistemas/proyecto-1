@@ -9,7 +9,7 @@ import { LocalidadModule } from 'src/modules/gutil/localidad/localidad.module';
 import { CondicionIvaModule } from 'src/modules/gutil/condicion-iva/condicion-iva.module';
 import { DataSource } from 'typeorm';
 import { TypeOrmUnitOfWork } from 'src/modules/common/unit-of-work/type-orm-unit-of-works1';
-import { IUnitOfWork } from 'src/modules/common/unit-of-work/iunit-of-work.';
+import { IUnitOfWork } from 'src/modules/common/unit-of-work/unit-of-work.interface';
 import { ProvinciaModule } from 'src/modules/gutil/provincia/provincia.module';
 import { UsuarioModule } from 'src/modules/gestion-usuario/usuario/usuario.module';
 import { ClienteValidationHelper } from '../helpers/cliente-validation-helper';

@@ -2,8 +2,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { Transform, Type } from "class-transformer";
 import { IsDate, IsInt, IsOptional, Min } from "class-validator";
 
-
-export class SearchInformacionProductoDto  {
+export class SearchInformacionProductoDto {
   @Type(() => Number)
   @IsInt()
   productoId: number;
@@ -13,22 +12,22 @@ export class SearchInformacionProductoDto  {
   fechaDesde: Date;
 
   @ApiProperty({
-      description: 'Fecha final del filtro (incluida)',
-      example: '2024-12-31',
-      type: String,
-      format: 'date',
-    })
-    @IsDate()
-    @Type(() => Date)
-    @Transform(({ value }) => {
-      const date = new Date(value);
-      // Asegura que si la fecha es válida, la lleva al final del día en UTC
-      if (!isNaN(date.getTime())) {
-        date.setUTCHours(23, 59, 59, 999);
-      }
-      return date;
-    })
-    fechaHasta: Date;
+    description: 'Fecha final del filtro (incluida)',
+    example: '2024-12-31',
+    type: String,
+    format: 'date',
+  })
+  @IsDate()
+  @Type(() => Date)
+  @Transform(({ value }) => {
+    const date = new Date(value);
+    // Asegura que si la fecha es válida, la lleva al final del día en UTC
+    if (!isNaN(date.getTime())) {
+      date.setUTCHours(23, 59, 59, 999);
+    }
+    return date;
+  })
+  fechaHasta: Date;
 
   @IsInt()
   @Min(0, { message: 'skip debe ser un número entero positivo o 0' })

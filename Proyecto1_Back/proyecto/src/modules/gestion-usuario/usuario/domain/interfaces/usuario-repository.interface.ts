@@ -3,7 +3,7 @@ import { RegistrarUsuarioDto } from "../../../auth/dto/register.dto";
 import { Rol } from "../../../rol/domain/entities/rol.entity";
 import { UpdateUsuarioDto } from "../../dto/updateUsuario.dto";
 import { Usuario } from "../entities/usuario.entity";
-import { IUnitOfWork } from "src/modules/common/unit-of-work/iunit-of-work.";
+import { IUnitOfWork } from "src/modules/common/unit-of-work/unit-of-work.interface";
 
 export interface IUsuarioRepository {
   

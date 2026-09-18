@@ -11,7 +11,7 @@ export class FindMarcaUseCase {
 
   constructor(
     @Inject(MARCA_REPOSITORY_TOKEN)
-    private readonly repository: IMarcaRepository,
+    private readonly repository: IMarcaRepository
   ) {}
 
   async findAllFor(denominacion: string): Promise<{ data: MarcaDto[]; total: number }> {
@@ -43,7 +43,7 @@ export class FindMarcaUseCase {
     denominacion: string,
     skip = 0,
     take = 10,
-    incluirEliminados = false,
+    incluirEliminados = false
   ): Promise<{ data: MarcaDto[]; total: number }> {
     this.logger.log(`Buscando o ${denominacion}  skip=${skip}, take=${take}`);
     const result = await this.repository.findBy(denominacion, skip, take, incluirEliminados);
