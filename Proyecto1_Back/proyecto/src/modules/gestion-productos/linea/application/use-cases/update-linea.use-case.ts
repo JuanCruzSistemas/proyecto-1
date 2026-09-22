@@ -5,6 +5,8 @@ import { ILineaRepository, LINEA_REPOSITORY_TOKEN } from '../../domain/interface
 import { UpdateLineaDto } from '../dto/update-linea.dto';
 import { LineaUniquenessValidator } from '../../infraestructure/validators/linea-uniqueness.validator';
 
+import { SuperlineaService } from '../../../superlinea/application/services/superlinea.service';
+
 @Injectable()
 export class UpdateLineaUseCase {
   private readonly ENTITY_NAME = 'Linea';
@@ -13,6 +15,7 @@ export class UpdateLineaUseCase {
   constructor(
     @Inject(LINEA_REPOSITORY_TOKEN)
     private readonly repository: ILineaRepository,
+    private readonly superlineas: SuperlineaService,
     private readonly uniquenessValidator: LineaUniquenessValidator
   ) {}
 
@@ -29,7 +32,10 @@ export class UpdateLineaUseCase {
       await this.uniquenessValidator.validarDenominacionUnica(dto.denominacion, id);
     }
 
+    const superlineaId = dto.superlineaId === undefined ? linea.getSuperlineaId() : dto.superlineaId;
+    await this.superlineas.assertActive(superlineaId);
     linea.actualizarDatos({
+      superlineaId,
       denominacion: dto.denominacion ?? linea.getDenominacion(),
       observacion: dto.observacion ?? linea.getObservacion(),
       utilizaStockMinimo: dto.utilizaStockMinimo,

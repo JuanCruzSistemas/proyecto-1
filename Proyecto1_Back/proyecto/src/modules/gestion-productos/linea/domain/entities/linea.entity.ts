@@ -13,6 +13,7 @@ export class Linea {
     private usuarioCreatedId: number | null,
     private usuarioUpdatedId: number | null,
     private usuarioDeletedId: number | null,
+    private superlineaId: number,
     private sistema: number
   ) {}
 
@@ -32,6 +33,7 @@ export class Linea {
       params.usuarioCreatedId,
       null,
       null,
+      params.superlineaId,
       0
     );
   }
@@ -52,17 +54,20 @@ export class Linea {
       params.usuarioCreatedId,
       params.usuarioUpdatedId,
       params.usuarioDeletedId,
+      params.superlineaId,
       params.sistema
     );
   }
 
   public actualizarDatos(params: {
     denominacion: string;
+    superlineaId: number;
     observacion: string | null;
     utilizaStockMinimo: boolean;
     stockMinimo: number;
     usuarioUpdatedId: number;
   }): void {
+    this.superlineaId = params.superlineaId;
     this.denominacion = params.denominacion;
     this.observacion = params.observacion;
     this.utilizaStockMinimo = params.utilizaStockMinimo;
@@ -75,6 +80,8 @@ export class Linea {
     this.deletedAt = new Date();
     this.usuarioDeletedId = usuarioDeletedId;
   }
+
+  public getSuperlineaId(): number { return this.superlineaId; }
 
   public getId(): number | null {
     return this.id;

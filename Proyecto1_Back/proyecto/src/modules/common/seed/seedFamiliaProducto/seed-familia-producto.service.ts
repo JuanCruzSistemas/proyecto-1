@@ -5,6 +5,7 @@ import { MarcaEntity } from 'src/modules/gestion-productos/marca/infraestructure
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
 import { Proveedor } from 'src/modules/organizacion/proveedor/domain/entities/proveedor.entity';
 import { DeepPartial, Repository } from 'typeorm';
+import { SuperlineaEntity } from 'src/modules/gestion-productos/superlinea/infraestructure/persistence/entities/superlinea.orm-entity';
 
 @Injectable()
 export class SeedFamiliaProductoService {
@@ -29,6 +30,11 @@ export class SeedFamiliaProductoService {
 
 
   async seedLineas() {
+    const superlineas = this.lineaRepository.manager.getRepository(SuperlineaEntity);
+    let general = await superlineas.findOneBy({ denominacion: 'General' });
+    if (!general) general = await superlineas.save(superlineas.create({
+      denominacion: 'General', observacion: 'Clasificación inicial', sistema: 0,
+    }));
     const entryData = [
       {
         denominacion: 'Aceites',
@@ -96,6 +102,7 @@ export class SeedFamiliaProductoService {
         const linea = this.lineaRepository.create({
           denominacion: data.denominacion.toUpperCase(),
           sistema: data.sistema,
+          superlineaId: general.id,
 
           usuarioCreatedId: usuarioCreated.id,
         } as DeepPartial<LineaEntity>);

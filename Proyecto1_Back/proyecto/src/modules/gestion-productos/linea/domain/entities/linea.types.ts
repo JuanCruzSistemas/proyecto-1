@@ -1,5 +1,6 @@
 export interface LineaCreateParams {
     denominacion: string;
+    superlineaId: number;
     observacion: string | null;
     utilizaStockMinimo: boolean;
     stockMinimo: number;
@@ -9,6 +10,7 @@ export interface LineaCreateParams {
 export interface LineaReconstituteParams {
     id: number;
     denominacion: string;
+    superlineaId: number;
     observacion: string | null;
     utilizaStockMinimo: boolean;
     stockMinimo: number;

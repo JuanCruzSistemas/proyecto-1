@@ -24,6 +24,9 @@ export function DatosTabla({ lineas, onEditar, onInfo, onDelete }: Props) {
       formatFunction: ({ value, row }) => (
         <div className="flex flex-col">
           <span>{value}</span>
+          <span className="text-xs text-gray-600">
+            SuperLínea: {row.superlinea?.denominacion ?? "Sin información"}
+          </span>
           {row.deletedAt && (
             <span className="text-xs text-red-500 font-medium">
               Eliminada el {formatFechaHora(row.deletedAt)}

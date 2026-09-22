@@ -81,8 +81,10 @@ export default function ConsultarLineas() {
   };
 
   const handleMostrarInfo = async (id: number) => {
-    const auditoria = await LineaService.obtenerAuditoria(id);
-    modal.abrirAuditoria(auditoria);
+    const [auditoria, linea] = await Promise.all([
+      LineaService.obtenerAuditoria(id), LineaService.obtenerId(id),
+    ]);
+    modal.abrirAuditoria(auditoria, linea);
   };
 
   const handleDelete = async (id: number) => {
