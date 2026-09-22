@@ -7,7 +7,7 @@ import { CreateLocalidadDto } from '../../dto/create-localidad.dto';
 import { Localidad } from '../../domain/entities/localidad.entity';
 import { ILocalidadRepository } from '../../domain/interfaces/localidad.repository.interface';
 import { UpdateLocalidadDto } from '../../dto/update-localidad.dto';
-import { IUnitOfWork } from 'src/modules/common/unit-of-work/iunit-of-work.';
+import { IUnitOfWork } from 'src/modules/common/unit-of-work/unit-of-work.interface';
 import { Transactional } from 'src/modules/common/decorators/transactional.decoratos';
 import { AuditoriaDto } from 'src/modules/gestion-sistema/auditoria/dto/auditoria.dto';
 import { FechaUtils } from 'src/modules/common/utils/date/fecha-utils';

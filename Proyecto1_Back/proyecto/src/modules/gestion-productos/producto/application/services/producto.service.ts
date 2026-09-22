@@ -2,105 +2,53 @@ import {
   forwardRef,
   Inject,
   Injectable,
-  InternalServerErrorException,
   Logger,
-  NotFoundException,
 } from '@nestjs/common';
-import { IUnitOfWork } from 'src/modules/common/unit-of-work/iunit-of-work.';
-import { ProveedorService } from 'src/modules/organizacion/proveedor/application/services/proveedor.service';
-import { PaginacionUtils } from 'src/modules/common/utils/pagination/paginacion-utils';
-import { UsuarioService } from 'src/modules/gestion-usuario/usuario/application/services/usuario.service';
-import { ensureNotSistemaEntity } from 'src/modules/common/utils/atrituto-sistema';
-import { AuditoriaMapper } from 'src/modules/gestion-sistema/auditoria/mappers/auditoria.mapper';
-import { MessageFrontUtils } from 'src/modules/common/utils/message/message-front.util';
+import { IUnitOfWork } from 'src/modules/common/unit-of-work/unit-of-work.interface';
 import { Producto } from '../../domain/entities/producto.entity';
-import { IProductoRepository } from '../../domain/interfaces/producto.repository-interface';
-import { CreateProductoDto } from '../../dto/create-producto.dto';
-import { GetProductoDto } from '../../dto/get-producto.dto';
-import { UpdateProductoDto } from '../../dto/update-producto.dto';
-import { ProductoMapper } from '../../mappers/producto.mapper';
+import { IProductoRepository, PRODUCTO_REPOSITORY_TOKEN } from '../../domain/interfaces/producto.repository-interface';
+import { CreateProductoDto } from '../dto/create-producto.dto';
+import { GetProductoDto } from '../dto/get-producto.dto';
+import { UpdateProductoDto } from '../dto/update-producto.dto';
 import { LineaService } from 'src/modules/gestion-productos/linea/application/services/linea.service';
 import { MarcaService } from 'src/modules/gestion-productos/marca/application/services/marca.service';
-import { ProductoIntrinsicValidationService } from '../../domain/services/producto-intrinsic-validation.service.ts';
-import { ProductoValidationService } from '../../domain/services/producto-validation.service.ts';
-import { ProductoRelatedEntitiesValidator } from '../../infraestructure/validators/producto-related-entities.validator.ts';
-import { ProductoUniquenessValidator } from '../../infraestructure/validators/producto-uniqueness.validator.ts';
-import { UsuarioValidator } from 'src/modules/common/utils/validation/usuario-validator';
-import { ProductoDeletePolicy } from '../policies/producto-delete.policy';
+import { CreateProductoUseCase } from '../use-cases/create-producto.use-case';
+import { UpdateProductoUseCase } from '../use-cases/update-producto.use-case';
+import { FindByProductoUseCase } from '../use-cases/find-by-producto.use-case';
+import { FindByIdConAuditoria } from '../use-cases/find-by-id-auditoria.use-case';
+import { FindDtoByIdUseCase } from '../use-cases/find-dto-by-id.use-case';
+import { FindEntityByIdUseCase } from '../use-cases/find-entity-by-id.use-case';
+import { RemoveProductoUseCase } from '../use-cases/remove-producto.use-case';
+import { FindByDenominacionUseCase } from '../use-cases/find-by-denominiacion.use-case';
+
 @Injectable()
 export class ProductoService {
   private readonly logger = new Logger(ProductoService.name);
   constructor(
-    @Inject('IProductoRepository')
+    private readonly createProductoUseCase: CreateProductoUseCase,
+    private readonly updateProductoUseCase: UpdateProductoUseCase,
+    private readonly findByProductoUseCase: FindByProductoUseCase,
+    private readonly findByIdConAuditoriaUseCase: FindByIdConAuditoria,
+    private readonly findDtoByIdUseCase: FindDtoByIdUseCase,
+    private readonly findEntityByIdUseCase: FindEntityByIdUseCase,
+    private readonly removeProductoUseCase: RemoveProductoUseCase,
+    private readonly findByDenominacionUseCase: FindByDenominacionUseCase,
+    @Inject(PRODUCTO_REPOSITORY_TOKEN)
     private readonly repository: IProductoRepository,
     private readonly lineaService: LineaService,
 
     @Inject(forwardRef(() => MarcaService))
     private readonly marcaService: MarcaService,
-    private readonly proveedorService: ProveedorService,
-    private readonly usuarioService: UsuarioService,
-
-    //  Domain Services
-    private readonly intrinsicValidationService: ProductoIntrinsicValidationService,
-    private readonly validationService: ProductoValidationService,
-
-    // Infrastructure Validators
-    private readonly relatedEntitiesValidator: ProductoRelatedEntitiesValidator,
-    private readonly uniquenessValidator: ProductoUniquenessValidator,
-    private readonly usuarioValidator: UsuarioValidator,
-
-    private readonly productoDeletePolicy: ProductoDeletePolicy,
-
-  ) { }
+  ) {}
 
   private readonly ENTITY_NAME = 'Producto';
 
   async create(dto: CreateProductoDto) {
-    this.logger.log(
-      `Creando un nuevo ${this.ENTITY_NAME} con denominación: ${dto.denominacion} a: ${dto.denominacion}`,
-    );
-
-    // Orquestar todas las validaciones
-    const { marca, linea, usuario } =
-      await this.validarYPrepararCreacion(dto);
-
-
-
-    const entity = await this.repository.create(
-      dto,
-      linea,
-      marca,
-
-      usuario,
-    );
-
-    return MessageFrontUtils.createSimple(
-      `${this.ENTITY_NAME}`,
-      entity.denominacion,
-      'creada',
-    );
+    return this.createProductoUseCase.execute(dto);
   }
 
   async update(id: number, dto: UpdateProductoDto) {
-    this.logger.log(`Actualizandox  ${this.ENTITY_NAME} con ID: ${id}`);
-
-    const { marca, linea, usuario } =
-      await this.validarYPrepararActualizacion(id, dto);
-
-    const entity = await this.repository.update(
-      id,
-      dto,
-      linea,
-      marca,
-
-      usuario,
-    );
-
-    return MessageFrontUtils.createSimple(
-      `${this.ENTITY_NAME}`,
-      entity.denominacion,
-      'editada',
-    );
+    return this.updateProductoUseCase.execute(id, dto);
   }
 
   async findByRapido(
@@ -109,21 +57,8 @@ export class ProductoService {
     skip: number,
     take: number,
   ): Promise<{ data: GetProductoDto[]; total: number }> {
-    this.logger.warn(`service`);
-    const result = await this.repository.findByRapido(
-      codigo,
-      exacto,
-      skip,
-      take,
-    );
-    return {
-      data: result.data.map((producto) => {
-        return ProductoMapper.toBusquedaDto(producto);
-      }),
-      total: PaginacionUtils.totalItems(result.total),
-    };
+    return this.findByProductoUseCase.findByRapido(codigo, exacto, skip, take);
   }
-
 
   async findBy(
     denominacion: string,
@@ -137,8 +72,7 @@ export class ProductoService {
     skip: number,
     take: number,
   ): Promise<{ data: GetProductoDto[]; total: number }> {
-    this.logger.warn(`service`);
-    const result = await this.repository.findBy(
+    return this.findByProductoUseCase.findBy(
       denominacion,
       codigoProveedor,
       codProveedorExacto,
@@ -150,14 +84,7 @@ export class ProductoService {
       skip,
       take,
     );
-    return {
-      data: result.data.map((producto) => {
-        return ProductoMapper.toBusquedaDto(producto);
-      }),
-      total: PaginacionUtils.totalItems(result.total),
-    };
   }
-
 
   async buscarMarcaDesdeProducto(id: number) {
     return this.marcaService.findEntityById(id);
@@ -168,56 +95,19 @@ export class ProductoService {
   }
 
   async findByIdConAuditoria(id: number) {
-    const entity = await this.repository.findByIdConAuditoria(id);
-    if (!entity)
-      throw new NotFoundException(
-        `${this.ENTITY_NAME} con ID ${id} no encontrado.`,
-      );
-    return AuditoriaMapper.mapProductoToDto(entity);
+    return this.findByIdConAuditoriaUseCase.execute(id);
   }
 
   async findDtoById(id: number) {
-    const entity = await this.repository.findOne(id);
-    if (!entity)
-      throw new NotFoundException(
-        `${this.ENTITY_NAME} con ID ${id} no encontrado.`,
-      );
-    this.logger.log(`b1x`);
-    return ProductoMapper.toDto(entity);
+    return this.findDtoByIdUseCase.execute(id);
   }
 
   async findEntityById(id: number) {
-    const entity = await this.repository.findOne(id);
-    if (!entity)
-      throw new NotFoundException(
-        `${this.ENTITY_NAME} con ID ${id} no encontrado.`,
-      );
-    return entity;
+    return this.findEntityByIdUseCase.execute(id);
   }
 
   async remove(id: number, usuarioId: number) {
-    const entity = await this.findEntityById(id);
-
-    if (!entity) {
-      throw new NotFoundException(
-        `${this.ENTITY_NAME} con ID ${id} no encontrado.`,
-      );
-    }
-    
-
-    ensureNotSistemaEntity(entity, 'Producto');
-
-    const usuario = await this.usuarioService.findOne(usuarioId);
-    if (!usuario) {
-      throw new NotFoundException(`Usuario con ID ${usuarioId} no encontrado.`);
-    }
-
-    await this.repository.remove(entity, usuario);
-    return MessageFrontUtils.createSimple(
-      `${this.ENTITY_NAME}`,
-      entity.denominacion,
-      'eliminada',
-    );
+    return this.removeProductoUseCase.execute(id, usuarioId);
   }
 
 
@@ -234,22 +124,7 @@ export class ProductoService {
     skip = 0,
     take = 10,
   ): Promise<{ data: GetProductoDto[]; total: number }> {
-    this.logger.log(
-      `  Buscando en srvice producto o ${denominacion}  skip=${skip}, take=${take}`,
-    );
-    const result =
-      await this.repository.findByDenominacionCodigoProveedorFiltered(
-        denominacion,
-        skip,
-        take,
-      );
-    this.logger.log(result);
-    return {
-      data: result.data.map((producto) => {
-        return ProductoMapper.toBusquedaDto(producto);
-      }),
-      total: PaginacionUtils.totalItems(result.total),
-    };
+    return this.findByDenominacionUseCase.execute(denominacion, skip, take);
   }
 
   async existsProductosActivosByMarca(marcaId: number): Promise<boolean> {
@@ -293,128 +168,14 @@ export class ProductoService {
       throw new Error(`Producto con ID ${productoId} no encontrado`);
     }
 
-    const stockActual = producto.stock ?? 0;
+    const stockActual = producto.getStock();
     const nuevoStock = stockActual + delta;
 
-    // Política opcional
-    // if (nuevoStock < 0) throw ...
-
-    producto.stock = nuevoStock;
+    producto.ajustarStock(delta, origen ?? 'Ajuste de stock');
     await this.repository.updateEntity(uow, producto);
 
-    this.logger.log(
-      `[StockService] ${origen ?? 'Desconocido'} → ${stockActual} → ${nuevoStock}`,
-    );
+    this.logger.log(`[StockService] ${origen ?? 'Desconocido'} → ${stockActual} → ${nuevoStock}`);
 
     return nuevoStock;
   }
-
-  /**
-   * Orquesta todas las validaciones necesarias para crear un producto
-   * @private
-   */
-  private async validarYPrepararCreacion(dto: CreateProductoDto) {
-    // Validar datos  (Domain - sin DB)
-    this.intrinsicValidationService.validarDatosBasicos({
-      denominacion: dto.denominacion,
-      marcaId: dto.marcaId,
-      lineaId: dto.lineaId,
-      alicuotaIva: dto.alicuotaIva,
-    });
-
-    // Validar unicidad (Infrastructure - DB)
-    await this.uniquenessValidator.validarDenominacionUnica(dto.denominacion);
-
-    if (dto.codigoProveedor) {
-      await this.uniquenessValidator.validarCodigoProveedorUnico(
-        dto.codigoProveedor,
-        0,
-      );
-    }
-    // 3 Validar entidades relacionadas existen (Infrastructure - DB)
-    const { marca, linea, } =
-      await this.relatedEntitiesValidator.validarYObtenerEntidadesRelacionadas(
-        dto.marcaId,
-        dto.lineaId,
-
-      );
-
-    //  Validar reglas de negocio sobre entidades (Domain)
-    this.validationService.validarEntidadesRelacionadas(
-      marca,
-      linea,
-
-    );
-
-
-    //  Validar usuario existe (Infrastructure)
-    const usuario = await this.usuarioValidator.validarUsuarioExiste(
-      dto.usuarioCreatedId,
-    );
-
-    return { marca, linea, usuario };
-  }
-  /**
-   * Orquesta todas las validaciones necesarias para actualizar un producto
-   * @private
-   */
-  private async validarYPrepararActualizacion(
-    id: number,
-    dto: UpdateProductoDto,
-  ) {
-    // Obtener producto actual
-    const productoActual = await this.repository.findOne(id);
-    if (!productoActual)
-      throw new NotFoundException(
-        `${this.ENTITY_NAME} con ID ${id} no encontrado.`,
-      );
-
-    if (
-      productoActual.lineaId == null ||
-      productoActual.marcaId == null
-    ) {
-      throw new InternalServerErrorException('Producto en estado inválido');
-    }
-
-    //  Validar datos intrínsecos
-    this.intrinsicValidationService.validarDatosBasicos({
-      denominacion: dto.denominacion ?? productoActual.denominacion,
-      marcaId: dto.marcaId ?? productoActual.marcaId,
-      lineaId: dto.lineaId ?? productoActual.lineaId,
-      alicuotaIva: dto.alicuotaIva ?? productoActual.alicuotaIva,
-
-    });
-
-    // Validar unicidad (excluyendo el ID actual)
-    if (dto.denominacion) {
-      await this.uniquenessValidator.validarDenominacionUnica(
-        dto.denominacion,
-        id,
-      );
-    }
-
-    // Validar entidades relacionadas
-    const { marca, linea, } =
-      await this.relatedEntitiesValidator.validarYObtenerEntidadesRelacionadas(
-        dto.marcaId ?? productoActual.marcaId,
-        dto.lineaId ?? productoActual.lineaId,
-
-      );
-
-    //  Validar reglas de negocio
-    this.validationService.validarEntidadesRelacionadas(
-      marca,
-      linea,
-
-    );
-
-    // 5 Validar usuario
-    const usuario = await this.usuarioValidator.validarUsuarioExiste(
-      dto.usuarioUpdatedId,
-    );
-
-    return { marca, linea, usuario };
-  }
-
-
 }

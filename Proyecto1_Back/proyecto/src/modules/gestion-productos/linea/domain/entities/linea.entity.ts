@@ -1,56 +1,126 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-  DeleteDateColumn,
-  OneToMany,
-  Index,
-} from 'typeorm';
+import { LineaCreateParams, LineaReconstituteParams } from "./linea.types";
 
-import { Producto } from '../../../producto/domain/entities/producto.entity';
-import { CantidadColumn } from 'src/modules/common/decorators/cantidad-column.decorator';
-
-@Entity('linea')
-@Index(['denominacion', 'deletedAt'], { unique: true })
 export class Linea {
-  @PrimaryGeneratedColumn()
-  id: number;
+  private constructor(
+    private id: number | null,
+    private denominacion: string,
+    private observacion: string | null,
+    private utilizaStockMinimo: boolean,
+    private stockMinimo: number,
+    private createdAt: Date,
+    private updatedAt: Date,
+    private deletedAt: Date | null,
+    private usuarioCreatedId: number | null,
+    private usuarioUpdatedId: number | null,
+    private usuarioDeletedId: number | null,
+    private sistema: number
+  ) {}
 
-  @Column({ type: 'varchar', length: 255 })
-  denominacion: string;
+  /**
+   * Fábrica para una Línea NUEVA, valida invariantes
+   */
+  public static create(params: LineaCreateParams): Linea {
+    return new Linea(
+      null,
+      params.denominacion,
+      params.observacion,
+      params.utilizaStockMinimo,
+      params.stockMinimo,
+      new Date(),
+      new Date(),
+      null,
+      params.usuarioCreatedId,
+      null,
+      null,
+      0
+    );
+  }
 
-  @Column({ type: 'text', nullable: true })
-  observacion?: string;
+  /**
+   * Fábrica para REHIDRATAR desde persistencia, la usa el mapper de infraestructura.
+   */
+  public static reconstitute(params: LineaReconstituteParams): Linea {
+    return new Linea(
+      params.id,
+      params.denominacion,
+      params.observacion,
+      params.utilizaStockMinimo,
+      params.stockMinimo,
+      params.createdAt,
+      params.updatedAt,
+      params.deletedAt,
+      params.usuarioCreatedId,
+      params.usuarioUpdatedId,
+      params.usuarioDeletedId,
+      params.sistema
+    );
+  }
 
-  @OneToMany(() => Producto, (producto) => producto.linea)
-  productos: Producto[];
- 
-  @Column('boolean', { default: false })
-  utilizaStockMinimo: boolean;
+  public actualizarDatos(params: {
+    denominacion: string;
+    observacion: string | null;
+    utilizaStockMinimo: boolean;
+    stockMinimo: number;
+    usuarioUpdatedId: number;
+  }): void {
+    this.denominacion = params.denominacion;
+    this.observacion = params.observacion;
+    this.utilizaStockMinimo = params.utilizaStockMinimo;
+    this.stockMinimo = params.stockMinimo;
+    this.usuarioUpdatedId = params.usuarioUpdatedId;
+    this.updatedAt = new Date();
+  }
 
-  @CantidadColumn()
-  stockMinimo: number;
+  public marcarComoEliminado(usuarioDeletedId: number): void {
+    this.deletedAt = new Date();
+    this.usuarioDeletedId = usuarioDeletedId;
+  }
 
-  @CreateDateColumn()
-  createdAt: Date;
+  public getId(): number | null {
+    return this.id;
+  }
 
-  @UpdateDateColumn()
-  updatedAt: Date;
+  public getDenominacion(): string {
+    return this.denominacion;
+  }
 
-  @DeleteDateColumn({ nullable: true })
-  deletedAt?: Date;
+  public getObservacion(): string | null {
+    return this.observacion;
+  }
 
-  @Column({ type: 'int', nullable: true })
-  usuarioCreatedId?: number;
+  public getUtilizaStockMinimo(): boolean {
+    return this.utilizaStockMinimo;
+  }
 
-  @Column({ type: 'int', nullable: true })
-  usuarioDeletedId?: number;
+  public getStockMinimo(): number {
+    return this.stockMinimo;
+  }
 
-  @Column({ type: 'int', nullable: true })
-  usuarioUpdatedId?: number;
+  public getCreatedAt(): Date {
+    return this.createdAt;
+  }
 
-  @Column({ type: 'int', default: 0 })
-  sistema: number;
+  public getUpdatedAt(): Date {
+    return this.updatedAt;
+  }
+
+  public getDeletedAt(): Date | null {
+    return this.deletedAt;
+  }
+
+  public getUsuarioCreatedId(): number | null {
+    return this.usuarioCreatedId;
+  }
+
+  public getUsuarioUpdatedId(): number | null {
+    return this.usuarioUpdatedId;
+  }
+
+  public getUsuarioDeletedId(): number | null {
+    return this.usuarioDeletedId;
+  }
+
+  public getSistema(): number {
+    return this.sistema;
+  }
 }

@@ -4,9 +4,9 @@ import { SeedAllController } from './seed-all.controller';
 import { SeedOrganizacionService } from '../seed-organizacion/seed-organizacion.service';
 import { SeedFamiliaProductoService } from '../seedFamiliaProducto/seed-familia-producto.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Linea } from 'src/modules/gestion-productos/linea/domain/entities/linea.entity';
-import { Marca } from 'src/modules/gestion-productos/marca/domain/entities/marca.entity';
-import { Producto } from 'src/modules/gestion-productos/producto/domain/entities/producto.entity';
+import { LineaEntity } from 'src/modules/gestion-productos/linea/infraestructure/persistence/entities/linea.orm-entity';
+import { MarcaEntity } from 'src/modules/gestion-productos/marca/infraestructure/persistence/entities/marca.orm-entity';
+import { ProductoEntity } from 'src/modules/gestion-productos/producto/infraestructure/persistence/entities/producto.orm-entity';
 import { Empresa } from 'src/modules/organizacion/empresa/domain/entities/empresa.entity';
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
 import { SeedUsuarioService } from '../seed-usuario/seed-usuario.service';
@@ -28,9 +28,9 @@ import { AlicuotaIva } from 'src/modules/gutil/alicuota-iva/domain/entities/alic
       CondicionIva,
       Localidad, 
 
-      Linea,
-      Marca,
-      Producto,
+      LineaEntity,
+      MarcaEntity,
+      ProductoEntity,
       Empresa,
       Cliente,
       Proveedor,

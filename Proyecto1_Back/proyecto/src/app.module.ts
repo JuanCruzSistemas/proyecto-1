@@ -25,7 +25,7 @@ import { ConfiguracionSistemaModule } from './modules/gestion-sistema/configurac
 import { CondicionIvaModule } from './modules/gutil/condicion-iva/condicion-iva.module';
 import { EmpresaOperacionModule } from './modules/organizacion/empresa-operacion/empresa-operacion.module';
 import { ClienteOperacionModule } from './modules/organizacion/cliente-operacion/cliente-operacion.module';
-import { ProductoOperacionModule } from './modules/gestion-productos/producto-operacion/producto-operacion.module';
+import { ProductoOperacionModule } from './modules/gestion-productos/movimiento-stock/producto-operacion.module';
 import { BusquedasModule } from './modules/gestion-documentos/busquedas/busquedas.module';
 
 @Module({
@@ -41,12 +41,10 @@ import { BusquedasModule } from './modules/gestion-documentos/busquedas/busqueda
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
       timezone: '-03:00',
-
-      //  Auto-carga de entidades desde los módulos
-      // Las entidades se registran automáticamente cuando usás
-      // TypeOrmModule.forFeature([Entidad]) en tus módulos
-      entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      // entities,
+      entities: [
+        __dirname + '/**/*.entity{.ts,.js}',
+        __dirname + '/**/*.orm-entity{.ts,.js}',
+      ],
       synchronize: false,  
       ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false
     }),
@@ -80,4 +78,4 @@ import { BusquedasModule } from './modules/gestion-documentos/busquedas/busqueda
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

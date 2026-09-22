@@ -4,7 +4,7 @@ import { Localidad } from '../localidad/domain/entities/localidad.entity';
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
 import { EntityManager } from 'typeorm';
 import { Domicilio } from './entities/domicilio.entity';
-import { IUnitOfWork } from 'src/modules/common/unit-of-work/iunit-of-work.';
+import { IUnitOfWork } from 'src/modules/common/unit-of-work/unit-of-work.interface';
 
 @Injectable()
 export class DomicilioService {

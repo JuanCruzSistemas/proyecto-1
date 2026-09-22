@@ -7,7 +7,7 @@ import { CondicionIvaPersistenceAdapter } from './infraestructure/repositories/c
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { TypeOrmUnitOfWork } from 'src/modules/common/unit-of-work/type-orm-unit-of-works1';
-import { IUnitOfWork } from 'src/modules/common/unit-of-work/iunit-of-work.';
+import { IUnitOfWork } from 'src/modules/common/unit-of-work/unit-of-work.interface';
 import { CondicionIva } from './domain/entities/condicion-iva.entity';
 
 @Module({

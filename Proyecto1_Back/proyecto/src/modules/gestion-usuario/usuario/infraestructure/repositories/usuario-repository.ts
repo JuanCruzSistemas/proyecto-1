@@ -8,7 +8,7 @@ import { UpdateUsuarioDto } from '../../dto/updateUsuario.dto';
 import { DatabaseConnectionException } from 'src/modules/common/exceptions/database-connection.exception';
 import { CreateUsuarioDto } from '../../dto/create-usuario.dto';
 import { Personal } from 'src/modules/organizacion/personal/domain/entities/personal.entity';
-import { IUnitOfWork } from 'src/modules/common/unit-of-work/iunit-of-work.';
+import { IUnitOfWork } from 'src/modules/common/unit-of-work/unit-of-work.interface';
 
 @Injectable()
 export class UsuarioRepository implements IUsuarioRepository {
@@ -51,7 +51,7 @@ export class UsuarioRepository implements IUsuarioRepository {
     try {
       return await this.persistenceService.create(data, rol);
     } catch (error) {
-      this.logger.error(`Error al crear ${this.ENTITY_NAME}: ${error.message}`);
+      this.logger.error(`Error al crear ${this.ENTITY_NAME}: ${error}`);
       throw new DatabaseConnectionException(
         'No se pudo crear la entidad en la base de datos.',
       );
@@ -76,7 +76,7 @@ export class UsuarioRepository implements IUsuarioRepository {
       return await this.persistenceService.save(usuario);
     } catch (error) {
       this.logger.error(
-        `Error al guardar ${this.ENTITY_NAME}: ${error.message}`,
+        `Error al guardar ${this.ENTITY_NAME}: ${error}`,
       );
       throw new DatabaseConnectionException(
         'No se pudo guardar la entidad en la base de datos.',

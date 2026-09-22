@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Linea } from 'src/modules/gestion-productos/linea/domain/entities/linea.entity';
-import { Marca } from 'src/modules/gestion-productos/marca/domain/entities/marca.entity';
+import { LineaEntity } from 'src/modules/gestion-productos/linea/infraestructure/persistence/entities/linea.orm-entity';
+import { MarcaEntity } from 'src/modules/gestion-productos/marca/infraestructure/persistence/entities/marca.orm-entity';
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
 import { Proveedor } from 'src/modules/organizacion/proveedor/domain/entities/proveedor.entity';
 import { DeepPartial, Repository } from 'typeorm';
@@ -10,11 +10,11 @@ import { DeepPartial, Repository } from 'typeorm';
 export class SeedFamiliaProductoService {
   constructor(
 
-    @InjectRepository(Linea)
-    private readonly lineaRepository: Repository<Linea>,
+    @InjectRepository(LineaEntity)
+    private readonly lineaRepository: Repository<LineaEntity>,
 
-    @InjectRepository(Marca)
-    private readonly marcaRepository: Repository<Marca>,
+    @InjectRepository(MarcaEntity)
+    private readonly marcaRepository: Repository<MarcaEntity>,
 
 
 
@@ -98,7 +98,7 @@ export class SeedFamiliaProductoService {
           sistema: data.sistema,
 
           usuarioCreatedId: usuarioCreated.id,
-        } as DeepPartial<Linea>); 
+        } as DeepPartial<LineaEntity>);
 
         await this.lineaRepository.save(linea);
         console.log(`✅ Linea "${data.denominacion}" creada.`);
@@ -138,7 +138,7 @@ export class SeedFamiliaProductoService {
           denominacion: data.denominacion.toUpperCase(),
           usuarioCreatedId: usuarioCreated.id,
           sistema: data.sistema,
-        } as DeepPartial<Marca>);
+        } as DeepPartial<MarcaEntity>);
 
         await this.marcaRepository.save(marca);
         console.log(`✅ Marca "${data.denominacion}" creada.`);
