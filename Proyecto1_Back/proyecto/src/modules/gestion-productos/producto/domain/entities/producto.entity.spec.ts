@@ -5,6 +5,7 @@ import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usu
 import { CostoInvalidoException } from '../exceptions/costo-invalido.exception';
 import { StockInvalidoException } from '../exceptions/stock-invalido.exception';
 import { MargenInvalidoException } from '../exceptions/margen-invalido.exception';
+import { PrecioInvalidoException } from '../exceptions/precio-invalido.exception';
 
 describe('Producto (dominio)', () => {
   const usuario = {} as Usuario;
@@ -53,10 +54,8 @@ describe('Producto (dominio)', () => {
       expect(producto.getPrecio()).toBeCloseTo(130);
     });
 
-    it('permite costo 0 (y por lo tanto precio 0)', () => {
-      const producto = crearProducto({ costo: 0, margen: 0.5 });
-      expect(producto.getCosto()).toBe(0);
-      expect(producto.getPrecio()).toBe(0);
+    it('rechaza un costo 0 (porque el precio resultante sería 0)', () => {
+    expect(() => crearProducto({ costo: 0, margen: 0.5 })).toThrow(PrecioInvalidoException);
     });
 
     it('rechaza un costo negativo', () => {

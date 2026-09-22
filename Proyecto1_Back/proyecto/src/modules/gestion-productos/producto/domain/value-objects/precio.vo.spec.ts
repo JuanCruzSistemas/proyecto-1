@@ -6,8 +6,8 @@ describe('Precio (VO)', () => {
     expect(Precio.create(100, 0.3).getValue()).toBeCloseTo(130);
   });
 
-  it('permite precio 0 cuando el costo es 0', () => {
-    expect(Precio.create(0, 0.5).getValue()).toBe(0);
+  it('rechaza un precio igual a 0', () => {
+    expect(() => Precio.create(0, 0.5)).toThrow(PrecioInvalidoException);
   });
 
   it('rechaza un resultado negativo', () => {
