@@ -2,8 +2,8 @@ import { Costo } from './costo.vo';
 import { CostoInvalidoException } from '../exceptions/costo-invalido.exception';
 
 describe('Costo (VO)', () => {
-  it('permite costo 0', () => {
-    expect(Costo.create(0).getValue()).toBe(0);
+  it('rechaza un costo igual a 0', () => {
+    expect(() => Costo.create(0)).toThrow(CostoInvalidoException);
   });
 
   it('permite un costo positivo', () => {

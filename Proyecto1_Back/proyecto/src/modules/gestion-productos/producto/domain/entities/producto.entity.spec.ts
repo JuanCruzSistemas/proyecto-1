@@ -55,7 +55,7 @@ describe('Producto (dominio)', () => {
     });
 
     it('rechaza un costo 0 (porque el precio resultante sería 0)', () => {
-    expect(() => crearProducto({ costo: 0, margen: 0.5 })).toThrow(PrecioInvalidoException);
+      expect(() => crearProducto({ costo: 0, margen: 0.5 })).toThrow(CostoInvalidoException);
     });
 
     it('rechaza un costo negativo', () => {
