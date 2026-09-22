@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { MessageFrontUtils } from 'src/modules/common/utils/message/message-front.util';
-import { IProductoRepository, PRODUCTO_REPOSITORY_TOKEN } from '../../domain/interfaces/producto.repository-interface';
+import { IProductoRepository, PRODUCTO_REPOSITORY_TOKEN } from '../../domain/repositories/producto.repository-interface';
 import { UpdateProductoDto } from '../dto/update-producto.dto';
 import { ProductoIntrinsicValidationService } from '../../domain/services/producto-intrinsic-validation.service';
 import { ProductoValidationService } from '../../domain/services/producto-validation.service';
@@ -37,14 +37,15 @@ export class UpdateProductoUseCase {
     async execute(id: number, dto: UpdateProductoDto) {
         this.logger.log(`Actualizandox  ${this.ENTITY_NAME} con ID: ${id}`);
 
-        const { marca, linea, usuario, productoActual } = await this.validarYPrepararActualizacion(id, dto);
+        const { marca, linea, presentacion, usuario, productoActual } = await this.validarYPrepararActualizacion(id, dto);
 
         const productoActualizado = ProductoDtoMapper.updateDtoToDomain(
             dto,
             productoActual,
             linea,
             marca,
-            usuario,
+            presentacion,
+            usuario
         );
 
         const entity = await this.repository.update(id, productoActualizado);
@@ -52,7 +53,7 @@ export class UpdateProductoUseCase {
         return MessageFrontUtils.createSimple(
             `${this.ENTITY_NAME}`,
             entity.getDenominacion(),
-            'editada',
+            'editada'
         );
     }
 
@@ -77,35 +78,36 @@ export class UpdateProductoUseCase {
         this.intrinsicValidationService.validarDatosBasicos({
             denominacion: dto.denominacion ?? productoActual.getDenominacion(),
             marcaId: dto.marcaId ?? productoActual.getMarca().getId()!,
-            lineaId: dto.lineaId ?? productoActual.getLinea().getId()!,
+            lineaId: dto.lineaId ?? productoActual.getLinea().getId()!
         });
 
         // Validar unicidad (excluyendo el ID actual)
         if (dto.denominacion) {
             await this.uniquenessValidator.validarDenominacionUnica(
                 dto.denominacion,
-                id,
+                id
             );
         }
 
         // Validar entidades relacionadas
-        const { marca, linea, } =
+        const { marca, linea, presentacion } =
             await this.relatedEntitiesValidator.validarYObtenerEntidadesRelacionadas(
                 dto.marcaId ?? productoActual.getMarca().getId()!,
                 dto.lineaId ?? productoActual.getLinea().getId()!,
+                dto.presentacionId ?? productoActual.getPresentacion()?.getId() ?? undefined
             );
 
         //  Validar reglas de negocio
         this.validationService.validarEntidadesRelacionadas(
             marca,
-            linea,
+            linea
         );
 
         // 5 Validar usuario
         const usuario = await this.usuarioValidator.validarUsuarioExiste(
-            dto.usuarioUpdatedId,
+            dto.usuarioUpdatedId
         );
 
-        return { marca, linea, usuario, productoActual };
+        return { marca, linea, presentacion, usuario, productoActual };
     }
 }

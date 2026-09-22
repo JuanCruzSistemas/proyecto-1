@@ -1,5 +1,6 @@
 import { Linea } from '../../../linea/domain/entities/linea.entity';
 import { Marca } from '../../../marca/domain/entities/marca.entity';
+import { Presentacion } from '../../../presentacion/domain/entities/presentacion.entity';
 import { MovimientoStock } from '../../../movimiento-stock/domain/entities/movimiento-stock.entity';
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
 import { Proveedor } from 'src/modules/organizacion/proveedor/domain/entities/proveedor.entity';
@@ -8,7 +9,7 @@ import { Proveedor } from 'src/modules/organizacion/proveedor/domain/entities/pr
  * Datos necesarios para dar de alta un Producto nuevo. `margen` es una fracción (de 0 a 1).
  */
 export interface ProductoCreateParams {
-    denominacion: string;
+    denominacion?: string;
     codigoBarra: string | null;
     proveedor: Proveedor | null;
     codigoProveedor: string | null;
@@ -24,6 +25,7 @@ export interface ProductoCreateParams {
     usuarioCreated: Usuario;
     linea: Linea;
     marca: Marca;
+    presentacion: Presentacion | null;
     utilizaPack: boolean;
     cantidadPorPack: number | null;
     imagen: string | null;
@@ -58,6 +60,7 @@ export interface ProductoReconstituteParams {
     usuarioDeleted: Usuario | null;
     linea: Linea;
     marca: Marca;
+    presentacion: Presentacion | null;
     utilizaPack: boolean;
     cantidadPorPack: number | null;
     imagen: string | null;
@@ -65,13 +68,14 @@ export interface ProductoReconstituteParams {
     movimientosStock: MovimientoStock[];
     sistema: number;
     codigoReferencia: string | null;
+    denominacionEditadaManualmente: boolean;
 }
 
 /**
  * Datos editables de un Producto ya existente
  */
 export interface ProductoActualizarDatosParams {
-    denominacion: string;
+    denominacion?: string;
     codigoBarra: string | null;
     codigoProveedor: string | null;
     stock: number;
@@ -85,6 +89,7 @@ export interface ProductoActualizarDatosParams {
     observacion: string | null;
     linea: Linea;
     marca: Marca;
+    presentacion: Presentacion | null;
     utilizaPack: boolean;
     cantidadPorPack: number | null;
     imagen: string | null;

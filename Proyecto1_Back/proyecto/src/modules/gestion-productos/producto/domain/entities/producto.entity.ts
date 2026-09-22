@@ -1,5 +1,6 @@
 import { Linea } from '../../../linea/domain/entities/linea.entity';
 import { Marca } from '../../../marca/domain/entities/marca.entity';
+import { Presentacion } from '../../../presentacion/domain/entities/presentacion.entity';
 import { MovimientoStock } from '../../../movimiento-stock/domain/entities/movimiento-stock.entity';
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
 import { Proveedor } from 'src/modules/organizacion/proveedor/domain/entities/proveedor.entity';
@@ -7,7 +8,8 @@ import { Stock } from '../value-objects/stock.vo';
 import { Precio } from '../value-objects/precio.vo';
 import { Costo } from '../value-objects/costo.vo';
 import { Margen } from '../value-objects/margen.vo';
-import { ProductoActualizarDatosParams } from './producto.types';
+import { ProductoActualizarDatosParams } from '../inputs/producto.types';
+import { PresentacionRequeridaException } from '../exceptions/presentacion-requerida.exception';
 
 /**
  * No instanciar directamente. Usar siempre `ProductoFactory.create()` /
@@ -52,6 +54,9 @@ export class Producto {
         // ==========  MARCA ==========
         private marca: Marca,
 
+        // ==========  PRESENTACIÓN ==========
+        private presentacion: Presentacion | null,
+
         private utilizaPack: boolean = false,
         private cantidadPorPack: number | null,
 
@@ -62,6 +67,7 @@ export class Producto {
 
         private sistema: number = 0,
         private codigoReferencia: string | null,
+        private denominacionEditadaManualmente: boolean = false,
     ) {}
 
     public actualizarDatos(params: ProductoActualizarDatosParams): void {
@@ -69,29 +75,60 @@ export class Producto {
         const margen = Margen.create(params.margen);
         const precio = Precio.create(costo.getValue(), margen.getValue());
 
-        this.denominacion = params.denominacion;
         this.codigoBarra = params.codigoBarra;
         this.codigoProveedor = params.codigoProveedor;
+
         this.stock = Stock.create(params.stock);
         this.utilizaStockMinimo = params.utilizaStockMinimo;
         this.utilizaStockMinimoPorEmpresa = params.utilizaStockMinimoPorEmpresa;
         this.stockMinimo = Stock.create(params.stockMinimo);
+
         this.costo = costo;
         this.margen = margen;
         this.precio = precio;
         this.fechaCosto = new Date();
+
         this.destacado = params.destacado;
         this.envioGratis = params.envioGratis;
         this.observacion = params.observacion;
+
         this.linea = params.linea;
         this.marca = params.marca;
+        this.presentacion = params.presentacion;
+
         this.utilizaPack = params.utilizaPack;
         this.cantidadPorPack = params.cantidadPorPack;
+
         this.imagen = params.imagen;
         this.ubicacion = params.ubicacion;
         this.codigoReferencia = params.codigoReferencia;
+
         this.usuarioUpdated = params.usuarioUpdated;
         this.updatedAt = new Date();
+
+        if (params.denominacion) {
+            this.actualizarDenominacion(params.denominacion);
+        } else if (!this.denominacionEditadaManualmente) {
+            this.actualizarDenominacion();
+        }
+    }
+
+    public generarDenominacion(): string {
+        if (this.presentacion === null) {
+            throw new PresentacionRequeridaException();
+        }
+
+        return `${this.marca.getDenominacion()} ${this.linea.getDenominacion()} ${this.presentacion.getDenominacion()}`;
+    }
+
+    public actualizarDenominacion(denominacion?: string): void {
+        if (denominacion) {
+            this.denominacion = denominacion;
+            this.denominacionEditadaManualmente = true;
+        } else {
+            this.denominacionEditadaManualmente = false;
+            this.denominacion = this.generarDenominacion();
+        }
     }
 
     public calcularPrecio(): void {
@@ -209,6 +246,14 @@ export class Producto {
 
     public getMarca(): Marca {
         return this.marca;
+    }
+
+    public getPresentacion(): Presentacion | null {
+        return this.presentacion;
+    }
+
+    public getDenominacionEditadaManualmente(): boolean {
+        return this.denominacionEditadaManualmente;
     }
 
     public getUtilizaPack(): boolean {

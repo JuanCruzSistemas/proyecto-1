@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './modules/common/filters/global-exception.filters';
+import { DomainExceptionFilter } from './modules/common/filters/domain-exception.filter';
 import { ValidationPipe } from '@nestjs/common';
 import * as bodyParser from 'body-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -33,8 +34,7 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   // Configurar filtro global de excepciones
-  app.useGlobalFilters(new GlobalExceptionFilter());
-  // inspeccion de rutas
+  app.useGlobalFilters(new DomainExceptionFilter(), new GlobalExceptionFilter());
 
   app.use(bodyParser.json({ limit: '50mb' }));
   app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));

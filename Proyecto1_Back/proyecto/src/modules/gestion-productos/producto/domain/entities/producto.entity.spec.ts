@@ -1,10 +1,12 @@
 import { ProductoFactory } from '../factories/producto.factory';
 import { Linea } from '../../../linea/domain/entities/linea.entity';
 import { Marca } from '../../../marca/domain/entities/marca.entity';
+import { Presentacion } from '../../../presentacion/domain/entities/presentacion.entity';
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
 import { CostoInvalidoException } from '../exceptions/costo-invalido.exception';
 import { StockInvalidoException } from '../exceptions/stock-invalido.exception';
 import { MargenInvalidoException } from '../exceptions/margen-invalido.exception';
+import { PresentacionRequeridaException } from '../exceptions/presentacion-requerida.exception';
 
 describe('Producto (dominio)', () => {
   const usuario = {} as Usuario;
@@ -17,6 +19,11 @@ describe('Producto (dominio)', () => {
   });
   const marca = Marca.create({
     denominacion: 'Marca genérica',
+    observacion: null,
+    usuarioCreatedId: 1,
+  });
+  const presentacion = Presentacion.create({
+    denominacion: 'Caja x 12',
     observacion: null,
     usuarioCreatedId: 1,
   });
@@ -39,6 +46,7 @@ describe('Producto (dominio)', () => {
       usuarioCreated: usuario,
       linea,
       marca,
+      presentacion,
       utilizaPack: false,
       cantidadPorPack: null,
       imagen: null,
@@ -104,6 +112,7 @@ describe('Producto (dominio)', () => {
         usuarioDeleted: null,
         linea,
         marca,
+        presentacion,
         utilizaPack: false,
         cantidadPorPack: null,
         imagen: null,
@@ -111,6 +120,7 @@ describe('Producto (dominio)', () => {
         movimientosStock: [],
         sistema: 0,
         codigoReferencia: null,
+        denominacionEditadaManualmente: false,
       });
 
       expect(producto.getId()).toBe(42);
@@ -170,6 +180,7 @@ describe('Producto (dominio)', () => {
         observacion: producto.getObservacion(),
         linea,
         marca,
+        presentacion: producto.getPresentacion(),
         utilizaPack: producto.getUtilizaPack(),
         cantidadPorPack: producto.getCantidadPorPack(),
         imagen: producto.getImagen(),
@@ -178,6 +189,92 @@ describe('Producto (dominio)', () => {
         usuarioUpdated: usuario,
       });
       expect(producto.getPrecio()).toBeCloseTo(300);
+    });
+  });
+
+  describe('generarDenominacion() / actualizarDenominacion() / actualizarDatos() (CR-005)', () => {
+    const datosActualizarBase = (producto: ReturnType<typeof crearProducto>) => ({
+      codigoBarra: producto.getCodigoBarra(),
+      codigoProveedor: producto.getCodigoProveedor(),
+      stock: producto.getStock(),
+      utilizaStockMinimo: producto.getUtilizaStockMinimo(),
+      utilizaStockMinimoPorEmpresa: producto.getUtilizaStockMinimoPorEmpresa(),
+      stockMinimo: producto.getStockMinimo(),
+      costo: producto.getCosto(),
+      margen: producto.getMargen(),
+      destacado: producto.isDestacado(),
+      envioGratis: producto.hasEnvioGratis(),
+      observacion: producto.getObservacion(),
+      utilizaPack: producto.getUtilizaPack(),
+      cantidadPorPack: producto.getCantidadPorPack(),
+      imagen: producto.getImagen(),
+      ubicacion: producto.getUbicacion(),
+      codigoReferencia: producto.getCodigoReferencia(),
+      usuarioUpdated: usuario,
+    });
+
+    it('CA1: al crear sin denominación manual, se autogenera a partir de marca + línea + presentación', () => {
+      const producto = crearProducto({ denominacion: undefined });
+
+      expect(producto.getDenominacion()).toBe(
+        `${marca.getDenominacion()} ${linea.getDenominacion()} ${presentacion.getDenominacion()}`,
+      );
+      expect(producto.getDenominacionEditadaManualmente()).toBe(false);
+    });
+
+    it('CA2: si se edita la denominación a mano, se respeta y no se sobrescribe en actualizaciones posteriores de otros campos', () => {
+      const producto = crearProducto({ denominacion: undefined });
+
+      producto.actualizarDatos({
+        ...datosActualizarBase(producto),
+        denominacion: 'Denominación editada a mano',
+        linea,
+        marca,
+        presentacion,
+      });
+      expect(producto.getDenominacion()).toBe('Denominación editada a mano');
+      expect(producto.getDenominacionEditadaManualmente()).toBe(true);
+
+      // Otra actualización, sin tocar la denominación: no debe regenerarse.
+      producto.actualizarDatos({
+        ...datosActualizarBase(producto),
+        denominacion: undefined,
+        costo: 500,
+        linea,
+        marca,
+        presentacion,
+      });
+      expect(producto.getDenominacion()).toBe('Denominación editada a mano');
+      expect(producto.getDenominacionEditadaManualmente()).toBe(true);
+    });
+
+    it('CA3: si nunca se editó a mano, cambiar marca/línea/presentación regenera la denominación', () => {
+      const producto = crearProducto({ denominacion: undefined });
+
+      const otraMarca = Marca.create({
+        denominacion: 'Otra marca',
+        observacion: null,
+        usuarioCreatedId: 1,
+      });
+
+      producto.actualizarDatos({
+        ...datosActualizarBase(producto),
+        denominacion: undefined,
+        linea,
+        marca: otraMarca,
+        presentacion,
+      });
+
+      expect(producto.getDenominacion()).toBe(
+        `${otraMarca.getDenominacion()} ${linea.getDenominacion()} ${presentacion.getDenominacion()}`,
+      );
+      expect(producto.getDenominacionEditadaManualmente()).toBe(false);
+    });
+
+    it('CA4: si falta la presentación al intentar generar, lanza PresentacionRequeridaException', () => {
+      expect(() => crearProducto({ denominacion: undefined, presentacion: null })).toThrow(
+        PresentacionRequeridaException,
+      );
     });
   });
 });

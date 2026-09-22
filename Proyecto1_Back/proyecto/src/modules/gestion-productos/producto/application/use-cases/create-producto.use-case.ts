@@ -4,7 +4,7 @@ import {
     Logger,
 } from '@nestjs/common';
 import { MessageFrontUtils } from 'src/modules/common/utils/message/message-front.util';
-import { IProductoRepository, PRODUCTO_REPOSITORY_TOKEN } from '../../domain/interfaces/producto.repository-interface';
+import { IProductoRepository, PRODUCTO_REPOSITORY_TOKEN } from '../../domain/repositories/producto.repository-interface';
 import { CreateProductoDto } from '../dto/create-producto.dto';
 import { ProductoIntrinsicValidationService } from '../../domain/services/producto-intrinsic-validation.service';
 import { ProductoValidationService } from '../../domain/services/producto-validation.service';
@@ -29,19 +29,20 @@ export class CreateProductoUseCase {
         // Infrastructure Validators
         private readonly relatedEntitiesValidator: ProductoRelatedEntitiesValidator,
         private readonly uniquenessValidator: ProductoUniquenessValidator,
-        private readonly usuarioValidator: UsuarioValidator,
+        private readonly usuarioValidator: UsuarioValidator
     ) {}
 
     async execute(dto: CreateProductoDto) {
         this.logger.log(`Creando un nuevo ${this.ENTITY_NAME} con denominación: ${dto.denominacion} a: ${dto.denominacion}`);
 
         // Orquestar todas las validaciones
-        const { marca, linea, usuario } = await this.validarYPrepararCreacion(dto);
+        const { marca, linea, presentacion, usuario } = await this.validarYPrepararCreacion(dto);
 
         const nuevoProducto = ProductoDtoMapper.createDtoToDomain(
             dto,
             linea,
             marca,
+            presentacion,
             usuario,
         );
 
@@ -67,7 +68,9 @@ export class CreateProductoUseCase {
         });
 
         // Validar unicidad (Infrastructure - DB)
-        await this.uniquenessValidator.validarDenominacionUnica(dto.denominacion);
+        if (dto.denominacion) {
+            await this.uniquenessValidator.validarDenominacionUnica(dto.denominacion);
+        }
 
         if (dto.codigoProveedor) {
             await this.uniquenessValidator.validarCodigoProveedorUnico(
@@ -76,18 +79,17 @@ export class CreateProductoUseCase {
             );
         }
         // 3 Validar entidades relacionadas existen (Infrastructure - DB)
-        const { marca, linea, } =
+        const { marca, linea, presentacion } =
             await this.relatedEntitiesValidator.validarYObtenerEntidadesRelacionadas(
                 dto.marcaId,
                 dto.lineaId,
-
+                dto.presentacionId
             );
 
         //  Validar reglas de negocio sobre entidades (Domain)
         this.validationService.validarEntidadesRelacionadas(
             marca,
-            linea,
-
+            linea
         );
 
 
@@ -96,6 +98,6 @@ export class CreateProductoUseCase {
             dto.usuarioCreatedId,
         );
 
-        return { marca, linea, usuario };
+        return { marca, linea, presentacion, usuario };
     }
 }

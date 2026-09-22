@@ -1,12 +1,10 @@
-// infrastructure/validators/producto-uniqueness.validator.ts
 import { Injectable, ConflictException, Logger } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
-import { IProductoRepository, PRODUCTO_REPOSITORY_TOKEN } from '../../domain/interfaces/producto.repository-interface';
+import { IProductoRepository, PRODUCTO_REPOSITORY_TOKEN } from '../../domain/repositories/producto.repository-interface';
 
 
 @Injectable()
 export class ProductoUniquenessValidator {
-
   private readonly logger = new Logger(ProductoUniquenessValidator.name);
 
   constructor(
@@ -14,11 +12,6 @@ export class ProductoUniquenessValidator {
     private readonly repository: IProductoRepository,
   ) {}
 
-  /**
-   * Valida que la denominación sea única
-   * @param denominacion - Denominación a validar
-   * @param excludeId - ID a excluir (para updates)
-   */
   async validarDenominacionUnica(
     denominacion: string,
     excludeId?: number,

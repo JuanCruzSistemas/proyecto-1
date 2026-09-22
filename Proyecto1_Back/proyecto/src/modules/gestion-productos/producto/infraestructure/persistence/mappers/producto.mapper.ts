@@ -5,7 +5,11 @@ import { GetProductoDto } from '../../../application/dto/get-producto.dto';
 import { ProductoDto } from '../../../application/dto/producto.dto';
 import { MarcaOrmMapper } from 'src/modules/gestion-productos/marca/infraestructure/persistence/mappers/marca.mapper';
 import { LineaOrmMapper } from 'src/modules/gestion-productos/linea/infraestructure/persistence/mappers/linea.mapper';
+import { PresentacionMapper } from 'src/modules/gestion-productos/presentacion/infraestructure/persistence/mappers/presentacion.mapper';
 import { MovimientoStockOrmMapper } from 'src/modules/gestion-productos/movimiento-stock/infraestructure/persistence/mappers/movimiento-stock.mapper';
+import { LineaDtoMapper } from 'src/modules/gestion-productos/linea/application/mappers/linea-dto.mapper';
+import { MarcaDtoMapper } from 'src/modules/gestion-productos/marca/application/mappers/marca-dto.mapper';
+import { PresentacionDtoMapper } from 'src/modules/gestion-productos/presentacion/application/mappers/presentacion-dto.mapper';
 
 export class ProductoMapper {
   static toDomain(orm: ProductoEntity): Producto {
@@ -35,6 +39,7 @@ export class ProductoMapper {
                        : (undefined as any),
       marca: orm.marca ? MarcaOrmMapper.toDomain(orm.marca)
                        : (undefined as any),
+      presentacion: orm.presentacion ? PresentacionMapper.toDomain(orm.presentacion) : null,
       utilizaPack: orm.utilizaPack,
       cantidadPorPack: orm.cantidadPorPack ?? null,
       imagen: orm.imagen ?? null,
@@ -42,6 +47,7 @@ export class ProductoMapper {
       movimientosStock: (orm.movimientosStock ?? []).map(MovimientoStockOrmMapper.toDomain),
       sistema: orm.sistema,
       codigoReferencia: orm.codigoReferencia ?? null,
+      denominacionEditadaManualmente: orm.denominacionEditadaManualmente ?? false,
     });
   }
 
@@ -88,6 +94,7 @@ export class ProductoMapper {
 
     target.linea = LineaOrmMapper.toOrmReference(producto.getLinea());
     target.marca = MarcaOrmMapper.toOrmReference(producto.getMarca());
+    target.presentacion = PresentacionMapper.toOrmReference(producto.getPresentacion());
 
     target.utilizaPack = producto.getUtilizaPack();
     target.cantidadPorPack = producto.getCantidadPorPack();
@@ -96,6 +103,7 @@ export class ProductoMapper {
     target.ubicacion = producto.getUbicacion() ?? undefined;
     target.sistema = producto.getSistema();
     target.codigoReferencia = producto.getCodigoReferencia() ?? undefined;
+    target.denominacionEditadaManualmente = producto.getDenominacionEditadaManualmente();
 
     const deletedAt = producto.getDeletedAt();
     if (deletedAt) {
@@ -138,27 +146,31 @@ export class ProductoMapper {
       observacion: producto.getObservacion() ?? '',
       codigoProveedor: producto.getCodigoProveedor() ?? '',
       codigoBarra: producto.getCodigoBarra() ?? '',
+
       stock: producto.getStock(),
       costo: producto.getCosto(),
       precio: producto.getPrecio(),
       porcentaje: producto.getMargen() * 100,
+
       destacado: producto.isDestacado(),
       envioGratis: producto.hasEnvioGratis(),
-      linea: {
-        id: producto.getLinea().getId() ?? 0,
-        denominacion: producto.getLinea().getDenominacion(),
-      },
-      marca: {
-        id: producto.getMarca().getId() ?? 0,
-        denominacion: producto.getMarca().getDenominacion(),
-      },
+
+      linea: LineaDtoMapper.toReferenciaDto(producto.getLinea()),
+      marca: MarcaDtoMapper.toReferenciaDto(producto.getMarca()),
+      presentacion: producto.getPresentacion()
+                            ? PresentacionDtoMapper.toReferenciaDto(producto.getPresentacion()!)
+                            : null,
       ubicacion: producto.getUbicacion() ?? '',
+
       utilizaStockMinimo: producto.getUtilizaStockMinimo(),
       stockMinimo: producto.getStockMinimo(),
+
       utilizaPack: producto.getUtilizaPack(),
       cantidadPorPack: producto.getCantidadPorPack() ?? 0,
+      
       sistema: producto.getSistema(),
       codigoReferencia: producto.getCodigoReferencia() ?? '',
+      denominacionEditadaManualmente: producto.getDenominacionEditadaManualmente(),
     };
   }
 }

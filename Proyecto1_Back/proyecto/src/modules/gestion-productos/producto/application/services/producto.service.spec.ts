@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProductoService } from './producto.service';
-import { IProductoRepository, PRODUCTO_REPOSITORY_TOKEN } from '../../domain/interfaces/producto.repository-interface';
+import { IProductoRepository, PRODUCTO_REPOSITORY_TOKEN } from '../../domain/repositories/producto.repository-interface';
 import { LineaService } from 'src/modules/gestion-productos/linea/application/services/linea.service';
 import { MarcaService } from 'src/modules/gestion-productos/marca/application/services/marca.service';
 import { ProductoFactory } from '../../domain/factories/producto.factory';
@@ -62,6 +62,7 @@ describe('ProductoService', () => {
       usuarioCreated: usuario,
       linea,
       marca,
+      presentacion: null,
       utilizaPack: false,
       cantidadPorPack: null,
       imagen: null,
@@ -87,6 +88,7 @@ describe('ProductoService', () => {
       existsByCodigoProveedor: jest.fn().mockResolvedValue(false),
       existsProductosActivosByMarca: jest.fn(),
       existsProductosActivosByLinea: jest.fn(),
+      existsProductosActivosByPresentacion: jest.fn(),
       findByIds: jest.fn(),
     };
 

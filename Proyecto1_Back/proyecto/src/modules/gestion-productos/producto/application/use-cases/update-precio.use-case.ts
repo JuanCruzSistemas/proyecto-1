@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { IProductoRepository, PRODUCTO_REPOSITORY_TOKEN } from '../../domain/interfaces/producto.repository-interface';
+import { IProductoRepository, PRODUCTO_REPOSITORY_TOKEN } from '../../domain/repositories/producto.repository-interface';
 import { UpdatePrecioDto } from '../dto/update-precio.dto';
 import { UsuarioValidator } from 'src/modules/common/utils/validation/usuario-validator';
 
@@ -11,7 +11,7 @@ export class UpdatePrecioUseCase {
     constructor(
         @Inject(PRODUCTO_REPOSITORY_TOKEN)
         private readonly repository: IProductoRepository,
-        private readonly usuarioValidator: UsuarioValidator,
+        private readonly usuarioValidator: UsuarioValidator
     ) {}
 
     async execute(id: number, dto: UpdatePrecioDto): Promise<void> {
@@ -23,7 +23,7 @@ export class UpdatePrecioUseCase {
         const usuario = await this.usuarioValidator.validarUsuarioExiste(dto.usuarioId);
 
         producto.actualizarDatos({
-            denominacion: producto.getDenominacion(),
+            denominacion: undefined,
             codigoBarra: producto.getCodigoBarra(),
             codigoProveedor: producto.getCodigoProveedor(),
             stock: producto.getStock(),
@@ -37,12 +37,13 @@ export class UpdatePrecioUseCase {
             observacion: producto.getObservacion(),
             linea: producto.getLinea(),
             marca: producto.getMarca(),
+            presentacion: producto.getPresentacion(),
             utilizaPack: producto.getUtilizaPack(),
             cantidadPorPack: producto.getCantidadPorPack(),
             imagen: producto.getImagen(),
             ubicacion: producto.getUbicacion(),
             codigoReferencia: producto.getCodigoReferencia(),
-            usuarioUpdated: usuario,
+            usuarioUpdated: usuario
         });
 
         await this.repository.update(id, producto);

@@ -5,6 +5,7 @@ import { NormalizeDenominacionPipe } from 'src/modules/common/pipes/normalize-de
 import { ProductoEntity } from './infraestructure/persistence/entities/producto.orm-entity';
 import { LineaModule } from '../linea/linea.module';
 import { MarcaModule } from '../marca/marca.module';
+import { PresentacionModule } from '../presentacion/presentacion.module';
 import { TypeOrmUnitOfWork } from 'src/modules/common/unit-of-work/type-orm-unit-of-works1';
 import { DataSource } from 'typeorm';
 import { IUnitOfWork, UNIT_OF_WORK_TOKEN } from 'src/modules/common/unit-of-work/unit-of-work.interface';
@@ -17,7 +18,7 @@ import { ProductoUniquenessValidator } from './infraestructure/validators/produc
 import { ProductoRelatedEntitiesValidator } from './infraestructure/validators/producto-related-entities.validator';
 import { ProductoValidationService } from './domain/services/producto-validation.service';
 import { ProductoIntrinsicValidationService } from './domain/services/producto-intrinsic-validation.service';
-import { PRODUCTO_REPOSITORY_TOKEN } from './domain/interfaces/producto.repository-interface';
+import { PRODUCTO_REPOSITORY_TOKEN } from './domain/repositories/producto.repository-interface';
 import { CreateProductoUseCase } from './application/use-cases/create-producto.use-case';
 import { UpdateProductoUseCase } from './application/use-cases/update-producto.use-case';
 import { FindByProductoUseCase } from './application/use-cases/find-by-producto.use-case';
@@ -34,6 +35,7 @@ import { UpdatePrecioUseCase } from './application/use-cases/update-precio.use-c
     CommonModule,
     forwardRef(() => LineaModule),
     forwardRef(() => MarcaModule),
+    forwardRef(() => PresentacionModule),
     ProveedorModule,
     UsuarioModule,
   ],
