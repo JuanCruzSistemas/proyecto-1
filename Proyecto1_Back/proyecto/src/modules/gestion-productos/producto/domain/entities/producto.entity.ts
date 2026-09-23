@@ -101,6 +101,12 @@ export class Producto {
         );
     }
 
+    public actualizarPrecio(precio: number, usuarioUpdated: Usuario): void {
+        this.precio = Precio.fromValue(precio);
+        this.usuarioUpdated = usuarioUpdated;
+        this.updatedAt = new Date();
+    }
+
     public estaBajoMinimo(): boolean {
         return this.stock.getValue() < this.stockMinimo.getValue();
     }

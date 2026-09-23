@@ -21,12 +21,16 @@ export function useCambioPrecios(usuarioId: number | null) {
     setLoading(false);
   };
 
-  const aplicarCambios = async (porcentaje: number) => {
+  const aplicarCambios = async (
+    valor: number,
+    tipoActualizacion: "PORCENTAJE" | "MONTO",
+  ) => {
     setLoading(true);
 
     const payload = {
       items: productos,
-      porcentaje,
+      valor,
+      tipoActualizacion,
     };
 
     const productosActualizados =

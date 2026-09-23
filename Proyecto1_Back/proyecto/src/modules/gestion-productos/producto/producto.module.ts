@@ -27,6 +27,9 @@ import { FindEntityByIdUseCase } from './application/use-cases/find-entity-by-id
 import { RemoveProductoUseCase } from './application/use-cases/remove-producto.use-case';
 import { FindByDenominacionUseCase } from './application/use-cases/find-by-denominiacion.use-case';
 import { UpdatePrecioUseCase } from './application/use-cases/update-precio.use-case';
+import { AplicarCambioMasivoUseCase } from './application/use-cases/aplicar-cambio-masivo.use-case';
+import { GuardarCambioMasivoUseCase } from './application/use-cases/guardar-cambio-masivo.use-case';
+import { CambioPreciosController } from '../movimiento-stock/infraestructure/persistence/cambio-precios.controller';
 
 @Module({
   imports: [
@@ -38,7 +41,7 @@ import { UpdatePrecioUseCase } from './application/use-cases/update-precio.use-c
     UsuarioModule,
   ],
 
-  controllers: [ProductoController],
+  controllers: [ProductoController, CambioPreciosController],
   
   providers: [
     ProductoService,
@@ -55,6 +58,8 @@ import { UpdatePrecioUseCase } from './application/use-cases/update-precio.use-c
     RemoveProductoUseCase,
     FindByDenominacionUseCase,
     UpdatePrecioUseCase,
+    AplicarCambioMasivoUseCase,
+    GuardarCambioMasivoUseCase,
     {
       provide: PRODUCTO_REPOSITORY_TOKEN,
       useClass: ProductoRepository,
