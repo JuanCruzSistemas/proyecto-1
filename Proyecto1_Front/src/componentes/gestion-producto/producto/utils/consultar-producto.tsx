@@ -1,3 +1,4 @@
+import { FiltrosBusquedaProducto, FiltrosTextoProducto, FILTROS_TEXTO_VACIOS } from "../componentes/filtros-busqueda-producto";
 import { useState, useEffect, useRef } from "react";
 import { Info, Pencil, Trash, Box, CircleDollarSign, Shuffle, Star } from "lucide-react";
 import { Button } from "../../../ui/Button";
@@ -35,6 +36,8 @@ import { puedeHacerAcciones } from "../domain/permisos-producto";
 
 
 export default function ConsultarProductos() {
+  const [filtrosTexto, setFiltrosTexto] = useState<FiltrosTextoProducto>({ ...FILTROS_TEXTO_VACIOS });
+  const [busquedaAplicada, setBusquedaAplicada] = useState<{ modo: "filtros" | "rapida"; parametros: Record<string, string | number | boolean | undefined> } | null>(null);
   const [productos, setProductos] = useState<ConsultarProducto[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -57,6 +60,7 @@ export default function ConsultarProductos() {
   const [auditoria, setAuditoria] = useState<Auditoria>({} as Auditoria);
   const isMounted = useRef(false);
   const inicializacionCompleta = useRef(false);
+  const timerBusquedaRapida = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   
    // =========================
@@ -99,9 +103,9 @@ export default function ConsultarProductos() {
     limpiarFiltros();
     setBuscar({ cont: 0, componente: "consultar-producto" });
     setFiltrosNecesarios({
-      denominacion: true,
+      denominacion: false,
       codigoProveedor: true,
-      linea: true,
+      linea: false,
       marca: true,
       proveedor: true,
       conStock: true,
@@ -118,6 +122,7 @@ export default function ConsultarProductos() {
     const timer = setTimeout(() => {
       handleBuscarProductosRapido();
     }, 400);
+    timerBusquedaRapida.current = timer;
     return () => clearTimeout(timer);
   }, [codigo, exacto]);
 
@@ -393,62 +398,75 @@ export default function ConsultarProductos() {
     await handleBuscarProductos();
   };
 
-  const handleBuscarProductos = async (botonBuscar?: boolean) => {
+  const handleBuscarProductos = (
+    nuevaBusqueda = false,
+    textos: FiltrosTextoProducto = filtrosTexto,
+  ) => {
+    if (timerBusquedaRapida.current) clearTimeout(timerBusquedaRapida.current);
+    // Una actualización de datos recarga la consulta aplicada, sin tomar borradores.
+    if (!nuevaBusqueda && busquedaAplicada) {
+      setBusquedaAplicada({ ...busquedaAplicada });
+      return;
+    }
     setBusquedaRapida(false);
-    if (botonBuscar) {
-      resetearPaginacion();
-    }
-    setLoading(true);
-
-    const filtrosConPaginacion = {
-      denominacion: valoresFiltros.denominacion,
-      codigoProveedor: valoresFiltros.codigoProveedor,
-      codigoReferencia: valoresFiltros.codigoReferencia,
-      codProveedorExacto: valoresFiltros.codProveedorExacto,
-      codReferenciaExacto: valoresFiltros.codReferenciaExacto,
-      lineaId: valoresFiltros.lineaId,
-      marcaId: valoresFiltros.marcaId,
-      proveedorId: valoresFiltros.proveedorId,
-      conStock: valoresFiltros.conStock,
-      skip: skip,
-      take: take,
-    };
-
-    const productosFiltrados = await ProductoService.obtener(filtrosConPaginacion);
-    setProductos(productosFiltrados.data);
-    setEntidadesTotales(productosFiltrados.total);
-    setLoading(false);
+    resetearPaginacion();
+    setBusquedaAplicada({
+      modo: "filtros",
+      parametros: {
+        denominacion: textos.denominacion.trim(),
+        lineaDenominacion: textos.lineaDenominacion.trim(),
+        superlineaDenominacion: textos.superlineaDenominacion.trim(),
+        codigoProveedor: valoresFiltros.codigoProveedor,
+        codigoReferencia: valoresFiltros.codigoReferencia,
+        codProveedorExacto: valoresFiltros.codProveedorExacto,
+        codReferenciaExacto: valoresFiltros.codReferenciaExacto,
+        marcaId: valoresFiltros.marcaId,
+        proveedorId: valoresFiltros.proveedorId,
+        conStock: valoresFiltros.conStock,
+      },
+    });
   };
 
-  const handleBuscarProductosRapido = async (botonBuscar?: boolean) => {
+  const handleBuscarProductosRapido = () => {
+    if (!codigo.trim()) { handleBuscarProductos(true); return; }
     setBusquedaRapida(true);
-    if (botonBuscar) {
-      resetearPaginacion();
-    }
-    setLoading(true);
-
-    const filtrosConPaginacion = {
-      codigo: codigo,
-      exacto: exacto,
-      skip: skip,
-      take: take,
-    };
-
-    const productosFiltrados = await ProductoService.obtenerRapido(filtrosConPaginacion);
-    setProductos(productosFiltrados.data);
-    setEntidadesTotales(productosFiltrados.total);
-    setLoading(false);
+    resetearPaginacion();
+    setBusquedaAplicada({ modo: "rapida", parametros: { codigo: codigo.trim(), exacto } });
   };
 
-  // MANEJO DE PAGINACION ===========================================
+  const limpiarBusquedaTexto = () => {
+    setFiltrosTexto({ ...FILTROS_TEXTO_VACIOS });
+    setCodigo("");
+    handleBuscarProductos(true, FILTROS_TEXTO_VACIOS);
+  };
 
   useEffect(() => {
-    if (filtrosInicializados === true) {
-      handleBuscarProductos();
-    }
-  }, [paginaActual, filtrosInicializados, take]);
+    if (filtrosInicializados) handleBuscarProductos(true);
+  }, [filtrosInicializados]);
 
-  // MANEJO DE PAGINACION ===========================================
+  useEffect(() => {
+    if (!busquedaAplicada) return;
+    let vigente = true;
+    setLoading(true);
+    setError(null);
+    const parametros = { ...busquedaAplicada.parametros, skip, take };
+    const solicitud = busquedaAplicada.modo === "rapida"
+      ? ProductoService.obtenerRapido(parametros)
+      : ProductoService.obtener(parametros);
+    solicitud.then(resultado => {
+      if (!vigente) return;
+      setProductos(resultado.data);
+      setEntidadesTotales(resultado.total);
+    }).catch(() => {
+      if (!vigente) return;
+      setProductos([]);
+      setEntidadesTotales(0);
+      setError("No se pudieron cargar los productos. Intentá buscar nuevamente.");
+    }).finally(() => {
+      if (vigente) setLoading(false);
+    });
+    return () => { vigente = false; };
+  }, [busquedaAplicada, skip, take]);
 
   const columns: Column<ConsultarProducto>[] = [
     {
@@ -495,21 +513,6 @@ export default function ConsultarProductos() {
     <div className="w-full">
       {/* Contenido Principal */}
       <div className="p-2">
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-400 text-lg">Cargando productos...</p>
-          </div>
-        ) : error ? (
-          <div className="flex flex-col items-center justify-center py-12">
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 max-w-md">
-              <p className="text-red-600 dark:text-red-400 text-center font-medium">{error}</p>
-            </div>
-          </div>
-        ) : (
-          <>
-            {/* Tabla de productos */}
-            <Card className="border-gray-200 dark:border-slate-700">
               <div className="hidden lg:block">
               {/*  HEADER Desktop */}
               <ProductosHeader
@@ -518,7 +521,7 @@ export default function ConsultarProductos() {
                 exacto={exacto}
                 onChangeCodigo={setCodigo}
                 onChangeExacto={setExacto}
-                onBuscarRapido={() => handleBuscarProductosRapido(true)}
+                onBuscarRapido={() => handleBuscarProductosRapido()}
                 onNuevo={openModal}
                 total={entidadesTotales}
                 mostrados={productos.length}
@@ -535,7 +538,7 @@ export default function ConsultarProductos() {
                 roles={getRoles()}
                 onChangeCodigo={setCodigo}
                 onChangeExacto={setExacto}
-                onBuscarRapido={() => handleBuscarProductosRapido(true)}
+                onBuscarRapido={() => handleBuscarProductosRapido()}
                 onNuevo={openModal}
                 total={entidadesTotales}
                 mostrados={productos.length}
@@ -545,8 +548,36 @@ export default function ConsultarProductos() {
               />
               </div>
 
+        <FiltrosBusquedaProducto valores={filtrosTexto} onChange={setFiltrosTexto}
+          onBuscar={() => handleBuscarProductos(true)} onLimpiar={limpiarBusquedaTexto} />
+        {busquedaAplicada && <p className="text-sm text-gray-600 mb-3" role="status">
+          {busquedaAplicada.modo === "rapida" ? "Búsqueda rápida por código: " + busquedaAplicada.parametros.codigo :
+            "Búsqueda aplicada: " + ([
+              busquedaAplicada.parametros.denominacion && "Producto: " + busquedaAplicada.parametros.denominacion,
+              busquedaAplicada.parametros.lineaDenominacion && "Línea: " + busquedaAplicada.parametros.lineaDenominacion,
+              busquedaAplicada.parametros.superlineaDenominacion && "SuperLínea: " + busquedaAplicada.parametros.superlineaDenominacion,
+            ].filter(Boolean).join(" · ") || "sin filtros de texto")}
+        </p>}
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-400 text-lg">Cargando productos...</p>
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center py-12">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 max-w-md">
+              <p className="text-red-600 dark:text-red-400 text-center font-medium">{error}</p>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Tabla de productos */}
+            <Card className="border-gray-200 dark:border-slate-700">
               <CardContent className="p-0">
                 <FiltrosAplicados />
+                {productos.length === 0 && <p role="status" className="p-6 text-center text-gray-600">
+                  No se encontraron productos con los filtros ingresados
+                </p>}
                 <DatosTabla
                   productos={productos}
                   columns={columns}

@@ -118,6 +118,8 @@ export class ProductoController {
       conStock,
       skip,
       take,
+      lineaDenominacion,
+      superlineaDenominacion,
     } = dto;
     return this.service.findBy(
       denominacion,
@@ -130,6 +132,8 @@ export class ProductoController {
       conStock,
       skip,
       take,
+      lineaDenominacion,
+      superlineaDenominacion,
     );
   }
 
