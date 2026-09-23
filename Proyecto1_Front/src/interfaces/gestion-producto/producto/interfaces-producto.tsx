@@ -1,6 +1,7 @@
 import { SelectLinea } from "../linea/interfaces-linea";
 import { SelectMarca } from "../marca/interfaces-marca";
 import { SelectSublinea } from "../sublinea/interfaces-sublinea";
+import { SelectPresentacion } from "../presentacion/interfaces-presentacion";
 import { ItemProdAlternativo } from "./interfaces-item-prod-alternativo";
 import { ItemProveedor } from "./interfaces-item-proveedor";
 
@@ -36,6 +37,8 @@ export interface Producto {
   usuarioUpdatedId: number;
   linea: SelectLinea;
   marca: SelectMarca;
+  presentacion: SelectPresentacion | null;
+  denominacionEditadaManualmente: boolean;
   /* itemsAlternativo?: ItemProdAlternativo[] | null;
   poseeAlternativos: boolean;
   esAlternativo: boolean; */
@@ -184,12 +187,6 @@ export const TipoProducto = {
   NACIONAL: 0,
   IMPORTADO: 1,
 };
-
-export interface SelectPresentacion {
-  id: number;
-  denominacion: string;
-}
-
 
 export const TipoPrecioN = {
   OCASIONAL: 0,
