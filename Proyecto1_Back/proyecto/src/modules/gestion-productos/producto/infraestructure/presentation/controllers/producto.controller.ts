@@ -8,6 +8,7 @@ import {
   Logger,
   ParseIntPipe,
   Put,
+  Patch,
   Query,
   UsePipes,
   UseGuards,
@@ -15,11 +16,14 @@ import {
 
 import { CreateProductoDto } from '../../../application/dto/create-producto.dto';
 import { UpdateProductoDto } from '../../../application/dto/update-producto.dto';
+import { UpdatePrecioDto } from '../../../application/dto/update-precio.dto';
+import { HistorialPrecioDto } from '../../../application/dto/historial.dto';
 import { NormalizeDenominacionPipe } from 'src/modules/common/pipes/normalize-denominations.pipe';
 import { AuthGuard } from 'src/modules/gestion-usuario/auth/auth.guard';
 import { Roles } from 'src/modules/gestion-usuario/auth/roles.decorator';
 import {
   ApiOkResponse,
+  ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
 import { NormalizeCodigoProveedorPipe } from 'src/modules/common/pipes/normalize-codigo-proveedor.pipe';
@@ -30,6 +34,8 @@ import { NormalizeDenominacionSearchPipe } from 'src/modules/common/pipes/normal
 import { DenominacionBusquedaDto } from 'src/modules/common/dto/denominacion-busqueda.dto';
 import { SearchProductoRapidoDto } from '../../../application/dto/search-producto-rapido.dto';
 import { ProductoService } from '../../../application/services/producto.service';
+import { UpdatePrecioUseCase } from '../../../application/use-cases/update-precio.use-case';
+import { FindHistorialPrecioUseCase } from '../../../application/use-cases/find-historial-precio.use-case';
 
 
 @ApiTags('Gestion Productos')
@@ -37,7 +43,12 @@ import { ProductoService } from '../../../application/services/producto.service'
 @UseGuards(AuthGuard)
 export class ProductoController {
   private readonly logger = new Logger(ProductoController.name);
-  constructor(private readonly service: ProductoService) {}
+  
+  constructor(
+    private readonly service: ProductoService,
+    private readonly updatePrecioUseCase: UpdatePrecioUseCase,
+    private readonly findHistorialPrecioUseCase: FindHistorialPrecioUseCase,
+  ) {}
 
   private readonly ENTITY_NAME = 'Producto';
 
@@ -190,5 +201,32 @@ export class ProductoController {
   ): Promise<AuditoriaDto> {
     const data = await this.service.findByIdConAuditoria(id);
     return data;
+  }
+
+
+  @Patch(':id/precio')
+  @Roles('Root', 'Administrador', 'Empleado')
+  @ApiOperation({ summary: 'Actualizar precio de un producto con registro de historial' })
+  @ApiOkResponse({ description: 'Precio actualizado exitosamente' })
+  async updatePrecio(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdatePrecioDto,
+  ): Promise<void> {
+    this.logger.log(`Actualizando precio de ${this.ENTITY_NAME} con ID: ${id}`);
+    return this.updatePrecioUseCase.execute(id, dto);
+  }
+  
+  @Get(':id/historial-precio')
+  @Roles('Root', 'Administrador', 'Empleado')
+  @ApiOperation({ summary: 'Consultar historial de cambios de precio de un producto' })
+  @ApiOkResponse({ 
+    description: 'Historial de precios del producto ordenado cronológicamente',
+    type: [HistorialPrecioDto],
+  })
+  async getHistorialPrecio(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<HistorialPrecioDto[]> {
+    this.logger.log(`Consultando historial de precios de ${this.ENTITY_NAME} con ID: ${id}`);
+    return this.findHistorialPrecioUseCase.execute(id);
   }
 }

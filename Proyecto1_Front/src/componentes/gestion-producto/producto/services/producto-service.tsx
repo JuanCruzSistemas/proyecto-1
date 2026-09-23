@@ -5,7 +5,15 @@ import { createCrudService } from "../../../../utils/crudFactory";
 import { FormValues } from "../interfaces/interfaces-validaciones-item-prod-alternativo";
 import ApiService from "../../../../utils/apiService";
 
-
+export interface HistorialPrecio{
+  id?:number;
+  productoId: number;
+  precioAnterior: number;
+  precioNuevo: number;
+  motivo: string;
+  fecha: string;
+  usuarioId?: number;
+}
 const apiUrl = axiosConfig.apiUrl;
 
 const baseService = createCrudService<FormValues>("producto");
@@ -123,6 +131,31 @@ const ProductoService = {
       { precio, tipo, valor },
       { headers },
     );
+    return data;
+  },
+
+  actualizarPrecio: async(
+    id: number,
+    costo: number,
+    porcentaje: number,
+    motivo: string,
+    usuarioId: number
+  ): Promise<void> => {
+    if (!motivo || motivo.trim() === ""){
+      throw new Error("Es obligatorio ingresar el motivo de actualizacion de precio")
+    }
+    const token = localStorage.getItem("Token");
+    const headers = {
+      Authorization: token ? `Bearer ${token}` : "",
+      "Content-Type": "application/json",
+    };
+    const payload = { costo, porcentaje, motivo, usuarioId };
+    await axios.post(`${apiUrl}/producto/${id}/actualizar-precio`, payload, { headers });
+  },
+  obtenerHistorialPrecio: async (id: number): Promise<HistorialPrecio[]> => {
+    const token = localStorage.getItem("Token");
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const { data } = await axios.get(`${apiUrl}/producto/${id}/historial-precios`, { headers });
     return data;
   },
 };

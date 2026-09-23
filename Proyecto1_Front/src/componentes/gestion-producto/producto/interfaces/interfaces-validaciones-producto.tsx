@@ -166,32 +166,13 @@ export const transformData = (producto: Producto): FormValues => {
     costo: producto.costo ?? null,
     precio: producto.precio ?? null,
     porcentaje: producto.porcentaje ?? null,
-   // oferta: producto.oferta ?? null,
-    /* costoEnDolar: producto.costoEnDolar ?? null,
-    costoDolar: producto.costoDolar ?? null,
-    destacado: producto.destacado ?? null,
-    
-    envioGratis: producto.envioGratis ?? null, */
     alicuotaIva: producto.alicuotaIva ?? null,
-   // ubicacion: producto.ubicacion ?? null,
     marcaId: producto.marca.id ?? 0,
     lineaId: producto.linea.id ?? 0,
-   /*  subLineaId: producto.sublinea?.id ?? 0,
-    presentacionId: producto.presentacion.id ?? 0,
- */
     stockMinimo: producto.stockMinimo ?? null,
     cantidadPorPack: producto.cantidadPorPack ?? null,
     utilizaStockMinimo: producto.utilizaStockMinimo,
     utilizaPack: producto.utilizaPack,
- //   cantidadOferta: producto.cantidadOferta ?? 0,
-   /*  porcentajeOcasional: producto.porcentajeOcasional ?? 0,
-    porcentajeMayorista: producto.porcentajeMayorista ?? 0,
-    porcentajeCliente: producto.porcentajeCliente ?? 0,
-    precioOcasional: producto.precioOcasional ?? 0,
-    precioMayorista: producto.precioMayorista ?? 0,
-    precioCliente: producto.precioCliente ?? 0,
-    precioOferta: producto.precioOferta ?? 0,
-     */
   };
 };
 
@@ -211,3 +192,13 @@ export const transformarItemsProdAlternativo = (items: ItemProdAlternativo[]): I
     usuarioCreatedId: item.usuarioCreatedId,
   }));
 };
+
+export const validarCambioPrecio = (
+  costo: number,
+  motivo: string
+): string | null => {
+  if (costo <= 0) return 'El precio debe ser mayor a 0'
+  if (!motivo || motivo.trim() === '') return 'Debe indicar un motivo'
+  return null
+};
+
