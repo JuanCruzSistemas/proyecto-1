@@ -6,6 +6,8 @@ import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usu
 import { CostoInvalidoException } from '../exceptions/costo-invalido.exception';
 import { StockInvalidoException } from '../exceptions/stock-invalido.exception';
 import { MargenInvalidoException } from '../exceptions/margen-invalido.exception';
+import { MotivoRequeridoException } from '../exceptions/motivo-requerido.exception';
+import { DenominacionRequeridaException } from '../exceptions/denominacion-requerida.exception';
 import { PresentacionRequeridaException } from '../exceptions/presentacion-requerida.exception';
 
 describe('Producto (dominio)', () => {
@@ -61,10 +63,8 @@ describe('Producto (dominio)', () => {
       expect(producto.getPrecio()).toBeCloseTo(130);
     });
 
-    it('permite costo 0 (y por lo tanto precio 0)', () => {
-      const producto = crearProducto({ costo: 0, margen: 0.5 });
-      expect(producto.getCosto()).toBe(0);
-      expect(producto.getPrecio()).toBe(0);
+    it('rechaza un costo 0 (porque el precio resultante sería 0)', () => {
+      expect(() => crearProducto({ costo: 0, margen: 0.5 })).toThrow(CostoInvalidoException);
     });
 
     it('rechaza un costo negativo', () => {
@@ -77,6 +77,10 @@ describe('Producto (dominio)', () => {
 
     it('rechaza un stock negativo', () => {
       expect(() => crearProducto({ stock: -5 })).toThrow(StockInvalidoException);
+    });
+
+    it('rechaza una denominación vacía', () => {
+    expect(() => crearProducto({ denominacion: '' })).toThrow(DenominacionRequeridaException);
     });
 
     it('nace sin id y con movimientosStock vacío', () => {
@@ -158,6 +162,11 @@ describe('Producto (dominio)', () => {
       expect(() => producto.ajustarStock(-10, 'venta')).toThrow(StockInvalidoException);
       // El ajuste rechazado no debe mutar el stock previo.
       expect(producto.getStock()).toBe(3);
+    });
+
+    it('rechaza un ajuste de stock sin motivo', () => {
+      const producto = crearProducto({ stock: 10 });
+      expect(() => producto.ajustarStock(5, '')).toThrow(MotivoRequeridoException);
     });
   });
 

@@ -1,4 +1,6 @@
 import { LineaCreateParams, LineaReconstituteParams } from "./linea.types";
+import { DenominacionRequeridaException } from "../exceptions/denominacion-requerida.exception";
+import { StockMinimoInvalidoException } from "../exceptions/stock-minimo-invalido.exception";
 
 export class Linea {
   private constructor(
@@ -20,6 +22,14 @@ export class Linea {
    * Fábrica para una Línea NUEVA, valida invariantes
    */
   public static create(params: LineaCreateParams): Linea {
+    if (!params.denominacion || params.denominacion.trim().length === 0) {
+      throw new DenominacionRequeridaException();
+    }
+
+    if (params.stockMinimo < 0) {
+      throw new StockMinimoInvalidoException(params.stockMinimo);
+    }
+
     return new Linea(
       null,
       params.denominacion,
@@ -63,6 +73,14 @@ export class Linea {
     stockMinimo: number;
     usuarioUpdatedId: number;
   }): void {
+    if (!params.denominacion || params.denominacion.trim().length === 0) {
+      throw new DenominacionRequeridaException();
+    }
+
+    if (params.stockMinimo < 0) {
+      throw new StockMinimoInvalidoException(params.stockMinimo);
+    }
+
     this.denominacion = params.denominacion;
     this.observacion = params.observacion;
     this.utilizaStockMinimo = params.utilizaStockMinimo;

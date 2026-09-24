@@ -4,12 +4,17 @@ import { Stock } from '../value-objects/stock.vo';
 import { Precio } from '../value-objects/precio.vo';
 import { Costo } from '../value-objects/costo.vo';
 import { Margen } from '../value-objects/margen.vo';
+import { DenominacionRequeridaException } from '../exceptions/denominacion-requerida.exception';
 
 export class ProductoFactory {
     /**
      * Fábrica para un Producto NUEVO, valida invariantes
      */
     public static create(params: ProductoCreateParams): Producto {
+        if (!params.denominacion || params.denominacion.trim().length === 0) {
+        throw new DenominacionRequeridaException();
+        }
+
         const costo = Costo.create(params.costo);
         const margen = Margen.create(params.margen);
         const precio = Precio.create(costo.getValue(), margen.getValue());

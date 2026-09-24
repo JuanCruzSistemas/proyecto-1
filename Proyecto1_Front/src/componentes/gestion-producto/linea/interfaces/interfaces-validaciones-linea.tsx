@@ -25,13 +25,16 @@ export const schema = (utilizaStockMinimo: boolean) =>
       .trim()
       .lowercase()
       .required("La denominación es obligatoria.")
+      .test("not-empty", "La denominación no puede estar vacía o contener solo espacios.", (value) => {
+        return value !== undefined && value.trim().length > 0;
+      })
       .max(255, "Máximo 255 caracteres.")
       .matches(/^[A-Za-z0-9 áéíóúÁÉÍÓÚñÑ]+$/, "Solo se permiten letras, números y espacios."),
     observacion: yup.string().optional().nullable(),
     stockMinimo: yup.number().when([], {
       is: () => utilizaStockMinimo,
-      then: (schema) => schema.required("El Stock minimo es obligatorio.").moreThan(0, "El stock minimo debe ser mayor a 0."),
-      otherwise: (schema) => schema.optional(),
+      then: (schema) => schema.required("El stock mínimo es obligatorio.").min(0, "El stock mínimo no puede ser negativo."),
+      otherwise: (schema) => schema.min(0, "El stock mínimo no puede ser negativo.").optional(),
     }),
     utilizaStockMinimo: yup.boolean().optional(),
    

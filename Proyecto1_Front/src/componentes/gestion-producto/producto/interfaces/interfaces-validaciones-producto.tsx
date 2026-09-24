@@ -54,6 +54,11 @@ export const schema = (utilizaStockMinimo: boolean, utilizaPack: boolean, usaOfe
       .string()
       .trim()
       .lowercase()
+      //.required("La denominación es obligatoria.")
+      .test("not-empty", "La denominación no puede estar vacía o contener solo espacios.", (value) => {
+        if (value === undefined) return true;
+        return value.trim().length > 0;
+      })
       .max(255, "Máximo 255 caracteres.")
       .matches(/^[A-Za-z0-9 %-_"'áéíóúÁÉÍÓÚñÑ./]+$/, "Solo se permiten letras, números y espacios.")
       .optional()
@@ -62,8 +67,22 @@ export const schema = (utilizaStockMinimo: boolean, utilizaPack: boolean, usaOfe
     codigoProveedor: yup.string().optional().nullable(),
     codigoReferencia: yup.string().optional().nullable(),
     codigoBarra: yup.string().optional().max(255, "Máximo 255 caracteres.").nullable(),
-    stock: yup.number().optional().nullable(),
-    costo: yup.number().typeError("El costo debe ser un valor númerico").required("El costo es obligatorio").min(0,"El costo debe ser mayor o igual a 0"),
+    stock: yup
+      .number()
+      .typeError("El stock debe ser un valor numérico.")
+      .min(0, "El stock no puede ser negativo.")
+      .optional()
+      .nullable(),
+    costo: yup
+      .number()
+      .typeError("El costo debe ser un valor numérico.")
+      .required("El costo es obligatorio.")
+      .positive("El costo debe ser mayor a 0."),
+    //precio: yup.number().typeError("El precio debe ser un valor númerico").required("El precio es obligatorio").min(0,"El costo debe ser mayor o igual a 0").test("precio-mayor-o-igual-costo","El precio debe ser mayor o igual que el costo", function(value){
+    //  const {costo} = this.parent;
+    //  if (value==null || costo == null ) return true;
+    //  return value>= costo;
+    //}),
     porcentaje: yup.number().typeError("El porcentaje debe ser un valor númerico").min(0,"El porcentaje mínimo debe ser mayor o igual a 0").max(999, "El porcentaje máximo permitido es de 999").optional().nullable(),
     /* costoEnDolar: yup.boolean().optional().nullable(),
     costoDolar: yup.number().optional().nullable(),
@@ -98,8 +117,8 @@ export const schema = (utilizaStockMinimo: boolean, utilizaPack: boolean, usaOfe
     .nullable(), */
     stockMinimo: yup.number().when([], {
       is: () => utilizaStockMinimo,
-      then: (schema) => schema.required("El Stock minimo es obligatorio.").moreThan(0, "El stock minimo debe ser mayor a 0."),
-      otherwise: (schema) => schema.optional(),
+      then: (schema) => schema.required("El stock mínimo es obligatorio.").min(0, "El stock mínimo no puede ser negativo."),
+      otherwise: (schema) => schema.min(0, "El stock mínimo no puede ser negativo.").optional(),
     }),
     cantidadPorPack: yup.number().when([], {
       is: () => utilizaPack,
