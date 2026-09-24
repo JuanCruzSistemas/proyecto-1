@@ -18,7 +18,7 @@ import { ProductoUniquenessValidator } from './infraestructure/validators/produc
 import { ProductoRelatedEntitiesValidator } from './infraestructure/validators/producto-related-entities.validator';
 import { ProductoValidationService } from './domain/services/producto-validation.service';
 import { ProductoIntrinsicValidationService } from './domain/services/producto-intrinsic-validation.service';
-import { PRODUCTO_REPOSITORY_TOKEN } from './domain/repositories/producto.repository-interface';
+import { PRODUCTO_REPOSITORY_TOKEN } from './domain/repositories/producto.repository.interface';
 import { CreateProductoUseCase } from './application/use-cases/create-producto.use-case';
 import { UpdateProductoUseCase } from './application/use-cases/update-producto.use-case';
 import { FindByProductoUseCase } from './application/use-cases/find-by-producto.use-case';
@@ -28,6 +28,9 @@ import { FindEntityByIdUseCase } from './application/use-cases/find-entity-by-id
 import { RemoveProductoUseCase } from './application/use-cases/remove-producto.use-case';
 import { FindByDenominacionUseCase } from './application/use-cases/find-by-denominiacion.use-case';
 import { UpdatePrecioUseCase } from './application/use-cases/update-precio.use-case';
+import { AplicarCambioMasivoUseCase } from './application/use-cases/aplicar-cambio-masivo.use-case';
+import { GuardarCambioMasivoUseCase } from './application/use-cases/guardar-cambio-masivo.use-case';
+import { CambioPreciosController } from './infraestructure/presentation/controllers/cambio-precios.controller';
 
 @Module({
   imports: [
@@ -40,7 +43,7 @@ import { UpdatePrecioUseCase } from './application/use-cases/update-precio.use-c
     UsuarioModule,
   ],
 
-  controllers: [ProductoController],
+  controllers: [ProductoController, CambioPreciosController],
   
   providers: [
     ProductoService,
@@ -57,6 +60,8 @@ import { UpdatePrecioUseCase } from './application/use-cases/update-precio.use-c
     RemoveProductoUseCase,
     FindByDenominacionUseCase,
     UpdatePrecioUseCase,
+    AplicarCambioMasivoUseCase,
+    GuardarCambioMasivoUseCase,
     {
       provide: PRODUCTO_REPOSITORY_TOKEN,
       useClass: ProductoRepository,

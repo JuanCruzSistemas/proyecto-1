@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { IUnitOfWork } from 'src/modules/common/unit-of-work/unit-of-work.interface';
 import { Producto } from '../../domain/entities/producto.entity';
-import { IProductoRepository, PRODUCTO_REPOSITORY_TOKEN } from '../../domain/repositories/producto.repository-interface';
+import { IProductoRepository, PRODUCTO_REPOSITORY_TOKEN } from '../../domain/repositories/producto.repository.interface';
 import { CreateProductoDto } from '../dto/create-producto.dto';
 import { GetProductoDto } from '../dto/get-producto.dto';
 import { UpdateProductoDto } from '../dto/update-producto.dto';

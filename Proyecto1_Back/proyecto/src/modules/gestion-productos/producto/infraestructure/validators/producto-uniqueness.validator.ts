@@ -1,6 +1,6 @@
 import { Injectable, ConflictException, Logger } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
-import { IProductoRepository, PRODUCTO_REPOSITORY_TOKEN } from '../../domain/repositories/producto.repository-interface';
+import { IProductoRepository, PRODUCTO_REPOSITORY_TOKEN } from '../../domain/repositories/producto.repository.interface';
 
 
 @Injectable()

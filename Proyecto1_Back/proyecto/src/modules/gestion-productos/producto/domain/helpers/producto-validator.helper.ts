@@ -8,7 +8,7 @@ import {
 import { BaseProductoDto } from '../interfaces/base-producto.interface';
 import { UsuarioValidator } from 'src/modules/common/utils/validation/usuario-validator';
 import { MarcaService } from 'src/modules/gestion-productos/marca/application/services/marca.service';
-import { IProductoRepository, PRODUCTO_REPOSITORY_TOKEN } from '../repositories/producto.repository-interface';
+import { IProductoRepository, PRODUCTO_REPOSITORY_TOKEN } from '../repositories/producto.repository.interface';
 
 @Injectable()
 export class ProductoValidator {

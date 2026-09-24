@@ -14,7 +14,7 @@ type Props = {
     sublineas: any[]; 
     productosLength: number; 
     onBuscar: () => void; 
-    onAplicarCambios: (porcentaje: number) => void; 
+    onAplicarCambios: (valor: number, tipoActualizacion: "PORCENTAJE" | "MONTO") => void; 
     onGuardarCambios: () => void; 
     fetchMarcas: () => void;
     fetchLineas: () => void;
@@ -35,7 +35,8 @@ export default function FiltrosCambioPrecios({
   fetchLineas,
   onLimpiarFiltros
 }: Props) {
-  const [porcentaje, setPorcentaje] = useState<number>(0);
+  const [valor, setValor] = useState<number>(0);
+  const [tipoActualizacion, setTipoActualizacion] = useState<"PORCENTAJE" | "MONTO">("PORCENTAJE");
   return (
     <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-4">
                 {/* Filtros y estadísticas */}
@@ -224,11 +225,23 @@ export default function FiltrosCambioPrecios({
                 </Button> */}
 
                   {/* <div className="flex gap-4 items-end flex-grow">
+                    <select
+                      value={tipoActualizacion}
+                      onChange={(event) => setTipoActualizacion(event.target.value as "PORCENTAJE" | "MONTO")}
+                      className="h-10 rounded-md border border-gray-300 bg-white px-2 text-black"
+                      disabled={productosLength === 0}
+                      aria-label="Tipo de actualización"
+                    >
+                      <option value="PORCENTAJE">Porcentaje</option>
+                      <option value="MONTO">Monto</option>
+                    </select>
+
                     <PorcentajeInput
-                      name="porcentaje"
-                      value={porcentaje}
-                      label="Porcentaje"
-                      onChange={(value) => setPorcentaje(value)}
+                      name="valorCambio"
+                      value={valor}
+                      label={tipoActualizacion === "PORCENTAJE" ? "Porcentaje" : "Monto"}
+                      suffix={tipoActualizacion === "PORCENTAJE" ? " %" : " $"}
+                      onChange={(value) => setValor(value)}
                       disabled={productosLength === 0}
                     />
 
@@ -248,7 +261,7 @@ export default function FiltrosCambioPrecios({
                   </div> */}
 
                   <div className="flex gap-4 items-end flex-grow">
-                     <Button
+                    <Button
                       variant="outline"
                       onClick={onBuscar}
                       className="self-end bg-blue-500 text-white hover:bg-blue-800"
@@ -266,18 +279,30 @@ export default function FiltrosCambioPrecios({
                       <Eraser className="w-4 h-4" />
                     </Button>
 
-                    
-                    <PorcentajeInput
-                      name="porcentaje"
-                      value={porcentaje}
-                      label="Porcentaje"
-                      onChange={(value) => setPorcentaje(value)}
+                    <select
+                      value={tipoActualizacion}
+                      onChange={(event) => setTipoActualizacion(event.target.value as "PORCENTAJE" | "MONTO")}
+                      className="h-10 rounded-md border border-gray-300 bg-white px-2 text-black"
                       disabled={productosLength === 0}
+                      aria-label="Tipo de actualización"
+                    >
+                      <option value="PORCENTAJE">Porcentaje</option>
+                      <option value="MONTO">Monto fijo</option>
+                    </select>
+
+                    <PorcentajeInput
+                      name="valorCambio"
+                      value={valor}
+                      label={tipoActualizacion === "PORCENTAJE" ? "Porcentaje" : "Monto"}
+                      suffix={tipoActualizacion === "PORCENTAJE" ? " %" : " $"}
+                      onChange={(value) => setValor(value)}
+                      disabled={productosLength === 0}
+                      allowNegative={tipoActualizacion === "MONTO"}
                     />
 
                     <Button
                       variant="outline"
-                      onClick={() => onAplicarCambios(porcentaje)}
+                      onClick={() => onAplicarCambios(valor, tipoActualizacion)}
                       className={`self-end ${
                         productosLength === 0
                           ? "bg-gray-400 text-gray-600 cursor-not-allowed"
@@ -298,7 +323,7 @@ export default function FiltrosCambioPrecios({
                     >
                       <Save className="w-4 h-4" />
                     </Button>
-                  </div> 
+                  </div>
                   
                 </div>
               </CardHeader>

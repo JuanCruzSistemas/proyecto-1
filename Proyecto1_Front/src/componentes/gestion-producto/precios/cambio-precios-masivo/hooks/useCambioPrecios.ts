@@ -11,22 +11,22 @@ export function useCambioPrecios(usuarioId: number | null) {
   const buscarProductos = async (filtros: any) => {
     setLoading(true);
 
-    const productosFiltrados =
-      await CambioPreciosMasivoService.obtenerDesde(
-        filtros,
-        "productos"
-      );
+    const productosFiltrados = await CambioPreciosMasivoService.obtener(filtros);
 
     setProductos(productosFiltrados.data);
     setLoading(false);
   };
 
-  const aplicarCambios = async (porcentaje: number) => {
+  const aplicarCambios = async (
+    valor: number,
+    tipoActualizacion: "PORCENTAJE" | "MONTO",
+  ) => {
     setLoading(true);
 
     const payload = {
       items: productos,
-      porcentaje,
+      valor,
+      tipoActualizacion,
     };
 
     const productosActualizados =

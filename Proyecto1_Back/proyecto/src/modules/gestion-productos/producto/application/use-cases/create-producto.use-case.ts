@@ -4,7 +4,7 @@ import {
     Logger,
 } from '@nestjs/common';
 import { MessageFrontUtils } from 'src/modules/common/utils/message/message-front.util';
-import { IProductoRepository, PRODUCTO_REPOSITORY_TOKEN } from '../../domain/repositories/producto.repository-interface';
+import { IProductoRepository, PRODUCTO_REPOSITORY_TOKEN } from '../../domain/repositories/producto.repository.interface';
 import { CreateProductoDto } from '../dto/create-producto.dto';
 import { ProductoIntrinsicValidationService } from '../../domain/services/producto-intrinsic-validation.service';
 import { ProductoValidationService } from '../../domain/services/producto-validation.service';

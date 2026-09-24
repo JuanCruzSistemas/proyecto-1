@@ -7,7 +7,7 @@ import { IUnitOfWork } from 'src/modules/common/unit-of-work/unit-of-work.interf
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
 import { Repository, IsNull } from 'typeorm';
 import { ProductoEntity } from '../entities/producto.orm-entity';
-import { IProductoRepository } from '../../../domain/repositories/producto.repository-interface';
+import { IProductoRepository } from '../../../domain/repositories/producto.repository.interface';
 import { Producto } from '../../../domain/entities/producto.entity';
 import { ProductoMapper } from '../mappers/producto.mapper';
 

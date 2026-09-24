@@ -3,7 +3,7 @@ import { ConflictException, NotFoundException } from '@nestjs/common';
 import { RemovePresentacionUseCase } from './remove-presentacion.use-case';
 import { PoliticaEliminacionPresentacion } from '../../domain/services/politica-eliminacion-presentacion.service';
 import { IPresentacionRepository, PRESENTACION_REPOSITORY_TOKEN } from '../../domain/repositories/presentacion.repository.interface';
-import { IProductoRepository } from 'src/modules/gestion-productos/producto/domain/repositories/producto.repository-interface';
+import { IProductoRepository } from 'src/modules/gestion-productos/producto/domain/repositories/producto.repository.interface';
 import { Presentacion } from '../../domain/entities/presentacion.entity';
 
 describe('RemovePresentacionUseCase', () => {

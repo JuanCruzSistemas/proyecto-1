@@ -1,11 +1,11 @@
 import { useState } from "react";
 import CambioPreciosMasivoService from "../service/lista-precios-service";
-import { ConsultarProductosCambioPreciosMasivo, ConsultarProductosListaPrecios } from "../../../../../interfaces/gestion-producto/producto/interfaces-producto";
+import { ConsultarProductosCambioPreciosMasivo } from "../../../../../interfaces/gestion-producto/producto/interfaces-producto";
 import { ResponsePost } from "../../../../../interfaces/generales/interfaces-generales";
 
 export function useCambioPrecios(usuarioId: number | null) {
   const [productos, setProductos] =
-    useState<ConsultarProductosListaPrecios[]>([]);
+    useState([]);
   const [loading, setLoading] = useState(false);
 
   const buscarProductos = async (filtros: any) => {
@@ -21,12 +21,13 @@ export function useCambioPrecios(usuarioId: number | null) {
     setLoading(false);
   };
 
-  const aplicarCambios = async (porcentaje: number) => {
+  const aplicarCambios = async (valor: number, tipoActualizacion: "PORCENTAJE" | "MONTO") => {
     setLoading(true);
 
     const payload = {
       items: productos,
-      porcentaje,
+      valor: valor,
+      tipoActualizacion: tipoActualizacion,
     };
 
     const productosActualizados =
@@ -57,7 +58,7 @@ export function useCambioPrecios(usuarioId: number | null) {
   };
 
   const actualizarProductoLocal = (
-   productoActualizado: ConsultarProductosListaPrecios
+   productoActualizado: ConsultarProductosCambioPreciosMasivo
    ) => {
    setProductos((prevProductos) =>
       prevProductos.map((p) =>

@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { IProductoRepository, PRODUCTO_REPOSITORY_TOKEN } from '../../../producto/domain/repositories/producto.repository-interface';
+import { IProductoRepository, PRODUCTO_REPOSITORY_TOKEN } from '../../../producto/domain/repositories/producto.repository.interface';
 
 @Injectable()
 export class PoliticaEliminacionPresentacion {

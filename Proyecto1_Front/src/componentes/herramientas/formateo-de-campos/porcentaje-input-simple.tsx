@@ -12,6 +12,8 @@ interface PorcentajeInputProps {
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   inputRef?: React.Ref<HTMLInputElement>;
   error?: string; // 🔹 opcional: si querés mostrar un error desde afuera
+  suffix?: string;
+  allowNegative?: boolean;
 }
 
 const PorcentajeInput: React.FC<PorcentajeInputProps> = ({
@@ -24,6 +26,8 @@ const PorcentajeInput: React.FC<PorcentajeInputProps> = ({
   onKeyDown,
   inputRef,
   error,
+  suffix = " %",
+  allowNegative = false,
 }) => {
   const handleFocus = () => {
     setTimeout(() => {
@@ -50,12 +54,12 @@ const PorcentajeInput: React.FC<PorcentajeInputProps> = ({
           onKeyDown={onKeyDown}
           value={value}
           name={name}
-          suffix=" %"
+          suffix={suffix}
           thousandSeparator="."
           decimalSeparator=","
           decimalScale={2}
           fixedDecimalScale
-          allowNegative={false}
+          allowNegative={allowNegative}
           disabled={disabled}
           onValueChange={(values) => {
             onChange(values.floatValue ?? 0);

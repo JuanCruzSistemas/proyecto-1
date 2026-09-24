@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger } from "@nestjs/common";
 import { ProductoMapper } from "../../infraestructure/persistence/mappers/producto.mapper";
 import { PaginacionUtils } from "src/modules/common/utils/pagination/paginacion-utils";
 import { GetProductoDto } from "../dto/get-producto.dto";
-import { IProductoRepository, PRODUCTO_REPOSITORY_TOKEN } from "../../domain/repositories/producto.repository-interface";
+import { IProductoRepository, PRODUCTO_REPOSITORY_TOKEN } from "../../domain/repositories/producto.repository.interface";
 
 @Injectable()
 export class FindByProductoUseCase {

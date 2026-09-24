@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { MessageFrontUtils } from 'src/modules/common/utils/message/message-front.util';
-import { IProductoRepository, PRODUCTO_REPOSITORY_TOKEN } from '../../domain/repositories/producto.repository-interface';
+import { IProductoRepository, PRODUCTO_REPOSITORY_TOKEN } from '../../domain/repositories/producto.repository.interface';
 import { UpdateProductoDto } from '../dto/update-producto.dto';
 import { ProductoIntrinsicValidationService } from '../../domain/services/producto-intrinsic-validation.service';
 import { ProductoValidationService } from '../../domain/services/producto-validation.service';
