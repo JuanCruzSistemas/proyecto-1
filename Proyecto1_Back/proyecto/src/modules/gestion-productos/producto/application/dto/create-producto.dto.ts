@@ -8,6 +8,8 @@ import {
   IsBoolean,
   IsNumber,
   IsInt,
+  IsPositive,
+  Min,
 } from 'class-validator';
 
 export class CreateProductoDto {
@@ -49,11 +51,13 @@ export class CreateProductoDto {
   utilizaStockMinimo: boolean;
 
   @IsOptional()
-  @IsInt()
+  @IsInt({ message: 'El stock mínimo debe ser un número entero.' })
+  @Min(0, { message: 'El stock mínimo no puede ser negativo.' })
   stockMinimo?: number;
 
   @IsOptional()
-  @IsInt()
+  @IsInt({ message: 'El stock debe ser un número entero.' })
+  @Min(0, { message: 'El stock no puede ser negativo.' })
   stock?: number;
 
   @IsOptional()
@@ -67,7 +71,8 @@ export class CreateProductoDto {
   envioGratis?: boolean;
 
   @IsOptional()
-  @IsNumber()
+  @IsNumber({}, { message: 'El costo debe ser un número.' })
+  @IsPositive({ message: 'El costo debe ser mayor a 0.' })
   costo?: number;
 
   @IsBoolean()

@@ -10,6 +10,9 @@ export const schema = yup.object().shape({
     .trim()
     .lowercase()
     .required("La denominación es obligatoria.")
+    .test("not-empty", "La denominación no puede estar vacía o contener solo espacios.", (value) => {
+      return value !== undefined && value.trim().length > 0;
+    })
     .max(255, "La denominación no puede superar los 255 caracteres.")
     .matches(/^[A-Za-z0-9 áéíóúÁÉÍÓÚñÑ]+$/, "Solo se permiten letras, números y espacios."),
 

@@ -1,4 +1,5 @@
 import { MarcaCreateParams, MarcaReconstituteParams } from "./marca.types";
+import { DenominacionRequeridaException } from "../exceptions/denominacion-requerida.exception";
 
 export class Marca {
   private constructor(
@@ -18,6 +19,10 @@ export class Marca {
    * Fábrica para una Marca NUEVA, valida invariantes.
    */
   public static create(params: MarcaCreateParams): Marca {
+    if (!params.denominacion || params.denominacion.trim().length === 0) {
+      throw new DenominacionRequeridaException();
+    }
+
     return new Marca(
       null,
       params.denominacion,
@@ -55,6 +60,10 @@ export class Marca {
     observacion: string | null;
     usuarioUpdatedId: number;
   }): void {
+    if (!params.denominacion || params.denominacion.trim().length === 0) {
+      throw new DenominacionRequeridaException();
+    }
+
     this.denominacion = params.denominacion;
     this.observacion = params.observacion;
     this.usuarioUpdatedId = params.usuarioUpdatedId;
