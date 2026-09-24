@@ -6,6 +6,7 @@ import { CostoInvalidoException } from '../exceptions/costo-invalido.exception';
 import { StockInvalidoException } from '../exceptions/stock-invalido.exception';
 import { MargenInvalidoException } from '../exceptions/margen-invalido.exception';
 import { PrecioInvalidoException } from '../exceptions/precio-invalido.exception';
+import { MotivoRequeridoException } from '../exceptions/motivo-requerido.exception';
 
 describe('Producto (dominio)', () => {
   const usuario = {} as Usuario;
@@ -147,6 +148,11 @@ describe('Producto (dominio)', () => {
       expect(() => producto.ajustarStock(-10, 'venta')).toThrow(StockInvalidoException);
       // El ajuste rechazado no debe mutar el stock previo.
       expect(producto.getStock()).toBe(3);
+    });
+
+    it('rechaza un ajuste de stock sin motivo', () => {
+      const producto = crearProducto({ stock: 10 });
+      expect(() => producto.ajustarStock(5, '')).toThrow(MotivoRequeridoException);
     });
   });
 

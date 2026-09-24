@@ -8,6 +8,7 @@ import { Precio } from '../value-objects/precio.vo';
 import { Costo } from '../value-objects/costo.vo';
 import { Margen } from '../value-objects/margen.vo';
 import { ProductoActualizarDatosParams } from './producto.types';
+import { MotivoRequeridoException } from '../exceptions/motivo-requerido.exception';
 
 /**
  * No instanciar directamente. Usar siempre `ProductoFactory.create()` /
@@ -106,9 +107,12 @@ export class Producto {
     }
 
     public ajustarStock(cantidad: number, motivo: string): void {
-        const nuevoStock = Stock.create(this.stock.getValue() + cantidad);
-        this.stock = nuevoStock;
+    if (!motivo || motivo.trim().length === 0) {
+        throw new MotivoRequeridoException();
     }
+    const nuevoStock = Stock.create(this.stock.getValue() + cantidad);
+    this.stock = nuevoStock;
+}
 
     public marcarComoEliminado(usuarioDeleted: Usuario): void {
         this.deletedAt = new Date();
