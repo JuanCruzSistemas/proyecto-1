@@ -13,6 +13,7 @@ import { PresentacionRequeridaException } from '../exceptions/presentacion-reque
 describe('Producto (dominio)', () => {
   const usuario = {} as Usuario;
   const linea = Linea.create({
+    superlineaId: 1,
     denominacion: 'Aceites',
     observacion: null,
     utilizaStockMinimo: false,

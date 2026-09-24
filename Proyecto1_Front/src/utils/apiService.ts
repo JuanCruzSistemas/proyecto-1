@@ -67,11 +67,11 @@ const ApiService = {
     }
   },
 
-  delete: async (url: string, usuarioId:number) => {
+  delete: async (url: string, usuarioId?: number) => {
     try {
       const { data } = await axios.delete(`${apiUrl}${url}`, {
         headers: getAuthHeaders(),
-        params: { usuarioId },
+        params: usuarioId === undefined ? undefined : { usuarioId },
       });
       return data;
     } catch (error) {

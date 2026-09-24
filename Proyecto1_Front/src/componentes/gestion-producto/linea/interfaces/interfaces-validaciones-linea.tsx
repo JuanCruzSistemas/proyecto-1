@@ -4,6 +4,7 @@ import { Linea } from "../../../../interfaces/gestion-producto/linea/interfaces-
 //===================== interfaces ============================================//
 
 export interface FormValues {
+  superlineaId: number;
   denominacion: string;
   observacion?: string | null;
   stockMinimo?: number;
@@ -20,6 +21,11 @@ export interface SublineasEnPayload {
 
 export const schema = (utilizaStockMinimo: boolean) =>
   yup.object().shape({
+    superlineaId: yup.number()
+      .typeError("Debe seleccionar una SuperLínea para la línea")
+      .required("Debe seleccionar una SuperLínea para la línea")
+      .integer("Debe seleccionar una SuperLínea para la línea")
+      .min(1, "Debe seleccionar una SuperLínea para la línea"),
     denominacion: yup
       .string()
       .trim()
@@ -45,6 +51,7 @@ export const schema = (utilizaStockMinimo: boolean) =>
 export const transformData = (linea: Linea): FormValues => {
   return {
     denominacion: linea.denominacion,
+    superlineaId: linea.superlineaId,
     observacion: linea.observacion ?? null,
     stockMinimo: linea.stockMinimo ?? 0,
     utilizaStockMinimo: linea.utilizaStockMinimo ?? false,

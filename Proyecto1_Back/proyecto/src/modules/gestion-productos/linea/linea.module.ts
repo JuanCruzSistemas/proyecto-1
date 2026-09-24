@@ -21,8 +21,11 @@ import { FindEntityByIdLineaUseCase } from './application/use-cases/find-entity-
 import { FindByIdConAuditoriaLineaUseCase } from './application/use-cases/find-by-id-auditoria-linea.use-case';
 import { RemoveLineaUseCase } from './application/use-cases/remove-linea.use-case';
 
+import { SuperlineaModule } from '../superlinea/superlinea.module';
+
 @Module({
   imports: [
+    SuperlineaModule,
     TypeOrmModule.forFeature([LineaEntity]),
     forwardRef(() => ProductoModule),
     UsuarioModule,

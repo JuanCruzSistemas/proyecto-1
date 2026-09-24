@@ -6,7 +6,7 @@ import { Button } from "../../../ui/Button";
 import FormInput from "../../../herramientas/formateo-de-campos/form-input";
 import React from "react";
 import { Card } from "../../../ui/Card";
-import { FormValues, schema, transformData, SublineasEnPayload, transformarSublineas } from "../interfaces/interfaces-validaciones-linea";
+import { FormValues, schema, transformData } from "../interfaces/interfaces-validaciones-linea";
 import LineaService from "../services/linea-service";
 import { Linea } from "../../../../interfaces/gestion-producto/linea/interfaces-linea";
 
@@ -22,6 +22,8 @@ import {
   useConfirmation,
 } from "../../../herramientas/alertas/alertas-confirmacion";
 
+import SuperlineaService, { SuperlineaResumen } from "../../superlinea/services/superlinea-service";
+
 export default function RegistrarActualizarLineaForm({
   linea,
   onClose,
@@ -31,13 +33,16 @@ export default function RegistrarActualizarLineaForm({
   onClose: () => void;
   onSuccess: (mensajeAlerta: string) => void;
 }) {
+  const [superlineas, setSuperlineas] = useState<SuperlineaResumen[]>([]);
+  const [loadingSuperlineas, setLoadingSuperlineas] = useState(true);
+  const [superlineasError, setSuperlineasError] = useState("");
   const usuarioId = getUsuarioId();
   const { showConfirmation, AlertasConfirmacion } = useConfirmation();
   const [rStockCritico, setStockCritico] = useState(false);
 
   const methods = useForm<FormValues>({
     resolver: yupResolver(schema(rStockCritico)) as any,
-    defaultValues: linea ? transformData(linea) : {},
+    defaultValues: linea ? transformData(linea) : { superlineaId: 0, utilizaStockMinimo: false, stockMinimo: 0 },
   });
 
   const {
@@ -49,6 +54,15 @@ export default function RegistrarActualizarLineaForm({
   } = methods;
 
  
+  useEffect(() => {
+    let active = true;
+    SuperlineaService.listar()
+      .then(rows => { if (active) setSuperlineas(rows); })
+      .catch(error => { if (active) setSuperlineasError(parseApiError(error)); })
+      .finally(() => { if (active) setLoadingSuperlineas(false); });
+    return () => { active = false; };
+  }, []);
+
   const stockMinimo = watch("stockMinimo");
   const utilizaStockMinimo = watch("utilizaStockMinimo");
 
@@ -67,6 +81,7 @@ export default function RegistrarActualizarLineaForm({
       try {
         if (linea) {
           setValue("denominacion", linea.denominacion || "");
+          setValue("superlineaId", linea.superlineaId);
           setValue("observacion", linea.observacion || null);
           setValue("stockMinimo", linea.stockMinimo || 0);
           setValue("utilizaStockMinimo", linea.utilizaStockMinimo || false);
@@ -77,7 +92,7 @@ export default function RegistrarActualizarLineaForm({
       }
     };
     fetchData();
-  }, []);
+  }, [linea, setValue]);
 
   const onSubmit = async (formData: FormValues) => {
     let response: ResponsePost;
@@ -130,6 +145,22 @@ export default function RegistrarActualizarLineaForm({
             <form onSubmit={handleSubmit(onSubmit)}>
               <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 px-6 py-4">
                 <div className="lg:col-span-2">
+                  <label htmlFor="linea-superlinea" className="block font-medium">SuperLínea *</label>
+                  {linea && <p className="text-sm text-gray-600 mb-2">
+                    Asociación guardada: {linea.superlinea?.denominacion ?? "Sin información"}
+                  </p>}
+                  <select id="linea-superlinea" {...methods.register("superlineaId", { valueAsNumber: true })}
+                    value={watch("superlineaId") ?? 0}
+                    disabled={loadingSuperlineas} aria-invalid={!!errors.superlineaId} aria-describedby="linea-superlinea-error"
+                    className="border rounded p-2 w-full">
+                    <option value={0}>{loadingSuperlineas ? "Cargando…" : "Seleccioná una SuperLínea"}</option>
+                    {superlineas.map(s => <option key={s.id} value={s.id}>{s.denominacion}</option>)}
+                  </select>
+                  <p id="linea-superlinea-error" role="alert" className="text-red-600">{errors.superlineaId?.message}</p>
+                  {superlineasError && <p role="alert" className="text-red-600">{superlineasError}</p>}
+                  {!loadingSuperlineas && !superlineasError && superlineas.length === 0 && <p>No hay SuperLíneas disponibles. Solicitá a un administrador que cree una.</p>}
+                </div>
+                <div className="lg:col-span-2">
                   <FormInput name="denominacion" label="Denominación" placeholder="Ingresa la denominación" />
                 </div>
 
@@ -159,7 +190,7 @@ export default function RegistrarActualizarLineaForm({
               )}
 
               <CardFooter className="flex justify-center">
-                <Button type="submit" disabled={isSubmitting} className="btn btn-dark">
+                <Button type="submit" disabled={isSubmitting || loadingSuperlineas || !!superlineasError || superlineas.length === 0} className="btn btn-dark">
                   {isSubmitting ? (linea ? "Actualizando..." : "Registrando...") : linea ? "Actualizar" : "Registrar"}
                 </Button>
               </CardFooter>

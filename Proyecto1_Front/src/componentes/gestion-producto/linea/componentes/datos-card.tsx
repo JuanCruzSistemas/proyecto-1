@@ -24,6 +24,9 @@ export function DatosCards({ linea, onEditar, onInfo, onDelete }: Props) {
       <div className="mb-2">
         <p className="text-xs text-gray-500">Denominación</p>
         <p className="text-sm font-medium text-gray-800 line-clamp-2">{linea.denominacion}</p>
+        <p className="text-sm text-gray-600 mt-1">
+          SuperLínea: <span className="font-medium">{linea.superlinea?.denominacion ?? "Sin información"}</span>
+        </p>
         {eliminada && (
           <p className="text-xs text-red-500 font-medium mt-0.5">
             Eliminada el {formatFechaHora(linea.deletedAt)}
@@ -49,7 +52,7 @@ export function DatosCards({ linea, onEditar, onInfo, onDelete }: Props) {
           <ActionButton
             variant="delete"
             onClick={() => onDelete(linea.id)}
-            disabled={linea.sistema}
+            disabled={!!linea.sistema}
             title="Eliminar"
           >
             <Trash size={16} />

@@ -7,14 +7,25 @@ import {
   DeleteDateColumn,
   OneToMany,
   Index,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 
 import { ProductoEntity } from '../../../../producto/infraestructure/persistence/entities/producto.orm-entity';
 import { CantidadColumn } from 'src/modules/common/decorators/cantidad-column.decorator';
 
+import { SuperlineaEntity } from '../../../../superlinea/infraestructure/persistence/entities/superlinea.orm-entity';
+
 @Entity('linea')
 @Index(['denominacion', 'deletedAt'], { unique: true })
 export class LineaEntity {
+  @Column({ type: 'int' })
+  superlineaId: number;
+
+  @ManyToOne(() => SuperlineaEntity, { nullable: false, onDelete: 'RESTRICT' })
+  @JoinColumn({ name: 'superlineaId', foreignKeyConstraintName: 'FK_linea_superlinea' })
+  superlinea: SuperlineaEntity;
+
   @PrimaryGeneratedColumn()
   id: number;
 

@@ -9,6 +9,9 @@ import {
 } from 'class-validator';
 
 export class LineaDto {
+  @ApiProperty()
+  superlineaId: number;
+
   @ApiProperty({ example: 123, description: 'ID del la linea' })
   @Type(() => Number)
   @IsInt()

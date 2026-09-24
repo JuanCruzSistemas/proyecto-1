@@ -16,6 +16,7 @@ describe('UpdatePrecioUseCase', () => {
 
   const usuario = { id: 1 } as Usuario;
   const linea = Linea.create({
+    superlineaId: 1,
     denominacion: 'Aceites',
     observacion: null,
     utilizaStockMinimo: false,

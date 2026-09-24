@@ -2,6 +2,7 @@ import { SelectSublinea } from "../sublinea/interfaces-sublinea";
 import { SelectSuperlinea } from "../superlinea/interfaces-superlinea";
 
 export interface Linea {
+  superlineaId: number;
   id: number;
   denominacion: string;
   observacion: string | null;
