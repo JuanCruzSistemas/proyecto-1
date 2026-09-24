@@ -3,6 +3,7 @@ import { ProductoController } from './infraestructure/presentation/controllers/p
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { NormalizeDenominacionPipe } from 'src/modules/common/pipes/normalize-denominations.pipe';
 import { ProductoEntity } from './infraestructure/persistence/entities/producto.orm-entity';
+import { HistorialPrecioOrmEntity } from './infraestructure/persistence/entities/historial-precio-orm.entity';
 import { LineaModule } from '../linea/linea.module';
 import { MarcaModule } from '../marca/marca.module';
 import { PresentacionModule } from '../presentacion/presentacion.module';
@@ -14,11 +15,13 @@ import { UsuarioModule } from 'src/modules/gestion-usuario/usuario/usuario.modul
 import { CommonModule } from 'src/modules/common/common.module';
 import { ProductoService } from './application/services/producto.service';
 import { ProductoRepository } from './infraestructure/persistence/repositories/producto.repository';
+import { HistorialPrecioRepository } from './infraestructure/persistence/repositories/historial-precio.repository';
 import { ProductoUniquenessValidator } from './infraestructure/validators/producto-uniqueness.validator';
 import { ProductoRelatedEntitiesValidator } from './infraestructure/validators/producto-related-entities.validator';
 import { ProductoValidationService } from './domain/services/producto-validation.service';
 import { ProductoIntrinsicValidationService } from './domain/services/producto-intrinsic-validation.service';
 import { PRODUCTO_REPOSITORY_TOKEN } from './domain/repositories/producto.repository.interface';
+import { HISTORIAL_PRECIO_REPOSITORY_TOKEN } from './domain/repositories/historial-precio.repository.interface';
 import { CreateProductoUseCase } from './application/use-cases/create-producto.use-case';
 import { UpdateProductoUseCase } from './application/use-cases/update-producto.use-case';
 import { FindByProductoUseCase } from './application/use-cases/find-by-producto.use-case';
@@ -31,10 +34,11 @@ import { UpdatePrecioUseCase } from './application/use-cases/update-precio.use-c
 import { AplicarCambioMasivoUseCase } from './application/use-cases/aplicar-cambio-masivo.use-case';
 import { GuardarCambioMasivoUseCase } from './application/use-cases/guardar-cambio-masivo.use-case';
 import { CambioPreciosController } from './infraestructure/presentation/controllers/cambio-precios.controller';
+import { FindHistorialPrecioUseCase } from './application/use-cases/find-historial-precio.use-case';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([ProductoEntity]),
+    TypeOrmModule.forFeature([ProductoEntity, HistorialPrecioOrmEntity]),
     CommonModule,
     forwardRef(() => LineaModule),
     forwardRef(() => MarcaModule),
@@ -62,9 +66,14 @@ import { CambioPreciosController } from './infraestructure/presentation/controll
     UpdatePrecioUseCase,
     AplicarCambioMasivoUseCase,
     GuardarCambioMasivoUseCase,
+    FindHistorialPrecioUseCase,
     {
       provide: PRODUCTO_REPOSITORY_TOKEN,
       useClass: ProductoRepository,
+    },
+    {
+      provide: HISTORIAL_PRECIO_REPOSITORY_TOKEN,
+      useClass: HistorialPrecioRepository,
     },
     {
       provide: UNIT_OF_WORK_TOKEN,

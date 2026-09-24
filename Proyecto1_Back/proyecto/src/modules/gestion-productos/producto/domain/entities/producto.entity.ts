@@ -73,7 +73,8 @@ export class Producto {
     ) {}
 
     public actualizarDatos(params: ProductoActualizarDatosParams): void {
-        if (!params.denominacion || params.denominacion.trim().length === 0) {
+        // Sin denominación se autogenera (CR-005); lo que no se admite es una vacía (CR-001)
+        if (params.denominacion !== undefined && params.denominacion.trim().length === 0) {
         throw new DenominacionRequeridaException();
         }
 
