@@ -7,6 +7,7 @@ import { StockInvalidoException } from '../exceptions/stock-invalido.exception';
 import { MargenInvalidoException } from '../exceptions/margen-invalido.exception';
 import { PrecioInvalidoException } from '../exceptions/precio-invalido.exception';
 import { MotivoRequeridoException } from '../exceptions/motivo-requerido.exception';
+import { DenominacionRequeridaException } from '../exceptions/denominacion-requerida.exception';
 
 describe('Producto (dominio)', () => {
   const usuario = {} as Usuario;
@@ -69,6 +70,10 @@ describe('Producto (dominio)', () => {
 
     it('rechaza un stock negativo', () => {
       expect(() => crearProducto({ stock: -5 })).toThrow(StockInvalidoException);
+    });
+
+    it('rechaza una denominación vacía', () => {
+    expect(() => crearProducto({ denominacion: '' })).toThrow(DenominacionRequeridaException);
     });
 
     it('nace sin id y con movimientosStock vacío', () => {

@@ -9,6 +9,7 @@ import { Costo } from '../value-objects/costo.vo';
 import { Margen } from '../value-objects/margen.vo';
 import { ProductoActualizarDatosParams } from './producto.types';
 import { MotivoRequeridoException } from '../exceptions/motivo-requerido.exception';
+import { DenominacionRequeridaException } from '../exceptions/denominacion-requerida.exception';
 
 /**
  * No instanciar directamente. Usar siempre `ProductoFactory.create()` /
@@ -66,6 +67,10 @@ export class Producto {
     ) {}
 
     public actualizarDatos(params: ProductoActualizarDatosParams): void {
+        if (!params.denominacion || params.denominacion.trim().length === 0) {
+        throw new DenominacionRequeridaException();
+        }
+
         const costo = Costo.create(params.costo);
         const margen = Margen.create(params.margen);
         const precio = Precio.create(costo.getValue(), margen.getValue());
