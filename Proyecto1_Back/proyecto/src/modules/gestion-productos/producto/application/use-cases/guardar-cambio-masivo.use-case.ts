@@ -12,6 +12,7 @@ export class GuardarCambioMasivoUseCase {
 
   async execute(items: any[], usuarioId: number): Promise<void> {
     const usuario = await this.usuarioValidator.validarUsuarioExiste(usuarioId);
+    const productos: { producto: any; precioNuevo: number }[] = [];
 
     for (const item of items) {
       const producto = await this.repository.findOne(Number(item.id));
@@ -26,6 +27,10 @@ export class GuardarCambioMasivoUseCase {
         throw new BadRequestException(`Precio inválido para el producto ${item.id}.`);
       }
 
+      productos.push({ producto, precioNuevo });
+    }
+
+    for (const { producto, precioNuevo } of productos) {
       producto.actualizarPrecio(precioNuevo, usuario);
       await this.repository.update(producto.getId()!, producto);
     }

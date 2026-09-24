@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsArray, IsEnum, IsNumber, Min } from "class-validator";
+import { IsArray, IsEnum, IsNumber, Min, ValidateIf } from "class-validator";
 
 export enum TipoActualizacion {
   PORCENTAJE = 'PORCENTAJE',
@@ -14,9 +14,10 @@ export class AplicarCambiosMasivosDto {
   @IsArray()
   items: any[]; // Recibe los ConsultarProductosCambioPreciosMasivo del frontend
 
-  @ApiProperty({ example: 15, description: 'Valor del aumento (monto fijo o porcentaje)' })
+  @ApiProperty({ example: 15, description: 'Valor del ajuste (monto fijo o porcentaje; el monto puede ser negativo)' })
   @IsNumber()
-  @Min(0)
+  @ValidateIf((dto: AplicarCambiosMasivosDto) => dto.tipoActualizacion === TipoActualizacion.PORCENTAJE)
+  @Min(0, { message: 'El porcentaje no puede ser negativo' })
   valor: number;
 
   @ApiProperty({ enum: TipoActualizacion, example: TipoActualizacion.PORCENTAJE })

@@ -13,6 +13,7 @@ interface PorcentajeInputProps {
   inputRef?: React.Ref<HTMLInputElement>;
   error?: string; // 🔹 opcional: si querés mostrar un error desde afuera
   suffix?: string;
+  allowNegative?: boolean;
 }
 
 const PorcentajeInput: React.FC<PorcentajeInputProps> = ({
@@ -26,6 +27,7 @@ const PorcentajeInput: React.FC<PorcentajeInputProps> = ({
   inputRef,
   error,
   suffix = " %",
+  allowNegative = false,
 }) => {
   const handleFocus = () => {
     setTimeout(() => {
@@ -57,7 +59,7 @@ const PorcentajeInput: React.FC<PorcentajeInputProps> = ({
           decimalSeparator=","
           decimalScale={2}
           fixedDecimalScale
-          allowNegative={false}
+          allowNegative={allowNegative}
           disabled={disabled}
           onValueChange={(values) => {
             onChange(values.floatValue ?? 0);

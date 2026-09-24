@@ -261,7 +261,7 @@ export default function FiltrosCambioPrecios({
                   </div> */}
 
                   <div className="flex gap-4 items-end flex-grow">
-                     <Button
+                    <Button
                       variant="outline"
                       onClick={onBuscar}
                       className="self-end bg-blue-500 text-white hover:bg-blue-800"
@@ -279,13 +279,25 @@ export default function FiltrosCambioPrecios({
                       <Eraser className="w-4 h-4" />
                     </Button>
 
-                    
-                    <PorcentajeInput
-                      name="porcentaje"
-                      value={porcentaje}
-                      label="Porcentaje"
-                      onChange={(value) => setPorcentaje(value)}
+                    <select
+                      value={tipoActualizacion}
+                      onChange={(event) => setTipoActualizacion(event.target.value as "PORCENTAJE" | "MONTO")}
+                      className="h-10 rounded-md border border-gray-300 bg-white px-2 text-black"
                       disabled={productosLength === 0}
+                      aria-label="Tipo de actualización"
+                    >
+                      <option value="PORCENTAJE">Porcentaje</option>
+                      <option value="MONTO">Monto fijo</option>
+                    </select>
+
+                    <PorcentajeInput
+                      name="valorCambio"
+                      value={valor}
+                      label={tipoActualizacion === "PORCENTAJE" ? "Porcentaje" : "Monto"}
+                      suffix={tipoActualizacion === "PORCENTAJE" ? " %" : " $"}
+                      onChange={(value) => setValor(value)}
+                      disabled={productosLength === 0}
+                      allowNegative={tipoActualizacion === "MONTO"}
                     />
 
                     <Button
@@ -311,7 +323,7 @@ export default function FiltrosCambioPrecios({
                     >
                       <Save className="w-4 h-4" />
                     </Button>
-                  </div> 
+                  </div>
                   
                 </div>
               </CardHeader>
