@@ -45,14 +45,14 @@ export class HistorialPrecioOrmEntity {
   fecha: Date;
 
   @ManyToOne(() => ProductoEntity, { eager: true })
-  @JoinColumn({ name: 'producto_id' })
+  @JoinColumn({ name: 'producto_id', foreignKeyConstraintName: 'FK_historial_precio_producto' })
   producto: ProductoEntity;
 
   @Column({ name: 'producto_id' })
   productoId: number;
 
   @ManyToOne(() => Usuario, { eager: true })
-  @JoinColumn({ name: 'usuario_id' })
+  @JoinColumn({ name: 'usuario_id', foreignKeyConstraintName: 'FK_historial_precio_usuario' })
   usuario: Usuario;
 
   @Column({ name: 'usuario_id' })
