@@ -43,7 +43,9 @@ export class FindByProductoUseCase {
         proveedor_id: number,
         conStock: boolean,
         skip: number,
-        take: number
+        take: number,
+        lineaDenominacion?: string,
+        superlineaDenominacion?: string,
     ): Promise<{ data: GetProductoDto[]; total: number }> {
         this.logger.warn(`service`);
         const result = await this.repository.findBy(
@@ -57,6 +59,8 @@ export class FindByProductoUseCase {
             conStock,
             skip,
             take,
+            lineaDenominacion,
+            superlineaDenominacion,
         );
         return {
             data: result.data.map((producto) => {

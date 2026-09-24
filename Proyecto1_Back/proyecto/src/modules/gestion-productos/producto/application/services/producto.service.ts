@@ -75,6 +75,8 @@ export class ProductoService {
     conStock: boolean,
     skip: number,
     take: number,
+    lineaDenominacion?: string,
+    superlineaDenominacion?: string,
   ): Promise<{ data: GetProductoDto[]; total: number }> {
     return this.findByProductoUseCase.findBy(
       denominacion,
@@ -87,6 +89,8 @@ export class ProductoService {
       conStock,
       skip,
       take,
+      lineaDenominacion,
+      superlineaDenominacion,
     );
   }
 
