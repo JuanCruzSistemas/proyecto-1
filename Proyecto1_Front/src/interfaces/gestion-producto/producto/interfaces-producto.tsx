@@ -94,19 +94,11 @@ export interface ConsultarProductosCambioPreciosMasivo {
   id: number;
   denominacion: string;
   codigoProveedor: string;
-  observacion: string;
-
-  precioOcasionalConIva: number;
-  precioOcasionalConIvaNuevo: number;
-  precioMayoristaConIva: number;
-  precioMayoristaConIvaNuevo: number;
-  precioClienteConIva: number;
-  precioClienteConIvaNuevo: number;
-  precioOfertaConIva: number;
-  precioOfertaConIvaNuevo: number;
-
+  observacion?: string;
+  costo: number;
+  precio: number;
+  precioNuevo?: number;
   dirty: boolean;
-
 }
 
 export interface ConsultarProductosListaPrecios {

@@ -19,6 +19,13 @@ import { useCambioPrecios } from "../hooks/useCambioPrecios";
 import TablaCambioPrecios from "../componentes/tabla-cambio-precios";
 import FiltrosCambioPrecios from "../componentes/filtros-cambio-precios";
 
+function obtenerMensajeError(error: unknown, mensajePredeterminado: string): string {
+  const response = (error as { response?: { data?: { message?: unknown } } })?.response;
+  const message = response?.data?.message;
+  if (Array.isArray(message)) return message.join(" ");
+  return typeof message === "string" ? message : mensajePredeterminado;
+}
+
 export default function CambioPreciosMasivo() {
   const [error, setError] = useState<string | null>(null);
   const [mostrarActualizarProducto, setMostrarActualizarProducto] = useState(false);
@@ -51,12 +58,12 @@ export default function CambioPreciosMasivo() {
     actualizarProductoLocal,
   } = useCambioPrecios(usuarioId);
 
-  const { marcas, lineas, sublineas, setLineas, setMarcas, setSublineas } = useCatalogosContext();
+  const { marcas, lineas, setLineas, setMarcas } = useCatalogosContext();
 
   useEffect(() => {
     limpiarFiltros();
     setBuscar({ cont: 0, componente: "cambio-precios-masivo" });
-    setFiltrosNecesarios({ marca: true, linea: true, sublinea: true });
+    setFiltrosNecesarios({ marca: true, linea: true, sublinea: false });
   }, []);
 
   const fetchMarcas = useCallback(async () => {
@@ -104,24 +111,6 @@ export default function CambioPreciosMasivo() {
   useEffect(() => {
     fetchLineas();
   }, [buscarLineas]);
-
-  useEffect(() => {
-    const fetchSublineas = async () => {
-      setError(null);
-      try {
-        if (valoresFiltros.lineaId && valoresFiltros.lineaId !== 0) {
-          const sublineasTotales = await CambioPreciosMasivoService.obtenerTotalesPara(
-            valoresFiltros.lineaId || 0,
-            "sublineas"
-          );
-          setSublineas(sublineasTotales.data);
-        }
-      } catch {
-        setError("No se pudieron cargar las sublíneas.");
-      }
-    };
-    fetchSublineas();
-  }, [valoresFiltros.lineaId]);
 
   const handleAbrirActualizarProducto = useCallback(
     (producto: ConsultarProductosCambioPreciosMasivo) => {
@@ -176,13 +165,11 @@ export default function CambioPreciosMasivo() {
       denominacionLinea: "",
       marcaId: undefined,
       lineaId: undefined,
-      sublineaId: undefined,
     });
-    setSublineas([]);
     setLineas([]);
     setMarcas([]);
     setProductos([]);
-  }, [setValoresFiltros, setSublineas, setLineas, setMarcas, setProductos]);
+  }, [setValoresFiltros, setLineas, setMarcas, setProductos]);
 
   const handleActualizarSuccess = useCallback(
     (productoActualizado: ConsultarProductosCambioPreciosMasivo) => {
@@ -200,15 +187,39 @@ export default function CambioPreciosMasivo() {
   );
 
   const handleGuardarCambios = useCallback(async () => {
-    const response = await guardarCambios();
-    addAlert({
-      type: TipoAlerta.SUCCESS,
-      title: TituloAlerta.SUCCESS,
-      message: response.mensaje,
-      autoClose: true,
-      duration: 3000,
-    });
+    try {
+      const response = await guardarCambios();
+      addAlert({
+        type: TipoAlerta.SUCCESS,
+        title: TituloAlerta.SUCCESS,
+        message: response.mensaje,
+        autoClose: true,
+        duration: 3000,
+      });
+    } catch (error) {
+      addAlert({
+        type: TipoAlerta.ERROR,
+        title: TituloAlerta.ERROR,
+        message: obtenerMensajeError(error, "No se pudieron guardar los cambios."),
+        autoClose: true,
+        duration: 5000,
+      });
+    }
   }, [guardarCambios, addAlert]);
+
+  const handleAplicarCambios = useCallback(async (valor: number, tipo: "PORCENTAJE" | "MONTO") => {
+    try {
+      await aplicarCambios(valor, tipo);
+    } catch (error) {
+      addAlert({
+        type: TipoAlerta.ERROR,
+        title: TituloAlerta.ERROR,
+        message: obtenerMensajeError(error, "No se pudieron calcular los nuevos precios."),
+        autoClose: true,
+        duration: 5000,
+      });
+    }
+  }, [aplicarCambios, addAlert]);
 
   const columns = useMemo<Column<ConsultarProductosCambioPreciosMasivo>[]>(
     () => [
@@ -247,71 +258,17 @@ export default function CambioPreciosMasivo() {
         ),
       },
       {
-        header: "P Ocasional",
-        accessor: "precioOcasionalConIva",
-        flex: 0.5,
+        header: "Precio actual",
+        accessor: "precio",
+        flex: 0.7,
         type: "text",
         editable: false,
         align: "right",
         formatFunction: ({ value }) => <span>{formatPrice(value, "ARS")}</span>,
       },
       {
-        header: "N Ocasional",
-        accessor: "precioOcasionalConIvaNuevo",
-        flex: 0.5,
-        type: "text",
-        editable: false,
-        align: "right",
-        formatFunction: ({ value }) => <span>{formatPrice(value, "ARS")}</span>,
-      },
-      {
-        header: "P Mayorista",
-        accessor: "precioMayoristaConIva",
-        flex: 0.5,
-        type: "text",
-        editable: false,
-        align: "right",
-        formatFunction: ({ value }) => <span>{formatPrice(value, "ARS")}</span>,
-      },
-      {
-        header: "N Mayorista",
-        accessor: "precioMayoristaConIvaNuevo",
-        flex: 0.5,
-        type: "text",
-        editable: false,
-        align: "right",
-        formatFunction: ({ value }) => <span>{formatPrice(value, "ARS")}</span>,
-      },
-      {
-        header: "P Cliente",
-        accessor: "precioClienteConIva",
-        flex: 0.5,
-        type: "text",
-        editable: false,
-        align: "right",
-        formatFunction: ({ value }) => <span>{formatPrice(value, "ARS")}</span>,
-      },
-      {
-        header: "N Cliente",
-        accessor: "precioClienteConIvaNuevo",
-        flex: 0.5,
-        type: "text",
-        editable: false,
-        align: "right",
-        formatFunction: ({ value }) => <span>{formatPrice(value, "ARS")}</span>,
-      },
-      {
-        header: "P Oferta",
-        accessor: "precioOfertaConIva",
-        flex: 0.5,
-        type: "text",
-        editable: false,
-        align: "right",
-        formatFunction: ({ value }) => <span>{formatPrice(value, "ARS")}</span>,
-      },
-      {
-        header: "N Oferta",
-        accessor: "precioOfertaConIvaNuevo",
+        header: "Precio nuevo",
+        accessor: "precioNuevo",
         flex: 0.5,
         type: "text",
         editable: false,
@@ -344,16 +301,19 @@ export default function CambioPreciosMasivo() {
                 setValoresFiltros={setValoresFiltros}
                 marcas={marcas}
                 lineas={lineas}
-                sublineas={sublineas}
                 productosLength={productos.length}
-                onBuscar={() =>
-                  buscarProductos({
+                onBuscar={async () => {
+                  setError(null);
+                  try {
+                    await buscarProductos({
                     marcaId: valoresFiltros.marcaId,
                     lineaId: valoresFiltros.lineaId,
-                    subLineaId: valoresFiltros.sublineaId,
-                  })
-                }
-                onAplicarCambios={aplicarCambios}
+                    });
+                  } catch (error) {
+                    setError(obtenerMensajeError(error, "No se pudieron cargar los productos."));
+                  }
+                }}
+                onAplicarCambios={handleAplicarCambios}
                 onGuardarCambios={handleGuardarCambios}
                 fetchMarcas={fetchMarcas}
                 fetchLineas={fetchLineas}

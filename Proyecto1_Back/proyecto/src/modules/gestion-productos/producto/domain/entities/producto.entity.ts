@@ -12,6 +12,8 @@ import { DenominacionRequeridaException } from '../exceptions/denominacion-reque
 import { PresentacionRequeridaException } from '../exceptions/presentacion-requerida.exception';
 import { MotivoRequeridoException } from '../exceptions/motivo-requerido.exception';
 import { ProductoActualizarDatosParams } from '../inputs/producto.types';
+import { MargenInvalidoException } from '../exceptions/margen-invalido.exception';
+
 
 /**
  * No instanciar directamente. Usar siempre `ProductoFactory.create()` /
@@ -146,7 +148,16 @@ export class Producto {
     }
 
     public actualizarPrecio(precio: number, usuarioUpdated: Usuario): void {
-        this.precio = Precio.fromValue(precio);
+        const costo = this.costo.getValue();
+        if (costo === 0 && precio !== 0) {
+            throw new MargenInvalidoException(precio);
+        }
+        const margen = costo === 0
+            ? this.margen
+            : Margen.create(precio / costo - 1);
+        const nuevoPrecio = Precio.fromValue(precio);
+        this.margen = margen;
+        this.precio = nuevoPrecio;
         this.usuarioUpdated = usuarioUpdated;
         this.updatedAt = new Date();
     }

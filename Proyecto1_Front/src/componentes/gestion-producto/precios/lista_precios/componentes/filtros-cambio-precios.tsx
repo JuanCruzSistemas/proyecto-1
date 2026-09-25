@@ -21,8 +21,8 @@ type Props = {
     sublineas: any[]; 
     productosLength: number; 
     onBuscar: () => void; 
-    onAplicarCambios: (valor: number, tipo: TipoActualizacion) => void; 
-    onGuardarCambios: () => void; 
+    onAplicarCambios?: (valor: number, tipo: TipoActualizacion) => void; 
+    onGuardarCambios?: () => void; 
     fetchMarcas: () => void;
     fetchLineas: () => void;
     onLimpiarFiltros: () => void;

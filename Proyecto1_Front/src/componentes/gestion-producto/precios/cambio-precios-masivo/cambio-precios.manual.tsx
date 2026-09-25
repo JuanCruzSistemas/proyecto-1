@@ -2,7 +2,7 @@ import { ConsultarProductosCambioPreciosMasivo } from "../../../../interfaces/ge
 import { Card, CardContent, CardFooter, } from "../../../ui/Card";
 import { Button } from "../../../ui/Button";
 import * as yup from "yup";
-import { FormProvider, useForm } from "react-hook-form";
+import { FormProvider, Resolver, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Layers } from "lucide-react";
 import PriceInput from "../../../herramientas/formateo-de-campos/price-input";
@@ -11,33 +11,15 @@ import { useEffect } from "react";
 
 
 interface FormValues {
-  nuevoPrecioOcasionalConIva: number;
-  nuevoPrecioMayoristaConIva: number;
-  nuevoPrecioClienteConIva: number;
-  nuevoPrecioOfertaConIva: number;
+  precioNuevo: number;
 }
 
-const schema = yup.object().shape({
-  nuevoPrecioOcasionalConIva: yup
+const schema: yup.ObjectSchema<FormValues> = yup.object({
+  precioNuevo: yup
     .number()
-    .typeError("El precio ocasional debe ser un número válido.")
-    .min(0, "El precio ocasional no puede ser negativo.")
-    .required("El precio ocasional es obligatorio."),
-  nuevoPrecioMayoristaConIva: yup
-    .number()
-    .typeError("El precio mayorista debe ser un número válido.")
-    .min(0, "El precio mayorista no puede ser negativo.")
-    .required("El precio mayorista es obligatorio."),
-  nuevoPrecioClienteConIva: yup
-    .number()
-    .typeError("El precio cliente debe ser un número válido.")
-    .min(0, "El precio cliente no puede ser negativo.")
-    .required("El precio cliente es obligatorio."),
-  nuevoPrecioOfertaConIva: yup
-    .number()
-    .typeError("El precio oferta debe ser un número válido.")
-    .min(0, "El precio oferta no puede ser negativo.")
-    .required("El precio oferta es obligatorio."),
+    .typeError("El precio debe ser un número válido.")
+    .min(0, "El precio no puede ser negativo.")
+    .required("El precio es obligatorio."),
 });
 
 export default function CambioPreciosManual({
@@ -52,12 +34,9 @@ export default function CambioPreciosManual({
   //===================== CONSTANTES VARIAS ============================================
 
   const methods = useForm<FormValues>({
-    resolver: yupResolver(schema),
+    resolver: yupResolver(schema) as Resolver<FormValues>,
     defaultValues: {
-      nuevoPrecioOcasionalConIva: 0,
-      nuevoPrecioMayoristaConIva: 0,
-      nuevoPrecioClienteConIva: 0,
-      nuevoPrecioOfertaConIva: 0,
+      precioNuevo: 0,
     },
   });
   
@@ -69,40 +48,14 @@ export default function CambioPreciosManual({
   } = methods;
 
 
-  const nuevoPrecioOcasionalConIva = watch("nuevoPrecioOcasionalConIva");
-  const nuevoPrecioMayoristaConIva = watch("nuevoPrecioMayoristaConIva");
-  const nuevoPrecioClienteConIva = watch("nuevoPrecioClienteConIva");
-  const nuevoPrecioOfertaConIva = watch("nuevoPrecioOfertaConIva");
+  const precioNuevo = watch("precioNuevo");
 
   //=============================== FUNCIONALIDAD ==================================
 
 
    useEffect(() => {
     if (producto) {
-      setValue(
-        "nuevoPrecioOcasionalConIva",
-        producto.precioOcasionalConIvaNuevo ??
-          producto.precioOcasionalConIva ??
-          0
-      );
-      setValue(
-        "nuevoPrecioMayoristaConIva",
-        producto.precioMayoristaConIvaNuevo ??
-          producto.precioMayoristaConIva ??
-          0
-      );
-      setValue(
-        "nuevoPrecioClienteConIva",
-        producto.precioClienteConIvaNuevo ??
-          producto.precioClienteConIva ??
-          0
-      );
-      setValue(
-        "nuevoPrecioOfertaConIva",
-        producto.precioOfertaConIvaNuevo ??
-          producto.precioOfertaConIva ??
-          0
-      );
+      setValue("precioNuevo", producto.precioNuevo ?? producto.precio);
     }
   }, [producto, setValue]);
 
@@ -111,10 +64,7 @@ export default function CambioPreciosManual({
     try {
       const productoActualizado: ConsultarProductosCambioPreciosMasivo = {
         ...producto,
-        precioOcasionalConIvaNuevo: formData.nuevoPrecioOcasionalConIva,
-        precioMayoristaConIvaNuevo: formData.nuevoPrecioMayoristaConIva,
-        precioClienteConIvaNuevo: formData.nuevoPrecioClienteConIva,
-        precioOfertaConIvaNuevo: formData.nuevoPrecioOfertaConIva,
+        precioNuevo: formData.precioNuevo,
         dirty: true, // ✅ Marcamos el producto como modificado
       };
 
@@ -190,103 +140,20 @@ export default function CambioPreciosManual({
 
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-
-                <div className="flex flex-col">
-                  <PriceInput
-                    name={`precioOcasionalConIva`}
-                    label="Precio Ocasional"
-                    value={producto.precioOcasionalConIva}
-                    onChange={() => {}}
-                    disabled
-                  />
-                </div>
-
-                <div className="flex flex-col">
-                  <PriceInput
-                    name={`precioMayoristaConIva`}
-                    label="Precio Mayorista"
-                    value={producto.precioMayoristaConIva}
-                    onChange={() => {}}
-                    disabled
-                  />
-                </div>
-
-                <div className="flex flex-col">
-                  <PriceInput
-                    name={`precioClienteConIva`}
-                    label="Precio Cliente"
-                    value={producto.precioClienteConIva}
-                    onChange={() => {}}
-                    disabled
-                  />
-                 {/*  <label className="text-sm font-medium text-gray-700">Precio Cliente</label>
-                  <input
-                    type="text"
-                    step="0.01"
-                    value={formatPrice(producto.precioClienteConIva, "ARS")}
-                    onChange={() => {}}
-                    className="bg-white text-black border rounded px-2 py-1"
-                    disabled
-                  /> */}
-                </div>
-
-                <div className="flex flex-col">
-                  <PriceInput
-                    name={`precioOfertaConIva`}
-                    label="Precio Oferta"
-                    value={producto.precioOfertaConIva}
-                    onChange={() => {}}
-                    disabled
-                  />
-                  
-                  {/* <label className="text-sm font-medium text-gray-700">Precio Oferta</label>
-                  <input
-                    type="text"
-                    step="0.01"
-                    value={formatPrice(producto.precioOfertaConIva, "ARS")}
-                    onChange={() => {}}
-                    className="bg-white text-black border rounded px-2 py-1"
-                    disabled
-                  /> */}
-                </div>
-
-                <div className="flex flex-col">
-                  <PriceInput
-                    name={`nuevoPrecioOcasionalConIva`}
-                    label="Nuevo Precio Ocasional"
-                    value={nuevoPrecioOcasionalConIva || 0}
-                    onChange={(value) => setValue(`nuevoPrecioOcasionalConIva`, Number(value))}
-                  />
-                </div>
-
-                <div className="flex flex-col">
-                  <PriceInput
-                    name={`nuevoPrecioMayoristaConIva`}
-                    label="Nuevo Precio Mayorista"
-                    value={nuevoPrecioMayoristaConIva || 0}
-                    onChange={(value) => setValue(`nuevoPrecioMayoristaConIva`, Number(value))}
-                  />
-                </div>
-
-                <div className="flex flex-col">
-                  <PriceInput
-                    name={`nuevoPrecioClienteConIva`}
-                    label="Nuevo Precio Cliente"
-                    value={nuevoPrecioClienteConIva || 0}
-                    onChange={(value) => setValue(`nuevoPrecioClienteConIva`, Number(value))}
-                  />
-                </div>
-
-                <div className="flex flex-col">
-                  <PriceInput
-                    name={`nuevoPrecioOfertaConIva`}
-                    label="Nuevo Precio Oferta"
-                    value={nuevoPrecioOfertaConIva || 0}
-                    onChange={(value) => setValue(`nuevoPrecioOfertaConIva`, Number(value))}
-                  />
-                </div>
-
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <PriceInput
+                  name="precioActual"
+                  label="Precio actual"
+                  value={producto.precio}
+                  onChange={() => {}}
+                  disabled
+                />
+                <PriceInput
+                  name="precioNuevo"
+                  label="Precio nuevo"
+                  value={precioNuevo}
+                  onChange={(value) => setValue("precioNuevo", Number(value))}
+                />
               </div>
 
               <div className="flex flex-col">
@@ -295,6 +162,7 @@ export default function CambioPreciosManual({
                   value={producto.observacion}
                   onChange={() => {}}
                   className="bg-white text-black border rounded px-2 py-1 min-h-[80px]"
+                  disabled
                 />
               </div>
             </CardContent>
