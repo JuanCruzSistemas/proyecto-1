@@ -80,11 +80,15 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     this.logger.error('═══════════════════════════════════════════════════════');
 
     // Respuesta al cliente
+    const httpResponse = exception instanceof HttpException ? exception.getResponse() : null;
+    const validationMessage = typeof httpResponse === 'object' && httpResponse !== null
+      ? (httpResponse as { message?: string | string[] }).message
+      : undefined;
     const errorResponse = {
       statusCode: status,
       timestamp: new Date().toISOString(),
       path: request.url,
-      message: exception?.message || 'Internal Server Error',
+      message: validationMessage ?? exception?.message ?? 'Internal Server Error',
       ...(process.env.NODE_ENV === 'development' && { 
         stack: exception?.stack,
         details: exception?.response 

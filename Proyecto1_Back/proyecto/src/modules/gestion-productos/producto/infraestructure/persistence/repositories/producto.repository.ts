@@ -1,3 +1,4 @@
+import { aplicarBusquedaParcial } from './producto-search.helper';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DatabaseConnectionException } from 'src/modules/common/exceptions/database-connection.exception';
@@ -6,7 +7,7 @@ import { IUnitOfWork } from 'src/modules/common/unit-of-work/unit-of-work.interf
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
 import { Repository, IsNull } from 'typeorm';
 import { ProductoEntity } from '../entities/producto.orm-entity';
-import { IProductoRepository } from '../../../domain/interfaces/producto.repository-interface';
+import { IProductoRepository } from '../../../domain/repositories/producto.repository.interface';
 import { Producto } from '../../../domain/entities/producto.entity';
 import { ProductoMapper } from '../mappers/producto.mapper';
 
@@ -48,6 +49,7 @@ export class ProductoRepository implements IProductoRepository {
       const entity = await this.repository.createQueryBuilder('producto')
                                           .leftJoinAndSelect('producto.linea', 'linea')
                                           .leftJoinAndSelect('producto.marca', 'marca')
+                                          .leftJoinAndSelect('producto.presentacion', 'presentacion')
                                           .where('producto.id = :id', { id })
                                           .andWhere('producto.deletedAt IS NULL')
                                           .getOne();
@@ -157,19 +159,21 @@ export class ProductoRepository implements IProductoRepository {
     conStock: boolean,
     skip: number,
     take: number,
+    lineaDenominacion?: string,
+    superlineaDenominacion?: string,
   ): Promise<{ data: Producto[]; total: number }> {
     const query = this.repository.createQueryBuilder('producto')
                                  .leftJoinAndSelect('producto.marca', 'marca')
                                  .leftJoinAndSelect('producto.linea', 'linea')
+                                 .leftJoinAndSelect('producto.presentacion', 'presentacion')
+                                 .leftJoinAndSelect('producto.proveedor', 'proveedor')
+                                 .leftJoin('linea.superlinea', 'superlinea');
 
-    if (denominacion || codigoProveedor || codigoReferencia) {
+    aplicarBusquedaParcial(query, { denominacion, lineaDenominacion, superlineaDenominacion });
+
+    if (codigoProveedor || codigoReferencia) {
       const condiciones: string[] = [];
       const parametros: any = {};
-
-      if (denominacion) {
-        condiciones.push(`UPPER(producto.denominacion) LIKE UPPER(:denominacion)`);
-        parametros.denominacion = `%${denominacion}%`;
-      }
 
       if (codigoProveedor) {
         if (codProveedorExacto) {
@@ -196,11 +200,15 @@ export class ProductoRepository implements IProductoRepository {
       query.andWhere('linea.id = :linea_id', { linea_id });
     }
 
+    if (proveedor_id) {
+      query.andWhere('proveedor.id = :proveedor_id', { proveedor_id });
+    }
+
     if (conStock) {
       query.andWhere('producto.stock > 0');
     }
     query.andWhere('producto.deletedAt IS NULL');
-    query.orderBy('producto.denominacion', 'ASC');
+    query.orderBy('producto.denominacion', 'ASC').addOrderBy('producto.id', 'ASC');
     query.skip(skip).take(take);
 
     const [data, total] = await query.getManyAndCount();
@@ -220,6 +228,7 @@ export class ProductoRepository implements IProductoRepository {
     const query = this.repository.createQueryBuilder('producto')
                                  .leftJoinAndSelect('producto.marca', 'marca')
                                  .leftJoinAndSelect('producto.linea', 'linea')
+                                 .leftJoinAndSelect('producto.presentacion', 'presentacion')
                                  .leftJoinAndSelect('producto.proveedor', 'proveedor')
                                  .where('producto.deletedAt IS NULL');
 
@@ -317,6 +326,7 @@ export class ProductoRepository implements IProductoRepository {
         .createQueryBuilder('producto')
         .leftJoinAndSelect('producto.marca', 'marca')
         .leftJoinAndSelect('producto.linea', 'linea')
+        .leftJoinAndSelect('producto.presentacion', 'presentacion')
 
       query.andWhere('producto.deletedAt IS NULL');
       query.orderBy('producto.denominacion', 'ASC');
@@ -330,6 +340,16 @@ export class ProductoRepository implements IProductoRepository {
         'Error al conectar con la base de datos.',
       );
     }
+  }
+
+  async existsProductosActivosByPresentacion(presentacionId: number): Promise<boolean> {
+    const count = await this.repository.createQueryBuilder('producto')
+                                       .where('producto.presentacion_id = :presentacionId', { presentacionId })
+                                       .andWhere('producto.deletedAt IS NULL')
+                                       .limit(1)
+                                       .getCount();
+
+    return count > 0;
   }
 
   async existsProductosActivosByMarca(marcaId: number): Promise<boolean> {

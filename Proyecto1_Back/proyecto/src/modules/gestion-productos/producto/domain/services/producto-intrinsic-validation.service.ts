@@ -1,4 +1,3 @@
-// domain/services/producto-intrinsic-validation.service.ts
 import { Injectable, BadRequestException } from '@nestjs/common';
 
 @Injectable()
@@ -7,7 +6,7 @@ export class ProductoIntrinsicValidationService {
    * Valida todos los datos intrínsecos del producto
    */
   validarDatosBasicos(datos: {
-    denominacion: string;
+    denominacion?: string;
     marcaId: number;
     lineaId: number;
     precioMayorista?: number;
@@ -23,9 +22,9 @@ export class ProductoIntrinsicValidationService {
     );
   }
 
-  private validarDenominacion(denominacion: string): void {
-    if (!denominacion || denominacion.trim().length === 0) {
-      throw new BadRequestException('La denominación es obligatoria');
+  private validarDenominacion(denominacion?: string): void {
+    if (denominacion === undefined) {
+      return;
     }
     if (denominacion.length > 200) {
       throw new BadRequestException(

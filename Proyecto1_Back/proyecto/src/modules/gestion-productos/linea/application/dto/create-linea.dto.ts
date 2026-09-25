@@ -1,6 +1,8 @@
 import { Transform } from 'class-transformer';
 import {
   IsString,
+  IsDefined,
+  Min,
   IsNotEmpty,
   MaxLength,
   Matches,
@@ -12,6 +14,12 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateLineaDto {
+  @ApiProperty({ description: 'SuperLínea activa a la que pertenece la Línea' })
+  @IsDefined({ message: 'Debe seleccionar una SuperLínea para la línea' })
+  @IsInt({ message: 'Debe seleccionar una SuperLínea para la línea' })
+  @Min(1, { message: 'Debe seleccionar una SuperLínea para la línea' })
+  superlineaId: number;
+
   @Transform(({ value }) => value.trim().toLowerCase())
   @IsString({ message: 'La denominación debe ser una cadena de texto.' }) // Valida que sea string
   @IsNotEmpty({ message: 'La denominación no puede estar vacía.' }) // Valida que no esté vacía

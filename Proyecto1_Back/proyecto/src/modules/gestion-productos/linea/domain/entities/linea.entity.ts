@@ -1,4 +1,6 @@
 import { LineaCreateParams, LineaReconstituteParams } from "./linea.types";
+import { DenominacionRequeridaException } from "../exceptions/denominacion-requerida.exception";
+import { StockMinimoInvalidoException } from "../exceptions/stock-minimo-invalido.exception";
 
 export class Linea {
   private constructor(
@@ -13,6 +15,7 @@ export class Linea {
     private usuarioCreatedId: number | null,
     private usuarioUpdatedId: number | null,
     private usuarioDeletedId: number | null,
+    private superlineaId: number,
     private sistema: number
   ) {}
 
@@ -20,6 +23,14 @@ export class Linea {
    * Fábrica para una Línea NUEVA, valida invariantes
    */
   public static create(params: LineaCreateParams): Linea {
+    if (!params.denominacion || params.denominacion.trim().length === 0) {
+      throw new DenominacionRequeridaException();
+    }
+
+    if (params.stockMinimo < 0) {
+      throw new StockMinimoInvalidoException(params.stockMinimo);
+    }
+
     return new Linea(
       null,
       params.denominacion,
@@ -32,6 +43,7 @@ export class Linea {
       params.usuarioCreatedId,
       null,
       null,
+      params.superlineaId,
       0
     );
   }
@@ -52,17 +64,28 @@ export class Linea {
       params.usuarioCreatedId,
       params.usuarioUpdatedId,
       params.usuarioDeletedId,
+      params.superlineaId,
       params.sistema
     );
   }
 
   public actualizarDatos(params: {
     denominacion: string;
+    superlineaId: number;
     observacion: string | null;
     utilizaStockMinimo: boolean;
     stockMinimo: number;
     usuarioUpdatedId: number;
   }): void {
+    if (!params.denominacion || params.denominacion.trim().length === 0) {
+      throw new DenominacionRequeridaException();
+    }
+
+    if (params.stockMinimo < 0) {
+      throw new StockMinimoInvalidoException(params.stockMinimo);
+    }
+
+    this.superlineaId = params.superlineaId;
     this.denominacion = params.denominacion;
     this.observacion = params.observacion;
     this.utilizaStockMinimo = params.utilizaStockMinimo;
@@ -75,6 +98,8 @@ export class Linea {
     this.deletedAt = new Date();
     this.usuarioDeletedId = usuarioDeletedId;
   }
+
+  public getSuperlineaId(): number { return this.superlineaId; }
 
   public getId(): number | null {
     return this.id;

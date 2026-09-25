@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DatabaseConnectionException } from 'src/modules/common/exceptions/database-connection.exception';
 import { EntityNotFoundException } from 'src/modules/common/exceptions/entity-notFound-exceptions';
@@ -12,6 +12,7 @@ import { FechaUtils } from 'src/modules/common/utils/date/fecha-utils';
 import { QueryBuilderHelper } from 'src/modules/common/query-builders/query-builder-helpers';
 import { handleDatabaseError } from 'src/modules/common/query-builders/database-error.helper';
 import { LineaOrmMapper } from '../mappers/linea.mapper';
+import { SuperlineaEntity } from '../../../../superlinea/infraestructure/persistence/entities/superlinea.orm-entity';
 
 @Injectable()
 export class LineaRepository implements ILineaRepository {
@@ -22,13 +23,24 @@ export class LineaRepository implements ILineaRepository {
     private readonly repository: Repository<LineaEntity>,
   ) {}
 
+  private async saveWithActiveSuperlinea(row: LineaEntity): Promise<LineaEntity> {
+    return this.repository.manager.transaction(async manager => {
+      const superlinea = await manager.getRepository(SuperlineaEntity).findOne({
+        where: { id: row.superlineaId }, lock: { mode: 'pessimistic_write' },
+      });
+      if (!superlinea) throw new BadRequestException('Debe seleccionar una SuperLínea válida y activa.');
+      return manager.save(LineaEntity, row);
+    });
+  }
+
   async create(data: Linea): Promise<Linea> {
     try {
       const nuevaEntity = this.repository.create(LineaOrmMapper.toOrm(data));
-      const entityGuardada = await this.repository.save(nuevaEntity);
+      const entityGuardada = await this.saveWithActiveSuperlinea(nuevaEntity);
 
       return LineaOrmMapper.toDomain(entityGuardada);
     } catch (error) {
+      if (error instanceof HttpException) throw error;
       this.logger.error(`Error al conectar con la base de datos: ${error}`);
       throw new DatabaseConnectionException(
         'Error al guardar en la base de datos.',
@@ -45,7 +57,7 @@ export class LineaRepository implements ILineaRepository {
       throw new NotFoundException(`Línea con ID ${id} no encontrada`);
     }
 
-    const entityActualizada = await this.repository.save(LineaOrmMapper.toOrm(data, entity));
+    const entityActualizada = await this.saveWithActiveSuperlinea(LineaOrmMapper.toOrm(data, entity));
 
     return LineaOrmMapper.toDomain(entityActualizada);
   }

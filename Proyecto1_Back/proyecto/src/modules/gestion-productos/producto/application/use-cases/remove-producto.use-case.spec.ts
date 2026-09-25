@@ -3,7 +3,7 @@ import { NotFoundException } from '@nestjs/common';
 import { RemoveProductoUseCase } from './remove-producto.use-case';
 import { FindEntityByIdUseCase } from './find-entity-by-id.use-case';
 import { UsuarioService } from 'src/modules/gestion-usuario/usuario/application/services/usuario.service';
-import { IProductoRepository, PRODUCTO_REPOSITORY_TOKEN } from '../../domain/interfaces/producto.repository-interface';
+import { IProductoRepository, PRODUCTO_REPOSITORY_TOKEN } from '../../domain/repositories/producto.repository.interface';
 import { ProductoFactory } from '../../domain/factories/producto.factory';
 import { Linea } from 'src/modules/gestion-productos/linea/domain/entities/linea.entity';
 import { Marca } from 'src/modules/gestion-productos/marca/domain/entities/marca.entity';
@@ -17,6 +17,7 @@ describe('RemoveProductoUseCase', () => {
 
   const usuario = { id: 1 } as Usuario;
   const linea = Linea.create({
+    superlineaId: 1,
     denominacion: 'Aceites',
     observacion: null,
     utilizaStockMinimo: false,
@@ -47,6 +48,7 @@ describe('RemoveProductoUseCase', () => {
       usuarioCreated: usuario,
       linea,
       marca,
+      presentacion: null,
       utilizaPack: false,
       cantidadPorPack: null,
       imagen: null,
@@ -72,6 +74,7 @@ describe('RemoveProductoUseCase', () => {
       existsByCodigoProveedor: jest.fn(),
       existsProductosActivosByMarca: jest.fn(),
       existsProductosActivosByLinea: jest.fn(),
+      existsProductosActivosByPresentacion: jest.fn(),
       findByIds: jest.fn(),
     };
     findEntityByIdUseCase = { execute: jest.fn() };

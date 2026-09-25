@@ -8,12 +8,14 @@ import {
   IsBoolean,
   IsNumber,
   IsInt,
+  IsPositive,
+  Min,
 } from 'class-validator';
 
 export class CreateProductoDto {
-  @Transform(({ value }) => value.trim().toLowerCase())
+  @IsOptional()
+  @Transform(({ value }) => value?.trim().toLowerCase())
   @IsString({ message: 'La denominación debe ser una cadena de texto.' }) // Valida que sea string
-  @IsNotEmpty({ message: 'La denominación no puede estar vacía.' }) // Valida que no esté vacía
   @MaxLength(255, { message: 'La denominación no puede estar vacía.' })
   /*  @Matches(/^[A-Za-z0-9 áéíóúÁÉÍÓÚñÑ.\-/]+$/, {
     message:
@@ -22,7 +24,7 @@ export class CreateProductoDto {
   @Matches(/^[\w áéíóúÁÉÍÓÚñÑ.\-/%]+$/, {
     message: 'La denominación contiene caracteres inválidos ',
   })
-  denominacion: string;
+  denominacion?: string;
 
   @IsOptional()
   @IsString()
@@ -49,11 +51,13 @@ export class CreateProductoDto {
   utilizaStockMinimo: boolean;
 
   @IsOptional()
-  @IsInt()
+  @IsInt({ message: 'El stock mínimo debe ser un número entero.' })
+  @Min(0, { message: 'El stock mínimo no puede ser negativo.' })
   stockMinimo?: number;
 
   @IsOptional()
-  @IsInt()
+  @IsInt({ message: 'El stock debe ser un número entero.' })
+  @Min(0, { message: 'El stock no puede ser negativo.' })
   stock?: number;
 
   @IsOptional()
@@ -67,7 +71,8 @@ export class CreateProductoDto {
   envioGratis?: boolean;
 
   @IsOptional()
-  @IsNumber()
+  @IsNumber({}, { message: 'El costo debe ser un número.' })
+  @IsPositive({ message: 'El costo debe ser mayor a 0.' })
   costo?: number;
 
   @IsBoolean()
@@ -84,6 +89,10 @@ export class CreateProductoDto {
   @IsNotEmpty({ message: 'La marca es obligatoria.' })
   @IsInt({ message: 'La marca  debe ser un número entero.' })
   marcaId: number;
+
+  @IsOptional()
+  @IsInt({ message: 'La presentación debe ser un número entero.' })
+  presentacionId?: number;
 
   @IsOptional()
   @IsNumber()

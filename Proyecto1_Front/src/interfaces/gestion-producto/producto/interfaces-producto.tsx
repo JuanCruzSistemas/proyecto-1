@@ -1,6 +1,7 @@
 import { SelectLinea } from "../linea/interfaces-linea";
 import { SelectMarca } from "../marca/interfaces-marca";
 import { SelectSublinea } from "../sublinea/interfaces-sublinea";
+import { SelectPresentacion } from "../presentacion/interfaces-presentacion";
 import { ItemProdAlternativo } from "./interfaces-item-prod-alternativo";
 import { ItemProveedor } from "./interfaces-item-proveedor";
 
@@ -36,6 +37,8 @@ export interface Producto {
   usuarioUpdatedId: number;
   linea: SelectLinea;
   marca: SelectMarca;
+  presentacion: SelectPresentacion | null;
+  denominacionEditadaManualmente: boolean;
   /* itemsAlternativo?: ItemProdAlternativo[] | null;
   poseeAlternativos: boolean;
   esAlternativo: boolean; */
@@ -91,19 +94,11 @@ export interface ConsultarProductosCambioPreciosMasivo {
   id: number;
   denominacion: string;
   codigoProveedor: string;
-  observacion: string;
-
-  precioOcasionalConIva: number;
-  precioOcasionalConIvaNuevo: number;
-  precioMayoristaConIva: number;
-  precioMayoristaConIvaNuevo: number;
-  precioClienteConIva: number;
-  precioClienteConIvaNuevo: number;
-  precioOfertaConIva: number;
-  precioOfertaConIvaNuevo: number;
-
+  observacion?: string;
+  costo: number;
+  precio: number;
+  precioNuevo?: number;
   dirty: boolean;
-
 }
 
 export interface ConsultarProductosListaPrecios {
@@ -184,12 +179,6 @@ export const TipoProducto = {
   NACIONAL: 0,
   IMPORTADO: 1,
 };
-
-export interface SelectPresentacion {
-  id: number;
-  denominacion: string;
-}
-
 
 export const TipoPrecioN = {
   OCASIONAL: 0,

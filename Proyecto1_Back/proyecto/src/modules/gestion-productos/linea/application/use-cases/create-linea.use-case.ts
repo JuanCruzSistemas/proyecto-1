@@ -5,6 +5,8 @@ import { Linea } from '../../domain/entities/linea.entity';
 import { CreateLineaDto } from '../dto/create-linea.dto';
 import { LineaUniquenessValidator } from '../../infraestructure/validators/linea-uniqueness.validator';
 
+import { SuperlineaService } from '../../../superlinea/application/services/superlinea.service';
+
 @Injectable()
 export class CreateLineaUseCase {
   private readonly ENTITY_NAME = 'Linea';
@@ -13,6 +15,7 @@ export class CreateLineaUseCase {
   constructor(
     @Inject(LINEA_REPOSITORY_TOKEN)
     private readonly repository: ILineaRepository,
+    private readonly superlineas: SuperlineaService,
     private readonly uniquenessValidator: LineaUniquenessValidator
   ) {}
 
@@ -20,8 +23,10 @@ export class CreateLineaUseCase {
     this.logger.log(`Creando un nuevo ${this.ENTITY_NAME} con denominación: ${dto.denominacion} a: ${dto.denominacion}`,);
     await this.uniquenessValidator.validarDenominacionUnica(dto.denominacion, 0);
 
+    await this.superlineas.assertActive(dto.superlineaId);
     const nuevaLinea = Linea.create({
       denominacion: dto.denominacion,
+      superlineaId: dto.superlineaId,
       observacion: dto.observacion ?? null,
       utilizaStockMinimo: dto.utilizaStockMinimo,
       stockMinimo: dto.stockMinimo ?? 0,

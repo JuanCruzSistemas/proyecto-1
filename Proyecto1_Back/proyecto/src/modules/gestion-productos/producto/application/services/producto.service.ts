@@ -6,12 +6,13 @@ import {
 } from '@nestjs/common';
 import { IUnitOfWork } from 'src/modules/common/unit-of-work/unit-of-work.interface';
 import { Producto } from '../../domain/entities/producto.entity';
-import { IProductoRepository, PRODUCTO_REPOSITORY_TOKEN } from '../../domain/interfaces/producto.repository-interface';
+import { IProductoRepository, PRODUCTO_REPOSITORY_TOKEN } from '../../domain/repositories/producto.repository.interface';
 import { CreateProductoDto } from '../dto/create-producto.dto';
 import { GetProductoDto } from '../dto/get-producto.dto';
 import { UpdateProductoDto } from '../dto/update-producto.dto';
 import { LineaService } from 'src/modules/gestion-productos/linea/application/services/linea.service';
 import { MarcaService } from 'src/modules/gestion-productos/marca/application/services/marca.service';
+import { PresentacionService } from 'src/modules/gestion-productos/presentacion/application/services/presentacion.service';
 import { CreateProductoUseCase } from '../use-cases/create-producto.use-case';
 import { UpdateProductoUseCase } from '../use-cases/update-producto.use-case';
 import { FindByProductoUseCase } from '../use-cases/find-by-producto.use-case';
@@ -39,6 +40,9 @@ export class ProductoService {
 
     @Inject(forwardRef(() => MarcaService))
     private readonly marcaService: MarcaService,
+
+    @Inject(forwardRef(() => PresentacionService))
+    private readonly presentacionService: PresentacionService,
   ) {}
 
   private readonly ENTITY_NAME = 'Producto';
@@ -71,6 +75,8 @@ export class ProductoService {
     conStock: boolean,
     skip: number,
     take: number,
+    lineaDenominacion?: string,
+    superlineaDenominacion?: string,
   ): Promise<{ data: GetProductoDto[]; total: number }> {
     return this.findByProductoUseCase.findBy(
       denominacion,
@@ -83,6 +89,8 @@ export class ProductoService {
       conStock,
       skip,
       take,
+      lineaDenominacion,
+      superlineaDenominacion,
     );
   }
 
@@ -117,6 +125,10 @@ export class ProductoService {
 
   async findAllForMarcas(denominacion: string) {
     return this.marcaService.findAllFor(denominacion);
+  }
+
+  async findAllForPresentaciones(denominacion: string) {
+    return this.presentacionService.findAllFor(denominacion);
   }
 
   async findByDenominacionCodigoProveedorFiltered(

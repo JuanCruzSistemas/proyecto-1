@@ -4,6 +4,7 @@ import { Linea } from "../../../../interfaces/gestion-producto/linea/interfaces-
 //===================== interfaces ============================================//
 
 export interface FormValues {
+  superlineaId: number;
   denominacion: string;
   observacion?: string | null;
   stockMinimo?: number;
@@ -20,18 +21,26 @@ export interface SublineasEnPayload {
 
 export const schema = (utilizaStockMinimo: boolean) =>
   yup.object().shape({
+    superlineaId: yup.number()
+      .typeError("Debe seleccionar una SuperLínea para la línea")
+      .required("Debe seleccionar una SuperLínea para la línea")
+      .integer("Debe seleccionar una SuperLínea para la línea")
+      .min(1, "Debe seleccionar una SuperLínea para la línea"),
     denominacion: yup
       .string()
       .trim()
       .lowercase()
       .required("La denominación es obligatoria.")
+      .test("not-empty", "La denominación no puede estar vacía o contener solo espacios.", (value) => {
+        return value !== undefined && value.trim().length > 0;
+      })
       .max(255, "Máximo 255 caracteres.")
       .matches(/^[A-Za-z0-9 áéíóúÁÉÍÓÚñÑ]+$/, "Solo se permiten letras, números y espacios."),
     observacion: yup.string().optional().nullable(),
     stockMinimo: yup.number().when([], {
       is: () => utilizaStockMinimo,
-      then: (schema) => schema.required("El Stock minimo es obligatorio.").moreThan(0, "El stock minimo debe ser mayor a 0."),
-      otherwise: (schema) => schema.optional(),
+      then: (schema) => schema.required("El stock mínimo es obligatorio.").min(0, "El stock mínimo no puede ser negativo."),
+      otherwise: (schema) => schema.min(0, "El stock mínimo no puede ser negativo.").optional(),
     }),
     utilizaStockMinimo: yup.boolean().optional(),
    
@@ -42,6 +51,7 @@ export const schema = (utilizaStockMinimo: boolean) =>
 export const transformData = (linea: Linea): FormValues => {
   return {
     denominacion: linea.denominacion,
+    superlineaId: linea.superlineaId,
     observacion: linea.observacion ?? null,
     stockMinimo: linea.stockMinimo ?? 0,
     utilizaStockMinimo: linea.utilizaStockMinimo ?? false,

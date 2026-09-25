@@ -6,6 +6,7 @@ export class LineaOrmMapper {
   static toDomain(orm: LineaEntity): Linea {
     return Linea.reconstitute({
       id: orm.id,
+      superlineaId: orm.superlineaId,
       denominacion: orm.denominacion,
       observacion: orm.observacion ?? null,
       utilizaStockMinimo: orm.utilizaStockMinimo,
@@ -25,6 +26,7 @@ export class LineaOrmMapper {
       target.id = linea.getId()!;
     }
 
+    target.superlineaId = linea.getSuperlineaId();
     target.denominacion = linea.getDenominacion();
     target.observacion = linea.getObservacion() ?? undefined;
     target.utilizaStockMinimo = linea.getUtilizaStockMinimo();
@@ -53,6 +55,7 @@ export class LineaOrmMapper {
     const deletedAt = entity.getDeletedAt();
     return {
       id: entity.getId() ?? 0,
+      superlineaId: entity.getSuperlineaId(),
       denominacion: entity.getDenominacion(),
       stockMinimo: entity.getStockMinimo(),
       utilizaStockMinimo: entity.getUtilizaStockMinimo(),

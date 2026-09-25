@@ -91,6 +91,21 @@ export class ProductoDto {
   @Type(() => ReferenciaDto)
   proveedor?: ReferenciaDto;
 
+  @ApiProperty({
+    type: () => ReferenciaDto,
+    description: 'Presentación asociada al producto',
+    nullable: true,
+  })
+  @ValidateNested()
+  @Type(() => ReferenciaDto)
+  presentacion: ReferenciaDto | null;
+
+  @ApiProperty({
+    description: 'Indica si la denominación fue editada manualmente y no debe regenerarse automáticamente',
+  })
+  @IsBoolean()
+  denominacionEditadaManualmente: boolean;
+
   @ApiProperty()
   @IsString()
   ubicacion: string;

@@ -4,6 +4,16 @@ import { Transform, Type } from 'class-transformer';
 export class SearchProductoPaginationWithDto {
   @IsOptional()
   @IsString()
+  @Transform(({ value }) => typeof value === 'string' ? value.trim() : value)
+  lineaDenominacion?: string;
+
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }) => typeof value === 'string' ? value.trim() : value)
+  superlineaDenominacion?: string;
+
+  @IsOptional()
+  @IsString()
   denominacion?: string;
 
   @IsOptional()

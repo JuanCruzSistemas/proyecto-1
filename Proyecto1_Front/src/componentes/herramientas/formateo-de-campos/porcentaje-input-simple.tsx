@@ -12,6 +12,8 @@ interface PorcentajeInputProps {
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   inputRef?: React.Ref<HTMLInputElement>;
   error?: string; // 🔹 opcional: si querés mostrar un error desde afuera
+  suffix?: string;
+  allowNegative?: boolean;
 }
 
 const PorcentajeInput: React.FC<PorcentajeInputProps> = ({
@@ -24,19 +26,14 @@ const PorcentajeInput: React.FC<PorcentajeInputProps> = ({
   onKeyDown,
   inputRef,
   error,
+  suffix = " %",
+  allowNegative = false,
 }) => {
-  const handleFocus = () => {
-    setTimeout(() => {
-      if (inputRef && "current" in inputRef && inputRef.current) {
-        const input = inputRef.current;
-        const valueStr = input.value;
-        const commaIndex = valueStr.indexOf(",");
-
-        if (commaIndex !== -1) {
-          input.setSelectionRange(commaIndex, commaIndex);
-        }
-      }
-    }, 0);
+  // Selecciona todo el contenido al enfocar: con fixedDecimalScale, si el cursor queda
+  // al final ("0,00 %|"), lo tipeado desplaza los decimales (escribir "10" daba 0,01 %).
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    const input = e.target;
+    setTimeout(() => input.select(), 0);
   };
 
   return (
@@ -50,12 +47,12 @@ const PorcentajeInput: React.FC<PorcentajeInputProps> = ({
           onKeyDown={onKeyDown}
           value={value}
           name={name}
-          suffix=" %"
+          suffix={suffix}
           thousandSeparator="."
           decimalSeparator=","
           decimalScale={2}
           fixedDecimalScale
-          allowNegative={false}
+          allowNegative={allowNegative}
           disabled={disabled}
           onValueChange={(values) => {
             onChange(values.floatValue ?? 0);

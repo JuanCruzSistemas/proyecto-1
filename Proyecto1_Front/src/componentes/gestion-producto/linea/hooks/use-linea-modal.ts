@@ -21,9 +21,9 @@ export function useLineaModal() {
     setTipo("edicion");
   };
 
-  const abrirAuditoria = (auditoria: Auditoria) => {
+  const abrirAuditoria = (auditoria: Auditoria, linea?: Linea) => {
     setAuditoria(auditoria);
-    setLinea(null);
+    setLinea(linea ?? null);
     setTipo("auditoria");
   };
 

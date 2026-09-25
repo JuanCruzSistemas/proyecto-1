@@ -1,14 +1,19 @@
 import { ProductoFactory } from '../factories/producto.factory';
 import { Linea } from '../../../linea/domain/entities/linea.entity';
 import { Marca } from '../../../marca/domain/entities/marca.entity';
+import { Presentacion } from '../../../presentacion/domain/entities/presentacion.entity';
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
 import { CostoInvalidoException } from '../exceptions/costo-invalido.exception';
 import { StockInvalidoException } from '../exceptions/stock-invalido.exception';
 import { MargenInvalidoException } from '../exceptions/margen-invalido.exception';
+import { MotivoRequeridoException } from '../exceptions/motivo-requerido.exception';
+import { DenominacionRequeridaException } from '../exceptions/denominacion-requerida.exception';
+import { PresentacionRequeridaException } from '../exceptions/presentacion-requerida.exception';
 
 describe('Producto (dominio)', () => {
   const usuario = {} as Usuario;
   const linea = Linea.create({
+    superlineaId: 1,
     denominacion: 'Aceites',
     observacion: null,
     utilizaStockMinimo: false,
@@ -17,6 +22,11 @@ describe('Producto (dominio)', () => {
   });
   const marca = Marca.create({
     denominacion: 'Marca genérica',
+    observacion: null,
+    usuarioCreatedId: 1,
+  });
+  const presentacion = Presentacion.create({
+    denominacion: 'Caja x 12',
     observacion: null,
     usuarioCreatedId: 1,
   });
@@ -39,6 +49,7 @@ describe('Producto (dominio)', () => {
       usuarioCreated: usuario,
       linea,
       marca,
+      presentacion,
       utilizaPack: false,
       cantidadPorPack: null,
       imagen: null,
@@ -53,10 +64,8 @@ describe('Producto (dominio)', () => {
       expect(producto.getPrecio()).toBeCloseTo(130);
     });
 
-    it('permite costo 0 (y por lo tanto precio 0)', () => {
-      const producto = crearProducto({ costo: 0, margen: 0.5 });
-      expect(producto.getCosto()).toBe(0);
-      expect(producto.getPrecio()).toBe(0);
+    it('rechaza un costo 0 (porque el precio resultante sería 0)', () => {
+      expect(() => crearProducto({ costo: 0, margen: 0.5 })).toThrow(CostoInvalidoException);
     });
 
     it('rechaza un costo negativo', () => {
@@ -69,6 +78,10 @@ describe('Producto (dominio)', () => {
 
     it('rechaza un stock negativo', () => {
       expect(() => crearProducto({ stock: -5 })).toThrow(StockInvalidoException);
+    });
+
+    it('rechaza una denominación vacía', () => {
+    expect(() => crearProducto({ denominacion: '' })).toThrow(DenominacionRequeridaException);
     });
 
     it('nace sin id y con movimientosStock vacío', () => {
@@ -104,6 +117,7 @@ describe('Producto (dominio)', () => {
         usuarioDeleted: null,
         linea,
         marca,
+        presentacion,
         utilizaPack: false,
         cantidadPorPack: null,
         imagen: null,
@@ -111,6 +125,7 @@ describe('Producto (dominio)', () => {
         movimientosStock: [],
         sistema: 0,
         codigoReferencia: null,
+        denominacionEditadaManualmente: false,
       });
 
       expect(producto.getId()).toBe(42);
@@ -149,6 +164,11 @@ describe('Producto (dominio)', () => {
       // El ajuste rechazado no debe mutar el stock previo.
       expect(producto.getStock()).toBe(3);
     });
+
+    it('rechaza un ajuste de stock sin motivo', () => {
+      const producto = crearProducto({ stock: 10 });
+      expect(() => producto.ajustarStock(5, '')).toThrow(MotivoRequeridoException);
+    });
   });
 
   describe('calcularPrecio()', () => {
@@ -170,6 +190,7 @@ describe('Producto (dominio)', () => {
         observacion: producto.getObservacion(),
         linea,
         marca,
+        presentacion: producto.getPresentacion(),
         utilizaPack: producto.getUtilizaPack(),
         cantidadPorPack: producto.getCantidadPorPack(),
         imagen: producto.getImagen(),

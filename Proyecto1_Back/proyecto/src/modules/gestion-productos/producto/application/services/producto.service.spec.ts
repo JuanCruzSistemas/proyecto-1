@@ -1,8 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProductoService } from './producto.service';
-import { IProductoRepository, PRODUCTO_REPOSITORY_TOKEN } from '../../domain/interfaces/producto.repository-interface';
+import { IProductoRepository, PRODUCTO_REPOSITORY_TOKEN } from '../../domain/repositories/producto.repository.interface';
 import { LineaService } from 'src/modules/gestion-productos/linea/application/services/linea.service';
 import { MarcaService } from 'src/modules/gestion-productos/marca/application/services/marca.service';
+import { PresentacionService } from 'src/modules/gestion-productos/presentacion/application/services/presentacion.service';
 import { ProductoFactory } from '../../domain/factories/producto.factory';
 import { Linea } from 'src/modules/gestion-productos/linea/domain/entities/linea.entity';
 import { Marca } from 'src/modules/gestion-productos/marca/domain/entities/marca.entity';
@@ -29,9 +30,11 @@ describe('ProductoService', () => {
   let findByDenominacionUseCase: jest.Mocked<Pick<FindByDenominacionUseCase, 'execute'>>;
   let lineaService: jest.Mocked<Pick<LineaService, 'findEntityById' | 'findAllFor'>>;
   let marcaService: jest.Mocked<Pick<MarcaService, 'findEntityById' | 'findAllFor'>>;
+  let presentacionService: jest.Mocked<Pick<PresentacionService, 'findAllFor'>>;
 
   const usuario = { id: 1 } as Usuario;
   const linea = Linea.create({
+    superlineaId: 1,
     denominacion: 'Aceites',
     observacion: null,
     utilizaStockMinimo: false,
@@ -62,6 +65,7 @@ describe('ProductoService', () => {
       usuarioCreated: usuario,
       linea,
       marca,
+      presentacion: null,
       utilizaPack: false,
       cantidadPorPack: null,
       imagen: null,
@@ -87,6 +91,7 @@ describe('ProductoService', () => {
       existsByCodigoProveedor: jest.fn().mockResolvedValue(false),
       existsProductosActivosByMarca: jest.fn(),
       existsProductosActivosByLinea: jest.fn(),
+      existsProductosActivosByPresentacion: jest.fn(),
       findByIds: jest.fn(),
     };
 
@@ -100,6 +105,7 @@ describe('ProductoService', () => {
     findByDenominacionUseCase = { execute: jest.fn() };
     lineaService = { findEntityById: jest.fn(), findAllFor: jest.fn() };
     marcaService = { findEntityById: jest.fn(), findAllFor: jest.fn() };
+    presentacionService = { findAllFor: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -115,6 +121,7 @@ describe('ProductoService', () => {
         { provide: FindByDenominacionUseCase, useValue: findByDenominacionUseCase },
         { provide: LineaService, useValue: lineaService },
         { provide: MarcaService, useValue: marcaService },
+        { provide: PresentacionService, useValue: presentacionService },
       ],
     }).compile();
 
