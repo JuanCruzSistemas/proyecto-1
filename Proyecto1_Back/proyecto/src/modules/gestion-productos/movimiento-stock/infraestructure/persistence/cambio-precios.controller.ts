@@ -1,10 +1,14 @@
-import { Body, Controller, Patch } from '@nestjs/common';
+import { Body, Controller, Patch, UseGuards } from '@nestjs/common';
 import { AplicarCambiosMasivosDto } from '../../../producto/application/dto/aplicar-cambios-masivos.dto';
 import { AplicarCambioMasivoUseCase } from '../../../producto/application/use-cases/aplicar-cambio-masivo.use-case';
 import { GuardarCambioMasivoUseCase } from '../../../producto/application/use-cases/guardar-cambio-masivo.use-case';
 import { MessageFrontUtils } from '../../../../common/utils/message/message-front.util';
+import { AuthGuard } from 'src/modules/gestion-usuario/auth/auth.guard';
+import { Roles } from 'src/modules/gestion-usuario/auth/roles.decorator';
 
 @Controller('cambio-precios')
+@UseGuards(AuthGuard)
+@Roles('Root', 'Administrador', 'Empleado')
 export class CambioPreciosController {
   constructor(
     private readonly aplicarCambioMasivoUseCase: AplicarCambioMasivoUseCase,

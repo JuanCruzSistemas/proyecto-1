@@ -34,14 +34,9 @@ async function bootstrap() {
 
   // Configurar filtro global de excepciones
   app.useGlobalFilters(new GlobalExceptionFilter());
-  // inspeccion de rutas
-
   app.use(bodyParser.json({ limit: '50mb' }));
   app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
 
   await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
-  // inspeccion de rutas
-  const router = app.getHttpAdapter().getInstance();
-  console.log(router._router?.stack);
 }
 bootstrap();

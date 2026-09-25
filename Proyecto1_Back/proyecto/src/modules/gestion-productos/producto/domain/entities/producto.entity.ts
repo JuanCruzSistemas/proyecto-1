@@ -7,6 +7,7 @@ import { Stock } from '../value-objects/stock.vo';
 import { Precio } from '../value-objects/precio.vo';
 import { Costo } from '../value-objects/costo.vo';
 import { Margen } from '../value-objects/margen.vo';
+import { MargenInvalidoException } from '../exceptions/margen-invalido.exception';
 import { ProductoActualizarDatosParams } from './producto.types';
 
 /**
@@ -102,7 +103,16 @@ export class Producto {
     }
 
     public actualizarPrecio(precio: number, usuarioUpdated: Usuario): void {
-        this.precio = Precio.fromValue(precio);
+        const costo = this.costo.getValue();
+        if (costo === 0 && precio !== 0) {
+            throw new MargenInvalidoException(precio);
+        }
+        const margen = costo === 0
+            ? this.margen
+            : Margen.create(precio / costo - 1);
+        const nuevoPrecio = Precio.fromValue(precio);
+        this.margen = margen;
+        this.precio = nuevoPrecio;
         this.usuarioUpdated = usuarioUpdated;
         this.updatedAt = new Date();
     }

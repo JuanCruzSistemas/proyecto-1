@@ -180,4 +180,29 @@ describe('Producto (dominio)', () => {
       expect(producto.getPrecio()).toBeCloseTo(300);
     });
   });
+
+  describe('actualizarPrecio()', () => {
+    it('recalcula el margen cuando el nuevo precio es compatible con el costo', () => {
+      const producto = crearProducto({ costo: 100, margen: 0.3 });
+
+      producto.actualizarPrecio(150, usuario);
+
+      expect(producto.getPrecio()).toBe(150);
+      expect(producto.getMargen()).toBeCloseTo(0.5);
+    });
+
+    it('rechaza un precio inferior al costo sin mutar el producto', () => {
+      const producto = crearProducto({ costo: 100, margen: 0.3 });
+
+      expect(() => producto.actualizarPrecio(99, usuario)).toThrow(MargenInvalidoException);
+      expect(producto.getPrecio()).toBe(130);
+      expect(producto.getMargen()).toBeCloseTo(0.3);
+    });
+
+    it('rechaza un precio superior al doble del costo', () => {
+      const producto = crearProducto({ costo: 100, margen: 0.3 });
+
+      expect(() => producto.actualizarPrecio(201, usuario)).toThrow(MargenInvalidoException);
+    });
+  });
 });

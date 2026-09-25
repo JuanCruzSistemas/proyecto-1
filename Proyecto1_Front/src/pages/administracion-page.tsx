@@ -5,7 +5,6 @@ import { Navbar } from "../componentes/navbar";
 import { Outlet } from "react-router-dom";
 import { SidebarMenus } from "../componentes/menu/sidebarMenus";
 import { SidebarFiltros } from "../componentes/sidebarFiltros";
-import { FiltrosProvider } from "../context/filtros-contesxt";
 
 interface AdministracionPageProps {
   children?: ReactNode;
@@ -35,7 +34,6 @@ const AdministracionPage: React.FC<AdministracionPageProps> = () => {
 
   return (
     <SidebarProvider>
-     <FiltrosProvider>
         <div className="w-full flex flex-col h-screen bg-white text-black dark:bg-gray-900 dark:text-white">
           {/* Navbar Principal */}
           <Navbar className="w-full" />
@@ -61,7 +59,6 @@ const AdministracionPage: React.FC<AdministracionPageProps> = () => {
             </main>
           </div>
         </div>
-      </FiltrosProvider>
     </SidebarProvider>
   );
 };
