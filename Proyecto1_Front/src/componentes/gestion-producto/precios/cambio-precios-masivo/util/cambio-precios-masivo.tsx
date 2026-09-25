@@ -53,6 +53,7 @@ export default function CambioPreciosMasivo() {
     loading,
     setProductos,
     buscarProductos,
+    refrescarProductos,
     aplicarCambios,
     guardarCambios,
     actualizarProductoLocal,
@@ -60,10 +61,24 @@ export default function CambioPreciosMasivo() {
 
   const { marcas, lineas, setLineas, setMarcas } = useCatalogosContext();
 
+  const ejecutarBusqueda = useCallback(
+    async (buscar: () => Promise<void>) => {
+      setError(null);
+      try {
+        await buscar();
+      } catch (error) {
+        setError(obtenerMensajeError(error, "No se pudieron cargar los productos."));
+      }
+    },
+    []
+  );
+
   useEffect(() => {
     limpiarFiltros();
     setBuscar({ cont: 0, componente: "cambio-precios-masivo" });
     setFiltrosNecesarios({ marca: true, linea: true, sublinea: false });
+    // Búsqueda primaria: al ingresar se cargan todos los productos (alcance global).
+    ejecutarBusqueda(() => buscarProductos({}));
   }, []);
 
   const fetchMarcas = useCallback(async () => {
@@ -204,8 +219,11 @@ export default function CambioPreciosMasivo() {
         autoClose: true,
         duration: 5000,
       });
+      return;
     }
-  }, [guardarCambios, addAlert]);
+    // Se vuelve a consultar con los filtros de la última búsqueda para mostrar los precios persistidos.
+    await ejecutarBusqueda(refrescarProductos);
+  }, [guardarCambios, addAlert, ejecutarBusqueda, refrescarProductos]);
 
   const handleAplicarCambios = useCallback(async (valor: number, tipo: "PORCENTAJE" | "MONTO") => {
     try {
@@ -282,57 +300,54 @@ export default function CambioPreciosMasivo() {
   return (
     <div className="w-full">
       <div className="p-6">
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-400 text-lg">Cargando productos...</p>
-          </div>
-        ) : error ? (
-          <div className="flex flex-col items-center justify-center py-12">
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 max-w-md">
-              <p className="text-red-600 dark:text-red-400 text-center font-medium">{error}</p>
-            </div>
-          </div>
-        ) : (
-          <>
-            <Card className="border-gray-200 dark:border-slate-700">
-              <FiltrosCambioPrecios
-                valoresFiltros={valoresFiltros}
-                setValoresFiltros={setValoresFiltros}
-                marcas={marcas}
-                lineas={lineas}
-                productosLength={productos.length}
-                onBuscar={async () => {
-                  setError(null);
-                  try {
-                    await buscarProductos({
-                    marcaId: valoresFiltros.marcaId,
-                    lineaId: valoresFiltros.lineaId,
-                    });
-                  } catch (error) {
-                    setError(obtenerMensajeError(error, "No se pudieron cargar los productos."));
-                  }
-                }}
-                onAplicarCambios={handleAplicarCambios}
-                onGuardarCambios={handleGuardarCambios}
-                fetchMarcas={fetchMarcas}
-                fetchLineas={fetchLineas}
-                onLimpiarFiltros={handleLimpiarFiltros}
+        {/* El panel de filtros queda siempre montado: si se desmontara durante la carga
+            perdería el valor y el tipo de actualización ingresados. */}
+        <Card className="border-gray-200 dark:border-slate-700">
+          <FiltrosCambioPrecios
+            valoresFiltros={valoresFiltros}
+            setValoresFiltros={setValoresFiltros}
+            marcas={marcas}
+            lineas={lineas}
+            productosLength={loading ? 0 : productos.length}
+            onBuscar={() =>
+              ejecutarBusqueda(() =>
+                buscarProductos({
+                  marcaId: valoresFiltros.marcaId,
+                  lineaId: valoresFiltros.lineaId,
+                })
+              )
+            }
+            onAplicarCambios={handleAplicarCambios}
+            onGuardarCambios={handleGuardarCambios}
+            fetchMarcas={fetchMarcas}
+            fetchLineas={fetchLineas}
+            onLimpiarFiltros={handleLimpiarFiltros}
+          />
+          <CardContent className="p-0">
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
+                <p className="text-gray-600 dark:text-gray-400 text-lg">Cargando productos...</p>
+              </div>
+            ) : error ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 max-w-md">
+                  <p className="text-red-600 dark:text-red-400 text-center font-medium">{error}</p>
+                </div>
+              </div>
+            ) : (
+              <TablaCambioPrecios
+                productos={productos}
+                columns={columns}
+                onEditar={handleAbrirActualizarProducto}
+                onEliminar={handleDelete}
               />
-              <CardContent className="p-0">
-                <TablaCambioPrecios
-                  productos={productos}
-                  columns={columns}
-                  onEditar={handleAbrirActualizarProducto}
-                  onEliminar={handleDelete}
-                />
-              </CardContent>
-            </Card>
+            )}
+          </CardContent>
+        </Card>
 
-            <Alertas alerts={alerts} onRemove={removeAlert} />
-            <AlertasConfirmacion />
-          </>
-        )}
+        <Alertas alerts={alerts} onRemove={removeAlert} />
+        <AlertasConfirmacion />
       </div>
 
       {mostrarActualizarProducto && (

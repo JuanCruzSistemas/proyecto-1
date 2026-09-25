@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import CambioPreciosMasivoService from "../cambio-precios-masivo-service";
 import { ConsultarProductosCambioPreciosMasivo } from "../../../../../interfaces/gestion-producto/producto/interfaces-producto";
 import { ResponsePost } from "../../../../../interfaces/generales/interfaces-generales";
@@ -7,8 +7,11 @@ export function useCambioPrecios(usuarioId: number | null) {
   const [productos, setProductos] =
     useState<ConsultarProductosCambioPreciosMasivo[]>([]);
   const [loading, setLoading] = useState(false);
+  // Filtros de la última búsqueda ejecutada, para refrescar la grilla luego de guardar.
+  const ultimosFiltros = useRef<any>({});
 
   const buscarProductos = async (filtros: any) => {
+    ultimosFiltros.current = filtros;
     setLoading(true);
     try {
       const productosFiltrados: ConsultarProductosCambioPreciosMasivo[] = [];
@@ -58,12 +61,13 @@ export function useCambioPrecios(usuarioId: number | null) {
       };
       const response =
         await CambioPreciosMasivoService.guardarCambios(payload);
-      setProductos((prev) => prev.map((p) => ({ ...p, dirty: false })));
       return response;
     } finally {
       setLoading(false);
     }
   };
+
+  const refrescarProductos = () => buscarProductos(ultimosFiltros.current);
 
   const actualizarProductoLocal = (
    productoActualizado: ConsultarProductosCambioPreciosMasivo
@@ -82,6 +86,7 @@ export function useCambioPrecios(usuarioId: number | null) {
     loading,
     setProductos,
     buscarProductos,
+    refrescarProductos,
     aplicarCambios,
     guardarCambios,
     actualizarProductoLocal

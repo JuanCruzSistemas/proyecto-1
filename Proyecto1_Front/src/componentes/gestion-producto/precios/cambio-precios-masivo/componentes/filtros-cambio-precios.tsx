@@ -116,13 +116,13 @@ export default function FiltrosCambioPrecios({
                 disabled={productosLength === 0}
                 aria-label="Tipo de actualización"
               >
-                <option value="PORCENTAJE">Porcentaje</option>
+                <option value="PORCENTAJE">Nuevo margen</option>
                 <option value="MONTO">Monto fijo</option>
               </select>
               <PorcentajeInput
                 name="valorCambio"
                 value={valor}
-                label={tipoActualizacion === "PORCENTAJE" ? "Porcentaje" : "Monto"}
+                label={tipoActualizacion === "PORCENTAJE" ? "Margen" : "Monto"}
                 suffix={tipoActualizacion === "PORCENTAJE" ? " %" : " $"}
                 onChange={setValor}
                 disabled={productosLength === 0}

@@ -34,7 +34,7 @@ export class AplicarCambiosMasivosDto {
   @IsArray()
   items: any[]; // Recibe los ConsultarProductosCambioPreciosMasivo del frontend
 
-  @ApiProperty({ example: 15, description: 'Valor del ajuste (monto fijo o porcentaje; el monto puede ser negativo)' })
+  @ApiProperty({ example: 15, description: 'PORCENTAJE: nuevo margen que reemplaza al actual. MONTO: importe fijo a sumar al precio (puede ser negativo)' })
   @IsNumber({ allowInfinity: false, allowNaN: false })
   @Validate(NonNegativePercentageConstraint)
   valor: number;
