@@ -33,8 +33,10 @@ async function bootstrap() {
   // Configurar prefijo para endpoints
   app.setGlobalPrefix('api');
 
-  // Configurar filtro global de excepciones
-  app.useGlobalFilters(new DomainExceptionFilter(), new GlobalExceptionFilter());
+  // Configurar filtro global de excepciones.
+  // Nest evalúa los filtros globales del último al primero: GlobalExceptionFilter (@Catch() de todo)
+  // va primero para que DomainExceptionFilter quede por delante y las DomainException respondan 422.
+  app.useGlobalFilters(new GlobalExceptionFilter(), new DomainExceptionFilter());
 
   app.use(bodyParser.json({ limit: '50mb' }));
   app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));

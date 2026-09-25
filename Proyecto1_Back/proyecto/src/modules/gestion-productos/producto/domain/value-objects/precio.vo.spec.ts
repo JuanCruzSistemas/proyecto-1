@@ -13,4 +13,18 @@ describe('Precio (VO)', () => {
   it('rechaza un resultado negativo', () => {
     expect(() => Precio.create(-10, 0.3)).toThrow(PrecioInvalidoException);
   });
+
+  describe('fromValue()', () => {
+    it('crea un precio directamente a partir de un valor positivo', () => {
+      expect(Precio.fromValue(99.9).getValue()).toBe(99.9);
+    });
+
+    it('rechaza un valor igual a 0', () => {
+      expect(() => Precio.fromValue(0)).toThrow(PrecioInvalidoException);
+    });
+
+    it('rechaza un valor negativo', () => {
+      expect(() => Precio.fromValue(-5)).toThrow(PrecioInvalidoException);
+    });
+  });
 });
