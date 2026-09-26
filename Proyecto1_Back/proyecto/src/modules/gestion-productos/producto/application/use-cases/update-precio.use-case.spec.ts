@@ -162,4 +162,39 @@ describe('UpdatePrecioUseCase', () => {
     expect(repository.updateEntity).not.toHaveBeenCalled();
     expect(historialPrecioRepository.save).not.toHaveBeenCalled();
   });
+
+  it('lanza BadRequestException si el costo es menor o igual a 0', async () => {
+    const producto = crearProducto();
+    repository.findOne.mockResolvedValue(producto);
+
+    await expect(
+      useCase.execute(1, {
+        costo: 0,
+        porcentaje: 50,
+        usuarioId: usuario.id,
+        motivo: 'Aumento del proveedor',
+      }),
+    ).rejects.toThrow();
+
+    expect(repository.updateEntity).not.toHaveBeenCalled();
+    expect(historialPrecioRepository.save).not.toHaveBeenCalled();
+    expect(queryRunner.rollbackTransaction).toHaveBeenCalled();
+  });
+  it('lanza BadRequestException si el motivo está vacío o solo contiene espacios', async () => {
+    const producto = crearProducto();
+    repository.findOne.mockResolvedValue(producto);
+
+    await expect(
+      useCase.execute(1, {
+        costo: 200,
+        porcentaje: 50,
+        usuarioId: usuario.id,
+        motivo: '   ',
+      }),
+    ).rejects.toThrow();
+
+    expect(repository.updateEntity).not.toHaveBeenCalled();
+    expect(historialPrecioRepository.save).not.toHaveBeenCalled();
+    expect(queryRunner.rollbackTransaction).toHaveBeenCalled();
+  });
 });
