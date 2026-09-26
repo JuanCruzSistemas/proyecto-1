@@ -11,8 +11,6 @@ const baseProps = (overrides: Record<string, unknown> = {}) => ({
   onBuscar: vi.fn(),
   onAplicarCambios: vi.fn(),
   onGuardarCambios: vi.fn(),
-  fetchMarcas: vi.fn(),
-  fetchLineas: vi.fn(),
   onLimpiarFiltros: vi.fn(),
   ...overrides,
 });
@@ -22,12 +20,12 @@ describe("FiltrosCambioPrecios masivo", () => {
     const props = baseProps();
     render(<FiltrosCambioPrecios {...props} />);
 
-    fireEvent.change(screen.getByPlaceholderText("Buscar marca..."), { target: { value: "Mar" } });
-    expect(props.setValoresFiltros).toHaveBeenCalledWith(expect.objectContaining({ denominacionMarca: "Mar" }));
-    fireEvent.keyDown(screen.getByPlaceholderText("Buscar marca..."), { key: "Enter" });
-    fireEvent.keyDown(screen.getByPlaceholderText("Buscar línea..."), { key: "Enter" });
-    expect(props.fetchMarcas).toHaveBeenCalledTimes(1);
-    expect(props.fetchLineas).toHaveBeenCalledTimes(1);
+    fireEvent.keyDown(screen.getByRole("combobox", { name: "Marca" }), { key: "ArrowDown" });
+    fireEvent.click(screen.getByText("Marca Uno"));
+    expect(props.setValoresFiltros).toHaveBeenCalledWith(expect.objectContaining({ marcaId: 1 }));
+    fireEvent.keyDown(screen.getByRole("combobox", { name: "Línea" }), { key: "ArrowDown" });
+    fireEvent.click(screen.getByText("Línea Uno"));
+    expect(props.setValoresFiltros).toHaveBeenCalledWith(expect.objectContaining({ lineaId: 2 }));
 
     fireEvent.click(screen.getByTitle("Buscar productos"));
     fireEvent.click(screen.getByTitle("Limpiar filtros"));
@@ -39,6 +37,28 @@ describe("FiltrosCambioPrecios masivo", () => {
     fireEvent.click(screen.getByTitle("Guardar cambios"));
     expect(props.onAplicarCambios).toHaveBeenCalledWith(0, "MONTO");
     expect(props.onGuardarCambios).toHaveBeenCalledTimes(1);
+  });
+
+  it("filtra las opciones del desplegable al escribir, sin mínimo de caracteres", () => {
+    const props = baseProps({
+      marcas: [{ id: 1, denominacion: "3M" }, { id: 7, denominacion: "Bosch" }],
+    });
+    render(<FiltrosCambioPrecios {...props} />);
+
+    fireEvent.change(screen.getByRole("combobox", { name: "Marca" }), { target: { value: "3" } });
+    expect(screen.getByText("3M")).toBeInTheDocument();
+    expect(screen.queryByText("Bosch")).not.toBeInTheDocument();
+  });
+
+  it("permite quitar la marca seleccionada", () => {
+    const props = baseProps({
+      valoresFiltros: { marcaId: 1, lineaId: undefined },
+    });
+    const { container } = render(<FiltrosCambioPrecios {...props} />);
+
+    const limpiarMarca = container.querySelector('[class*="indicatorContainer"]') as HTMLElement;
+    fireEvent.mouseDown(limpiarMarca, { button: 0 });
+    expect(props.setValoresFiltros).toHaveBeenCalledWith(expect.objectContaining({ marcaId: undefined }));
   });
 
   it("oculta acciones opcionales y bloquea aplicar/guardar sin productos", () => {

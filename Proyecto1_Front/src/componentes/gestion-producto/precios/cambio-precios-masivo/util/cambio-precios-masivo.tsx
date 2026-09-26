@@ -9,7 +9,6 @@ import {
 import { ConsultarProductosCambioPreciosMasivo } from "../../../../../interfaces/gestion-producto/producto/interfaces-producto";
 import { formatPrice } from "../../../../herramientas/formateo-de-campos/fucion-formateo";
 import { Column } from "../../../../herramientas/tablas/tabla-flexible-ag-grid";
-import { useConfiguracionSistema } from "../../../../sistema/ConfiguracionSistemaContext";
 import { useFiltrosContext } from "../../../../../context/filtros-contesxt";
 import CambioPreciosMasivoService from "../cambio-precios-masivo-service";
 import CambioPreciosManual from "../cambio-precios.manual";
@@ -34,7 +33,6 @@ export default function CambioPreciosMasivo() {
   );
 
   const usuarioId = getUsuarioId();
-  const { configuracion } = useConfiguracionSistema();
   const { alerts, addAlert, removeAlert } = useAlerts();
   const { showConfirmation, AlertasConfirmacion } = useConfirmation();
 
@@ -44,8 +42,6 @@ export default function CambioPreciosMasivo() {
     setValoresFiltros,
     limpiarFiltros,
     setBuscar,
-    buscarMarcas,
-    buscarLineas,
   } = useFiltrosContext();
 
   const {
@@ -60,6 +56,26 @@ export default function CambioPreciosMasivo() {
   } = useCambioPrecios(usuarioId);
 
   const { marcas, lineas, setLineas, setMarcas } = useCatalogosContext();
+
+  // Se cargan todas las marcas y líneas; el filtrado por texto lo hace el propio desplegable.
+  const cargarCatalogos = useCallback(async () => {
+    try {
+      const [marcasTotales, lineasTotales] = await Promise.all([
+        CambioPreciosMasivoService.obtenerTotales({ denominacion: "" }, "marcas"),
+        CambioPreciosMasivoService.obtenerTotales({ denominacion: "" }, "lineas"),
+      ]);
+      setMarcas(marcasTotales.data);
+      setLineas(lineasTotales.data);
+    } catch {
+      addAlert({
+        type: TipoAlerta.ERROR,
+        title: TituloAlerta.ERROR,
+        message: "No se pudieron cargar las marcas y líneas.",
+        autoClose: true,
+        duration: 5000,
+      });
+    }
+  }, [setMarcas, setLineas, addAlert]);
 
   const ejecutarBusqueda = useCallback(
     async (buscar: () => Promise<void>) => {
@@ -76,56 +92,12 @@ export default function CambioPreciosMasivo() {
   useEffect(() => {
     limpiarFiltros();
     setBuscar({ cont: 0, componente: "cambio-precios-masivo" });
-    setFiltrosNecesarios({ marca: true, linea: true, sublinea: false });
+    // Marca y línea se filtran desde la cabecera de la pantalla, no desde el sidebar.
+    setFiltrosNecesarios({ marca: false, linea: false, sublinea: false });
     // Búsqueda primaria: al ingresar se cargan todos los productos (alcance global).
     ejecutarBusqueda(() => buscarProductos({}));
+    cargarCatalogos();
   }, []);
-
-  const fetchMarcas = useCallback(async () => {
-    setError(null);
-    try {
-      const caracteresParaBusqueda = configuracion?.caracteresParaBusqueda ?? 4;
-      if (
-        valoresFiltros.denominacionMarca &&
-        valoresFiltros.denominacionMarca.length >= caracteresParaBusqueda
-      ) {
-        const marcasTotales = await CambioPreciosMasivoService.obtenerTotales(
-          { denominacion: valoresFiltros.denominacionMarca || " " },
-          "marcas"
-        );
-        setMarcas(marcasTotales.data);
-      }
-    } catch {
-      setError("No se pudieron cargar las marcas.");
-    }
-  }, [valoresFiltros.denominacionMarca, configuracion?.caracteresParaBusqueda]);
-
-  useEffect(() => {
-    fetchMarcas();
-  }, [buscarMarcas]);
-
-  const fetchLineas = useCallback(async () => {
-    setError(null);
-    try {
-      const caracteresParaBusqueda = configuracion?.caracteresParaBusqueda ?? 4;
-      if (
-        valoresFiltros.denominacionLinea &&
-        valoresFiltros.denominacionLinea.length >= caracteresParaBusqueda
-      ) {
-        const lineasTotales = await CambioPreciosMasivoService.obtenerTotales(
-          { denominacion: valoresFiltros.denominacionLinea || " " },
-          "lineas"
-        );
-        setLineas(lineasTotales.data);
-      }
-    } catch {
-      setError("No se pudieron cargar las líneas.");
-    }
-  }, [valoresFiltros.denominacionLinea, configuracion?.caracteresParaBusqueda]);
-
-  useEffect(() => {
-    fetchLineas();
-  }, [buscarLineas]);
 
   const handleAbrirActualizarProducto = useCallback(
     (producto: ConsultarProductosCambioPreciosMasivo) => {
@@ -176,15 +148,11 @@ export default function CambioPreciosMasivo() {
 
   const handleLimpiarFiltros = useCallback(() => {
     setValoresFiltros({
-      denominacionMarca: "",
-      denominacionLinea: "",
       marcaId: undefined,
       lineaId: undefined,
     });
-    setLineas([]);
-    setMarcas([]);
     setProductos([]);
-  }, [setValoresFiltros, setLineas, setMarcas, setProductos]);
+  }, [setValoresFiltros, setProductos]);
 
   const handleActualizarSuccess = useCallback(
     (productoActualizado: ConsultarProductosCambioPreciosMasivo) => {
@@ -319,8 +287,6 @@ export default function CambioPreciosMasivo() {
             }
             onAplicarCambios={handleAplicarCambios}
             onGuardarCambios={handleGuardarCambios}
-            fetchMarcas={fetchMarcas}
-            fetchLineas={fetchLineas}
             onLimpiarFiltros={handleLimpiarFiltros}
           />
           <CardContent className="p-0">

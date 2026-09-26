@@ -2,7 +2,6 @@ import { Check, Eraser, Package, Save, Search } from "lucide-react";
 import { useState } from "react";
 import Select from "react-select";
 import { CardHeader, CardTitle } from "../../../../ui/Card";
-import { Input } from "../../../../ui/Input";
 import { Button } from "../../../../ui/Button";
 import PorcentajeInput from "../../../../herramientas/formateo-de-campos/porcentaje-input-simple";
 
@@ -15,8 +14,6 @@ type Props = {
   onBuscar: () => void;
   onAplicarCambios?: (valor: number, tipoActualizacion: "PORCENTAJE" | "MONTO") => void;
   onGuardarCambios?: () => void;
-  fetchMarcas: () => void;
-  fetchLineas: () => void;
   onLimpiarFiltros: () => void;
 };
 
@@ -40,8 +37,6 @@ export default function FiltrosCambioPrecios({
   onBuscar,
   onAplicarCambios,
   onGuardarCambios,
-  fetchMarcas,
-  fetchLineas,
   onLimpiarFiltros,
 }: Props) {
   const [valor, setValor] = useState(0);
@@ -56,14 +51,7 @@ export default function FiltrosCambioPrecios({
         </CardTitle>
 
         <div className="flex flex-wrap items-center gap-3">
-          <div className="space-y-3">
-            <Input
-              type="text"
-              placeholder="Buscar marca..."
-              value={valoresFiltros.denominacionMarca ?? ""}
-              onKeyDown={(event) => event.key === "Enter" && fetchMarcas()}
-              onChange={(event) => setValoresFiltros({ ...valoresFiltros, denominacionMarca: event.target.value })}
-            />
+          <div>
             <Select
               value={(marcas ?? []).find((option) => option.id === valoresFiltros.marcaId) ?? null}
               options={marcas ?? []}
@@ -71,20 +59,16 @@ export default function FiltrosCambioPrecios({
               getOptionValue={(option) => String(option.id)}
               onChange={(option) => setValoresFiltros({ ...valoresFiltros, marcaId: option?.id })}
               placeholder="Seleccione una marca"
+              aria-label="Marca"
+              noOptionsMessage={() => "Sin resultados"}
+              isClearable
               className="min-w-56 text-black"
               menuPortalTarget={document.body}
               styles={selectStyles}
             />
           </div>
 
-          <div className="space-y-3">
-            <Input
-              type="text"
-              placeholder="Buscar línea..."
-              value={valoresFiltros.denominacionLinea ?? ""}
-              onKeyDown={(event) => event.key === "Enter" && fetchLineas()}
-              onChange={(event) => setValoresFiltros({ ...valoresFiltros, denominacionLinea: event.target.value })}
-            />
+          <div>
             <Select
               value={(lineas ?? []).find((option) => option.id === valoresFiltros.lineaId) ?? null}
               options={lineas ?? []}
@@ -92,6 +76,9 @@ export default function FiltrosCambioPrecios({
               getOptionValue={(option) => String(option.id)}
               onChange={(option) => setValoresFiltros({ ...valoresFiltros, lineaId: option?.id })}
               placeholder="Seleccione una línea"
+              aria-label="Línea"
+              noOptionsMessage={() => "Sin resultados"}
+              isClearable
               className="min-w-56 text-black"
               menuPortalTarget={document.body}
               styles={selectStyles}

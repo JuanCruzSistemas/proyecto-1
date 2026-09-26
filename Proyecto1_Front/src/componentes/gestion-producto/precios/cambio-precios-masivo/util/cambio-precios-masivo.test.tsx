@@ -9,8 +9,6 @@ const mocks = vi.hoisted(() => ({
     setValoresFiltros: vi.fn(),
     limpiarFiltros: vi.fn(),
     setBuscar: vi.fn(),
-    buscarMarcas: 0,
-    buscarLineas: 0,
   },
   catalogos: { marcas: [], lineas: [], setLineas: vi.fn(), setMarcas: vi.fn() },
   hook: {
@@ -29,7 +27,6 @@ const mocks = vi.hoisted(() => ({
   obtenerTotales: vi.fn(),
 }));
 
-vi.mock("../../../../sistema/ConfiguracionSistemaContext", () => ({ useConfiguracionSistema: () => ({ configuracion: { caracteresParaBusqueda: 3 } }) }));
 vi.mock("../../../../../context/filtros-contesxt", () => ({ useFiltrosContext: () => mocks.filtros }));
 vi.mock("../../../../../context/catalogos-context", () => ({ useCatalogosContext: () => mocks.catalogos }));
 vi.mock("../../../../../utils/auth", () => ({ getUsuarioId: () => 5 }));
@@ -51,8 +48,7 @@ vi.mock("../componentes/filtros-cambio-precios", () => ({
     <button onClick={props.onBuscar}>Buscar productos</button>
     <button onClick={() => props.onAplicarCambios(-10, "MONTO")}>Aplicar monto negativo</button>
     <button onClick={props.onGuardarCambios}>Guardar cambios</button>
-    <button onClick={props.fetchMarcas}>Buscar marcas</button>
-    <button onClick={props.fetchLineas}>Buscar líneas</button>
+    <span>Marcas: {props.marcas.length}</span>
     <button onClick={props.onLimpiarFiltros}>Limpiar filtros</button>
   </div>,
 }));
@@ -82,12 +78,15 @@ describe("CambioPreciosMasivo", () => {
     mocks.hook.aplicarCambios.mockResolvedValue(undefined);
     mocks.hook.guardarCambios.mockResolvedValue({ mensaje: "Precios guardados" });
     mocks.hook.refrescarProductos.mockResolvedValue(undefined);
+    mocks.obtenerTotales.mockImplementation((_filtros: unknown, entidad: string) =>
+      Promise.resolve({ data: entidad === "marcas" ? [{ id: 1, denominacion: "Marca" }] : [{ id: 2, denominacion: "Línea" }], total: 1 })
+    );
   });
 
   it("busca global al abrir y ejecuta acciones con los filtros actuales", async () => {
     render(<CambioPreciosMasivo />);
     await waitFor(() => expect(mocks.hook.buscarProductos).toHaveBeenCalledWith({}));
-    expect(mocks.filtros.setFiltrosNecesarios).toHaveBeenCalledWith({ marca: true, linea: true, sublinea: false });
+    expect(mocks.filtros.setFiltrosNecesarios).toHaveBeenCalledWith({ marca: false, linea: false, sublinea: false });
 
     fireEvent.click(screen.getByRole("button", { name: "Buscar productos" }));
     fireEvent.click(screen.getByRole("button", { name: "Aplicar monto negativo" }));
@@ -96,6 +95,22 @@ describe("CambioPreciosMasivo", () => {
     fireEvent.click(screen.getByRole("button", { name: "Guardar cambios" }));
     await waitFor(() => expect(mocks.hook.guardarCambios).toHaveBeenCalledTimes(1));
     expect(mocks.hook.refrescarProductos).toHaveBeenCalledTimes(1);
+  });
+
+  it("carga todas las marcas y líneas al abrir la pantalla", async () => {
+    render(<CambioPreciosMasivo />);
+    await waitFor(() => expect(mocks.catalogos.setMarcas).toHaveBeenCalledWith([{ id: 1, denominacion: "Marca" }]));
+    expect(mocks.catalogos.setLineas).toHaveBeenCalledWith([{ id: 2, denominacion: "Línea" }]);
+    expect(mocks.obtenerTotales).toHaveBeenCalledWith({ denominacion: "" }, "marcas");
+    expect(mocks.obtenerTotales).toHaveBeenCalledWith({ denominacion: "" }, "lineas");
+  });
+
+  it("avisa si no se pudieron cargar marcas y líneas", async () => {
+    mocks.obtenerTotales.mockRejectedValueOnce(new Error("caída"));
+    render(<CambioPreciosMasivo />);
+    await waitFor(() =>
+      expect(mocks.addAlert).toHaveBeenCalledWith(expect.objectContaining({ message: "No se pudieron cargar las marcas y líneas." }))
+    );
   });
 
   it("muestra alertas para fallos de guardado y cálculo", async () => {
@@ -121,9 +136,12 @@ describe("CambioPreciosMasivo", () => {
     await waitFor(() => expect(mocks.showConfirmation).toHaveBeenCalledTimes(1));
     expect(mocks.hook.setProductos).toHaveBeenCalledWith(expect.any(Function));
 
+    await waitFor(() => expect(mocks.catalogos.setMarcas).toHaveBeenCalledTimes(1));
     fireEvent.click(screen.getByRole("button", { name: "Limpiar filtros" }));
-    expect(mocks.catalogos.setMarcas).toHaveBeenCalledWith([]);
-    expect(mocks.catalogos.setLineas).toHaveBeenCalledWith([]);
+    expect(mocks.filtros.setValoresFiltros).toHaveBeenCalledWith({ marcaId: undefined, lineaId: undefined });
+    // Limpiar no vacía los desplegables.
+    expect(mocks.catalogos.setMarcas).not.toHaveBeenCalledWith([]);
+    expect(mocks.catalogos.setLineas).not.toHaveBeenCalledWith([]);
   });
 
   it("muestra estado de carga y error de búsqueda global", async () => {
