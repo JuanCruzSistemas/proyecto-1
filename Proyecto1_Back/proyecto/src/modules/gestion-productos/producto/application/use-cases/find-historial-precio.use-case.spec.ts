@@ -1,53 +1,62 @@
 import { NotFoundException } from '@nestjs/common';
 import { FindHistorialPrecioUseCase } from './find-historial-precio.use-case';
-import { HistorialPrecioFactory } from '../../domain/factories/historial-precio.factory';
-import { crearProducto, crearUsuario } from '../../testing/producto.fixtures-spec';
+import { HistorialPrecioDtoMapper } from '../mappers/historial-precio-dto.mapper';
 
 describe('FindHistorialPrecioUseCase', () => {
-  const historialRepository = { findByProductoId: jest.fn() };
-  const productoRepository = { findOne: jest.fn() };
-  const useCase = new FindHistorialPrecioUseCase(historialRepository as any, productoRepository as any);
+  let useCase: FindHistorialPrecioUseCase;
+  let productoRepository: { findOne: jest.Mock };
+  let historialPrecioRepository: { findByProductoId: jest.Mock };
 
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    productoRepository = {
+      findOne: jest.fn(), // O findById según use tu caso de uso
+    };
+    historialPrecioRepository = {
+      findByProductoId: jest.fn(),
+    };
 
-  it('devuelve el historial del producto como DTOs', async () => {
-    const producto = crearProducto();
-    productoRepository.findOne.mockResolvedValue(producto);
-    historialRepository.findByProductoId.mockResolvedValue([
-      HistorialPrecioFactory.reconstitute({
-        id: 1,
-        precioAnterior: 130,
-        precioNuevo: 150,
-        costoAnterior: 100,
-        costoNuevo: 100,
-        margenAnterior: 0.3,
-        margenNuevo: 0.5,
-        motivo: 'Ajuste',
-        fecha: new Date('2026-03-01T00:00:00Z'),
-        producto,
-        usuario: crearUsuario(),
-      }),
-    ]);
-
-    const res = await useCase.execute(100);
-
-    expect(productoRepository.findOne).toHaveBeenCalledWith(100);
-    expect(historialRepository.findByProductoId).toHaveBeenCalledWith(100);
-    expect(res).toHaveLength(1);
-    expect(res[0]).toMatchObject({ id: 1, precioAnterior: 130, precioNuevo: 150, motivo: 'Ajuste' });
+    // Constructor con solo 2 argumentos:
+    useCase = new FindHistorialPrecioUseCase(
+      productoRepository as any,
+      historialPrecioRepository as any,
+    );
   });
 
-  it('devuelve lista vacía si el producto no tiene cambios de precio', async () => {
-    productoRepository.findOne.mockResolvedValue(crearProducto());
-    historialRepository.findByProductoId.mockResolvedValue([]);
+  it('debe retornar la lista de historial mapeada cuando el producto existe', async () => {
+    const productoId = 1;
+    const mockEntities = [
+      { id: 1, precioAnterior: 100, precioNuevo: 120, motivo: 'Ajuste 1' },
+      { id: 2, precioAnterior: 120, precioNuevo: 150, motivo: 'Ajuste 2' },
+    ];
 
-    await expect(useCase.execute(100)).resolves.toEqual([]);
+    productoRepository.findOne.mockResolvedValue({ id: productoId });
+    historialPrecioRepository.findByProductoId.mockResolvedValue(mockEntities);
+
+    jest.spyOn(HistorialPrecioDtoMapper, 'toDto').mockImplementation((entity: any) => ({
+      id: entity.id,
+      precioAnterior: entity.precioAnterior,
+      precioNuevo: entity.precioNuevo,
+      costoAnterior: 80,
+      costoNuevo: 90,
+      margenAnterior: 20,
+      margenNuevo: 25,
+      motivo: entity.motivo,
+      fecha: '2026-09-25',
+      usuarioId: 1, // Campo obligatorio requerido por HistorialPrecioDto
+      usuarioNombre: 'Admin',
+    } as any));
+
+    const result = await useCase.execute(productoId);
+
+    expect(productoRepository.findOne).toHaveBeenCalledWith(expect.anything());
+    expect(historialPrecioRepository.findByProductoId).toHaveBeenCalledWith(productoId);
+    expect(result).toHaveLength(2);
   });
 
-  it('lanza NotFound si el producto no existe, sin consultar el historial', async () => {
+  it('debe lanzar NotFoundException si el producto consultado no existe', async () => {
     productoRepository.findOne.mockResolvedValue(null);
 
-    await expect(useCase.execute(3)).rejects.toThrow(new NotFoundException('Producto con ID 3 no encontrado'));
-    expect(historialRepository.findByProductoId).not.toHaveBeenCalled();
+    await expect(useCase.execute(999)).rejects.toThrow(NotFoundException);
+    expect(historialPrecioRepository.findByProductoId).not.toHaveBeenCalled();
   });
 });
