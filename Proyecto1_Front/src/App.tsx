@@ -12,14 +12,16 @@ import ConsultarCliente from "./componentes/gestion-organizacion/cliente/utils/c
 import ConsultarProveedores from "./componentes/gestion-organizacion/proveedor/utils/consultar-proveedor";
 import ConsultarLocalidad from "./componentes/gestion-organizacion/localidad/utils/consultar-localidad";
 import ConsultarLinea from "./componentes/gestion-producto/linea/utils/consultar-linea";
+import ConsultarPresentaciones from "./componentes/gestion-producto/presentacion/utils/consultar-presentacion";
 
 import PrivateRoute from "./utils/PrivateRoute";
 import { Rol } from "./interfaces/generales/interfaces-generales";
 import CambioPreciosMasivo from "./componentes/gestion-producto/precios/cambio-precios-masivo/util/cambio-precios-masivo";
 import DashboardHome from "./pages/dashboard-home";
 
-import ListaPrecios from "./componentes/gestion-producto/precios/lista_precios/util/lista-precios";
 import ConsultarPersonal from "./componentes/gestion-organizacion/personal/utils/consultar-personal";
+
+import ConsultarSuperlinea from './componentes/gestion-producto/superlinea/consultar-superlinea';
 
 function App() {
   return (
@@ -39,8 +41,12 @@ function App() {
               <Route index element={<DashboardHome />} />
               <Route element={<PrivateRoute allowedRoles={[Rol.EMPLEADO, Rol.ADMINISTRADOR]} />}>
                 <Route path="marca" element={<ConsultarMarcas />} />
+                <Route path="presentacion" element={<ConsultarPresentaciones />} />
               </Route>
      
+              <Route element={<PrivateRoute allowedRoles={[Rol.ROOT, Rol.ADMINISTRADOR]} />}>
+                <Route path="superlinea" element={<ConsultarSuperlinea />} />
+              </Route>
               <Route path="linea" element={<ConsultarLinea />} />
               <Route path="usuario" element={<GestionUsuario />} />
               <Route path="producto" element={<ConsultarProducto />} />
@@ -48,7 +54,6 @@ function App() {
               <Route path="proveedor" element={<ConsultarProveedores />} />
               <Route path="personal" element={<ConsultarPersonal />} />
               <Route path="cambio-precios-masivo" element={<CambioPreciosMasivo />} />
-              <Route path="lista-precios" element={<ListaPrecios />} />
               <Route path="localidad" element={<ConsultarLocalidad />} />
               <Route path="condicion-iva" element={<CondicionIva />} />     
 

@@ -181,6 +181,7 @@ export default function CalculoPreciosProducto({
                 setValue("porcentajeOcasional", Number(v))
               }
               className="h-10 font-input-cabecera"
+              disabled={disabled}
             />
           </div>
 
@@ -194,6 +195,7 @@ export default function CalculoPreciosProducto({
               }
               maxDigits={8}
               className="text-right h-10 font-input-cabecera"
+              disabled={disabled}
             />
           </div>
         </div>
@@ -209,6 +211,7 @@ export default function CalculoPreciosProducto({
                 setValue("porcentajeMayorista", Number(v))
               }
               className="h-10 font-input-cabecera"
+              disabled={disabled}
             />
           </div>
 
@@ -222,6 +225,7 @@ export default function CalculoPreciosProducto({
               }
               maxDigits={8}
               className="text-right  h-10 font-input-cabecera"
+              disabled={disabled}
             />
           </div>
         </div>
@@ -240,6 +244,7 @@ export default function CalculoPreciosProducto({
                 setValue("porcentajeCliente", Number(v))
               }
               className="h-10 font-input-cabecera"
+              disabled={disabled}
             />
           </div>
 
@@ -253,6 +258,7 @@ export default function CalculoPreciosProducto({
               }
               maxDigits={8}
               className="text-right h-10 font-input-cabecera"
+              disabled={disabled}
             />
           </div>
         </div>

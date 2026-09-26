@@ -7,7 +7,7 @@ import { Localidad } from './domain/entities/localidad.entity';
 import { LocalidadPersistenceAdapter } from './infraestructure/repositories/localidad.persistence-adapters';
 import { ProvinciaModule } from '../provincia/provincia.module';
 import { DataSource } from 'typeorm';
-import { IUnitOfWork } from 'src/modules/common/unit-of-work/iunit-of-work.';
+import { IUnitOfWork } from 'src/modules/common/unit-of-work/unit-of-work.interface';
 import { TypeOrmUnitOfWork } from 'src/modules/common/unit-of-work/type-orm-unit-of-works1';
 
 @Module({

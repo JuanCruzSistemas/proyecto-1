@@ -9,7 +9,7 @@ import { DomicilioModule } from 'src/modules/gutil/domicilio/domicilio.module';
 import { CondicionIvaModule } from 'src/modules/gutil/condicion-iva/condicion-iva.module';
 import { TypeOrmUnitOfWork } from 'src/modules/common/unit-of-work/type-orm-unit-of-works1';
 import { DataSource } from 'typeorm';
-import { IUnitOfWork } from 'src/modules/common/unit-of-work/iunit-of-work.';
+import { IUnitOfWork } from 'src/modules/common/unit-of-work/unit-of-work.interface';
 import { UsuarioModule } from 'src/modules/gestion-usuario/usuario/usuario.module';
 import { ProvinciaModule } from 'src/modules/gutil/provincia/provincia.module';
 import { ProveedorValidationHelper } from '../helpers/proveedor-validation-helper';

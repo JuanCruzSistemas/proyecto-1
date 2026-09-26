@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './modules/common/filters/global-exception.filters';
+import { DomainExceptionFilter } from './modules/common/filters/domain-exception.filter';
 import { ValidationPipe } from '@nestjs/common';
 import * as bodyParser from 'body-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -32,16 +33,14 @@ async function bootstrap() {
   // Configurar prefijo para endpoints
   app.setGlobalPrefix('api');
 
-  // Configurar filtro global de excepciones
-  app.useGlobalFilters(new GlobalExceptionFilter());
-  // inspeccion de rutas
+  // Configurar filtro global de excepciones.
+  // Nest evalúa los filtros globales del último al primero: GlobalExceptionFilter (@Catch() de todo)
+  // va primero para que DomainExceptionFilter quede por delante y las DomainException respondan 422.
+  app.useGlobalFilters(new GlobalExceptionFilter(), new DomainExceptionFilter());
 
   app.use(bodyParser.json({ limit: '50mb' }));
   app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
 
   await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
-  // inspeccion de rutas
-  const router = app.getHttpAdapter().getInstance();
-  console.log(router._router?.stack);
 }
 bootstrap();

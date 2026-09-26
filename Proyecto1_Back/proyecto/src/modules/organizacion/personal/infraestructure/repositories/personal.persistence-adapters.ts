@@ -8,7 +8,7 @@ import { CreatePersonalDto } from '../../dto/create-personal.dto';
 import { UpdatePersonalDto } from '../../dto/update-personal.dto';
 import { Personal } from '../../domain/entities/personal.entity';
 import { Transactional } from 'src/modules/common/decorators/transactional.decoratos';
-import { IUnitOfWork } from 'src/modules/common/unit-of-work/iunit-of-work.';
+import { IUnitOfWork } from 'src/modules/common/unit-of-work/unit-of-work.interface';
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
 import { UsuarioService } from 'src/modules/gestion-usuario/usuario/application/services/usuario.service';
 import { Domicilio } from 'src/modules/gutil/domicilio/entities/domicilio.entity';

@@ -19,6 +19,13 @@ import { useCambioPrecios } from "../hooks/useCambioPrecios";
 import TablaCambioPrecios from "../componentes/tabla-cambio-precios";
 import FiltrosCambioPrecios from "../componentes/filtros-cambio-precios";
 
+function obtenerMensajeError(error: unknown, mensajePredeterminado: string): string {
+  const response = (error as { response?: { data?: { message?: unknown } } })?.response;
+  const message = response?.data?.message;
+  if (Array.isArray(message)) return message.join(" ");
+  return typeof message === "string" ? message : mensajePredeterminado;
+}
+
 export default function CambioPreciosMasivo() {
   const [error, setError] = useState<string | null>(null);
   const [mostrarActualizarProducto, setMostrarActualizarProducto] = useState(false);
@@ -46,17 +53,32 @@ export default function CambioPreciosMasivo() {
     loading,
     setProductos,
     buscarProductos,
+    refrescarProductos,
     aplicarCambios,
     guardarCambios,
     actualizarProductoLocal,
   } = useCambioPrecios(usuarioId);
 
-  const { marcas, lineas, sublineas, setLineas, setMarcas, setSublineas } = useCatalogosContext();
+  const { marcas, lineas, setLineas, setMarcas } = useCatalogosContext();
+
+  const ejecutarBusqueda = useCallback(
+    async (buscar: () => Promise<void>) => {
+      setError(null);
+      try {
+        await buscar();
+      } catch (error) {
+        setError(obtenerMensajeError(error, "No se pudieron cargar los productos."));
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     limpiarFiltros();
     setBuscar({ cont: 0, componente: "cambio-precios-masivo" });
-    setFiltrosNecesarios({ marca: true, linea: true, sublinea: true });
+    setFiltrosNecesarios({ marca: true, linea: true, sublinea: false });
+    // Búsqueda primaria: al ingresar se cargan todos los productos (alcance global).
+    ejecutarBusqueda(() => buscarProductos({}));
   }, []);
 
   const fetchMarcas = useCallback(async () => {
@@ -104,24 +126,6 @@ export default function CambioPreciosMasivo() {
   useEffect(() => {
     fetchLineas();
   }, [buscarLineas]);
-
-  useEffect(() => {
-    const fetchSublineas = async () => {
-      setError(null);
-      try {
-        if (valoresFiltros.lineaId && valoresFiltros.lineaId !== 0) {
-          const sublineasTotales = await CambioPreciosMasivoService.obtenerTotalesPara(
-            valoresFiltros.lineaId || 0,
-            "sublineas"
-          );
-          setSublineas(sublineasTotales.data);
-        }
-      } catch {
-        setError("No se pudieron cargar las sublíneas.");
-      }
-    };
-    fetchSublineas();
-  }, [valoresFiltros.lineaId]);
 
   const handleAbrirActualizarProducto = useCallback(
     (producto: ConsultarProductosCambioPreciosMasivo) => {
@@ -176,13 +180,11 @@ export default function CambioPreciosMasivo() {
       denominacionLinea: "",
       marcaId: undefined,
       lineaId: undefined,
-      sublineaId: undefined,
     });
-    setSublineas([]);
     setLineas([]);
     setMarcas([]);
     setProductos([]);
-  }, [setValoresFiltros, setSublineas, setLineas, setMarcas, setProductos]);
+  }, [setValoresFiltros, setLineas, setMarcas, setProductos]);
 
   const handleActualizarSuccess = useCallback(
     (productoActualizado: ConsultarProductosCambioPreciosMasivo) => {
@@ -200,15 +202,42 @@ export default function CambioPreciosMasivo() {
   );
 
   const handleGuardarCambios = useCallback(async () => {
-    const response = await guardarCambios();
-    addAlert({
-      type: TipoAlerta.SUCCESS,
-      title: TituloAlerta.SUCCESS,
-      message: response.mensaje,
-      autoClose: true,
-      duration: 3000,
-    });
-  }, [guardarCambios, addAlert]);
+    try {
+      const response = await guardarCambios();
+      addAlert({
+        type: TipoAlerta.SUCCESS,
+        title: TituloAlerta.SUCCESS,
+        message: response.mensaje,
+        autoClose: true,
+        duration: 3000,
+      });
+    } catch (error) {
+      addAlert({
+        type: TipoAlerta.ERROR,
+        title: TituloAlerta.ERROR,
+        message: obtenerMensajeError(error, "No se pudieron guardar los cambios."),
+        autoClose: true,
+        duration: 5000,
+      });
+      return;
+    }
+    // Se vuelve a consultar con los filtros de la última búsqueda para mostrar los precios persistidos.
+    await ejecutarBusqueda(refrescarProductos);
+  }, [guardarCambios, addAlert, ejecutarBusqueda, refrescarProductos]);
+
+  const handleAplicarCambios = useCallback(async (valor: number, tipo: "PORCENTAJE" | "MONTO") => {
+    try {
+      await aplicarCambios(valor, tipo);
+    } catch (error) {
+      addAlert({
+        type: TipoAlerta.ERROR,
+        title: TituloAlerta.ERROR,
+        message: obtenerMensajeError(error, "No se pudieron calcular los nuevos precios."),
+        autoClose: true,
+        duration: 5000,
+      });
+    }
+  }, [aplicarCambios, addAlert]);
 
   const columns = useMemo<Column<ConsultarProductosCambioPreciosMasivo>[]>(
     () => [
@@ -247,71 +276,17 @@ export default function CambioPreciosMasivo() {
         ),
       },
       {
-        header: "P Ocasional",
-        accessor: "precioOcasionalConIva",
-        flex: 0.5,
+        header: "Precio actual",
+        accessor: "precio",
+        flex: 0.7,
         type: "text",
         editable: false,
         align: "right",
         formatFunction: ({ value }) => <span>{formatPrice(value, "ARS")}</span>,
       },
       {
-        header: "N Ocasional",
-        accessor: "precioOcasionalConIvaNuevo",
-        flex: 0.5,
-        type: "text",
-        editable: false,
-        align: "right",
-        formatFunction: ({ value }) => <span>{formatPrice(value, "ARS")}</span>,
-      },
-      {
-        header: "P Mayorista",
-        accessor: "precioMayoristaConIva",
-        flex: 0.5,
-        type: "text",
-        editable: false,
-        align: "right",
-        formatFunction: ({ value }) => <span>{formatPrice(value, "ARS")}</span>,
-      },
-      {
-        header: "N Mayorista",
-        accessor: "precioMayoristaConIvaNuevo",
-        flex: 0.5,
-        type: "text",
-        editable: false,
-        align: "right",
-        formatFunction: ({ value }) => <span>{formatPrice(value, "ARS")}</span>,
-      },
-      {
-        header: "P Cliente",
-        accessor: "precioClienteConIva",
-        flex: 0.5,
-        type: "text",
-        editable: false,
-        align: "right",
-        formatFunction: ({ value }) => <span>{formatPrice(value, "ARS")}</span>,
-      },
-      {
-        header: "N Cliente",
-        accessor: "precioClienteConIvaNuevo",
-        flex: 0.5,
-        type: "text",
-        editable: false,
-        align: "right",
-        formatFunction: ({ value }) => <span>{formatPrice(value, "ARS")}</span>,
-      },
-      {
-        header: "P Oferta",
-        accessor: "precioOfertaConIva",
-        flex: 0.5,
-        type: "text",
-        editable: false,
-        align: "right",
-        formatFunction: ({ value }) => <span>{formatPrice(value, "ARS")}</span>,
-      },
-      {
-        header: "N Oferta",
-        accessor: "precioOfertaConIvaNuevo",
+        header: "Precio nuevo",
+        accessor: "precioNuevo",
         flex: 0.5,
         type: "text",
         editable: false,
@@ -325,54 +300,54 @@ export default function CambioPreciosMasivo() {
   return (
     <div className="w-full">
       <div className="p-6">
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-400 text-lg">Cargando productos...</p>
-          </div>
-        ) : error ? (
-          <div className="flex flex-col items-center justify-center py-12">
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 max-w-md">
-              <p className="text-red-600 dark:text-red-400 text-center font-medium">{error}</p>
-            </div>
-          </div>
-        ) : (
-          <>
-            <Card className="border-gray-200 dark:border-slate-700">
-              <FiltrosCambioPrecios
-                valoresFiltros={valoresFiltros}
-                setValoresFiltros={setValoresFiltros}
-                marcas={marcas}
-                lineas={lineas}
-                sublineas={sublineas}
-                productosLength={productos.length}
-                onBuscar={() =>
-                  buscarProductos({
-                    marcaId: valoresFiltros.marcaId,
-                    lineaId: valoresFiltros.lineaId,
-                    subLineaId: valoresFiltros.sublineaId,
-                  })
-                }
-                onAplicarCambios={aplicarCambios}
-                onGuardarCambios={handleGuardarCambios}
-                fetchMarcas={fetchMarcas}
-                fetchLineas={fetchLineas}
-                onLimpiarFiltros={handleLimpiarFiltros}
+        {/* El panel de filtros queda siempre montado: si se desmontara durante la carga
+            perdería el valor y el tipo de actualización ingresados. */}
+        <Card className="border-gray-200 dark:border-slate-700">
+          <FiltrosCambioPrecios
+            valoresFiltros={valoresFiltros}
+            setValoresFiltros={setValoresFiltros}
+            marcas={marcas}
+            lineas={lineas}
+            productosLength={loading ? 0 : productos.length}
+            onBuscar={() =>
+              ejecutarBusqueda(() =>
+                buscarProductos({
+                  marcaId: valoresFiltros.marcaId,
+                  lineaId: valoresFiltros.lineaId,
+                })
+              )
+            }
+            onAplicarCambios={handleAplicarCambios}
+            onGuardarCambios={handleGuardarCambios}
+            fetchMarcas={fetchMarcas}
+            fetchLineas={fetchLineas}
+            onLimpiarFiltros={handleLimpiarFiltros}
+          />
+          <CardContent className="p-0">
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
+                <p className="text-gray-600 dark:text-gray-400 text-lg">Cargando productos...</p>
+              </div>
+            ) : error ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 max-w-md">
+                  <p className="text-red-600 dark:text-red-400 text-center font-medium">{error}</p>
+                </div>
+              </div>
+            ) : (
+              <TablaCambioPrecios
+                productos={productos}
+                columns={columns}
+                onEditar={handleAbrirActualizarProducto}
+                onEliminar={handleDelete}
               />
-              <CardContent className="p-0">
-                <TablaCambioPrecios
-                  productos={productos}
-                  columns={columns}
-                  onEditar={handleAbrirActualizarProducto}
-                  onEliminar={handleDelete}
-                />
-              </CardContent>
-            </Card>
+            )}
+          </CardContent>
+        </Card>
 
-            <Alertas alerts={alerts} onRemove={removeAlert} />
-            <AlertasConfirmacion />
-          </>
-        )}
+        <Alertas alerts={alerts} onRemove={removeAlert} />
+        <AlertasConfirmacion />
       </div>
 
       {mostrarActualizarProducto && (

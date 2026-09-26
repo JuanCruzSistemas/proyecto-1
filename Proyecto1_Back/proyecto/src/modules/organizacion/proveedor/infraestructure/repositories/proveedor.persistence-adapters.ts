@@ -8,7 +8,7 @@ import { UpdateProveedorDto } from '../../dto/update-proveedor.dto';
 import { IProveedorRepository } from '../../domain/interfaces/proveedor.interface';
 import { Localidad } from 'src/modules/gutil/localidad/domain/entities/localidad.entity';
 import { DomicilioService } from 'src/modules/gutil/domicilio/domicilio.service';
-import { IUnitOfWork } from 'src/modules/common/unit-of-work/iunit-of-work.';
+import { IUnitOfWork } from 'src/modules/common/unit-of-work/unit-of-work.interface';
 import { Domicilio } from 'src/modules/gutil/domicilio/entities/domicilio.entity';
 import { Transactional } from 'src/modules/common/decorators/transactional.decoratos';
 import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';

@@ -1,4 +1,4 @@
-import { IUnitOfWork } from "../unit-of-work/iunit-of-work.";
+import { IUnitOfWork } from "../unit-of-work/unit-of-work.interface";
 import { TypeOrmUnitOfWork } from "../unit-of-work/type-orm-unit-of-works1";
 
 export function Transactional() {

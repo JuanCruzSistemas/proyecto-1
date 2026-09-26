@@ -1,71 +1,34 @@
-import {
-  ConflictException,
-  forwardRef,
-  Inject,
-  Injectable,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
-import { UsuarioService } from 'src/modules/gestion-usuario/usuario/application/services/usuario.service';
-import { ensureNotSistemaEntity } from 'src/modules/common/utils/atrituto-sistema';
-import { PaginacionUtils } from 'src/modules/common/utils/pagination/paginacion-utils';
-import { MessageFrontUtils } from 'src/modules/common/utils/message/message-front.util';
-import { ILineaRepository } from '../../domain/interfaces/linea.repository.interface';
-import { CreateLineaDto } from '../../dto/create-linea.dto';
-import { UpdateLineaDto } from '../../dto/update-linea.dto';
-import { LineaDto } from '../../dto/linea.dto';
-import { LineaMapper } from '../../mappers/linea.mapper';
-import { PoliticaEliminacionLinea } from '../../domain/services/politica-eliminacion-linea.service';
+import { Injectable } from '@nestjs/common';
+import { CreateLineaDto } from '../dto/create-linea.dto';
+import { UpdateLineaDto } from '../dto/update-linea.dto';
+import { LineaDto } from '../dto/linea.dto';
 import { Linea } from '../../domain/entities/linea.entity';
+import { CreateLineaUseCase } from '../use-cases/create-linea.use-case';
+import { UpdateLineaUseCase } from '../use-cases/update-linea.use-case';
+import { FindLineaUseCase } from '../use-cases/find-linea.use-case';
+import { FindDtoByIdLineaUseCase } from '../use-cases/find-dto-by-id-linea.use-case';
+import { FindEntityByIdLineaUseCase } from '../use-cases/find-entity-by-id-linea.use-case';
+import { FindByIdConAuditoriaLineaUseCase } from '../use-cases/find-by-id-auditoria-linea.use-case';
+import { RemoveLineaUseCase } from '../use-cases/remove-linea.use-case';
 
 @Injectable()
 export class LineaService {
-  private readonly logger = new Logger(LineaService.name);
   constructor(
-    @Inject('ILineaRepository')
-    private readonly repository: ILineaRepository,
-
-    @Inject(forwardRef(() => PoliticaEliminacionLinea))
-    private readonly validacionesService: PoliticaEliminacionLinea,
-    private readonly usuarioService: UsuarioService,
-
-  ) { }
-
-  private readonly ENTITY_NAME = 'Linea';
+    private readonly createLineaUseCase: CreateLineaUseCase,
+    private readonly updateLineaUseCase: UpdateLineaUseCase,
+    private readonly findLineaUseCase: FindLineaUseCase,
+    private readonly findDtoByIdLineaUseCase: FindDtoByIdLineaUseCase,
+    private readonly findEntityByIdLineaUseCase: FindEntityByIdLineaUseCase,
+    private readonly findByIdConAuditoriaLineaUseCase: FindByIdConAuditoriaLineaUseCase,
+    private readonly removeLineaUseCase: RemoveLineaUseCase
+  ) {}
 
   async create(dto: CreateLineaDto) {
-    this.logger.log(
-      `Creando un nuevo ${this.ENTITY_NAME} con denominación: ${dto.denominacion} a: ${dto.denominacion}`,
-    );
-    await this.checkDenominacionExists(dto.denominacion, 0);
-
-
-    const entity = await this.repository.create(dto);
-
-
-    return MessageFrontUtils.createSimple(
-      `${this.ENTITY_NAME}`,
-      entity.denominacion,
-      'creada',
-    );
+    return this.createLineaUseCase.execute(dto);
   }
 
   async update(id: number, dto: UpdateLineaDto) {
-    this.logger.log(`Actualizando  ${this.ENTITY_NAME} con ID: ${id}`);
-
-
-    const linea = await this.findEntityById(id); // Verifica existencia
-    ensureNotSistemaEntity(linea, 'Linea');
-    if (dto.denominacion)
-      await this.checkDenominacionExists(dto.denominacion, id);
-
-
-    const entity = await this.repository.update(id, dto);
-    return MessageFrontUtils.createSimple(
-      `${this.ENTITY_NAME}`,
-      entity.denominacion,
-      'editada',
-    );
+    return this.updateLineaUseCase.execute(id, dto);
   }
 
   async findByDenominacionFiltered(
@@ -74,132 +37,30 @@ export class LineaService {
     take = 10,
     incluirEliminados: boolean = false,
   ): Promise<{ data: LineaDto[]; total: number }> {
-    this.logger.log(
-      ` ser Buscando o ${denominacion}  skip=${skip}, take=${take}`,
-    );
-    const result = await this.repository.findByDenominacionFiltered(
-      denominacion,
-      skip,
-      take,
-      incluirEliminados,
-    );
-    const data: LineaDto[] = result.data.map((linea) =>
-      LineaMapper.toDto(linea),
-    );
-    return {
-      data,
-      total: PaginacionUtils.totalItems(result.total),
-    };
+    return this.findLineaUseCase.findByDenominacionFiltered(denominacion, skip, take, incluirEliminados);
   }
 
-  async findAllFor(
-    denominacion: string,
-  ): Promise<{ data: LineaDto[]; total: number }> {
-    const result = await this.repository.findAllFor(denominacion);
-
-    this.logger.log(
-      ` ser Buscando o ${denominacion}    result.length=${result.length}}`,
-    );
-
-    const data: LineaDto[] = result.map((linea) => LineaMapper.toDto(linea));
-
-    return {
-      data,
-      total: 1,
-    };
+  async findAllFor(denominacion: string): Promise<{ data: LineaDto[]; total: number }> {
+    return this.findLineaUseCase.findAllFor(denominacion);
   }
 
   async findByIdConAuditoria(id: number) {
-    const entity = await this.repository.findByIdConAuditoria(id);
-    if (!entity)
-      throw new NotFoundException(
-        `${this.ENTITY_NAME} con ID ${id} no encontrado.`,
-      );
-    this.logger.warn(`FindOne : ${JSON.stringify(entity)}.`);
-
-    return entity;
+    return this.findByIdConAuditoriaLineaUseCase.execute(id);
   }
 
   async findDtoById(id: number) {
-    const entity = await this.repository.findOne(id);
-    if (!entity)
-      throw new NotFoundException(
-        `${this.ENTITY_NAME} con ID ${id} no encontrado.`,
-      );
-    return LineaMapper.toDto(entity);
+    return this.findDtoByIdLineaUseCase.execute(id);
   }
 
   async findEntityById(id: number) {
-    const entity = await this.repository.findOne(id);
-    if (!entity)
-      throw new NotFoundException(
-        `${this.ENTITY_NAME} con ID ${id} no encontrado.`,
-      );
-    return entity;
+    return this.findEntityByIdLineaUseCase.execute(id);
   }
 
   async remove(id: number, usuarioId: number) {
-    const entity = await this.repository.findOne(id);
-
-    if (!entity) {
-      throw new NotFoundException(
-        `${this.ENTITY_NAME} con ID ${id} no encontrado.`,
-      );
-    }
-
-    ensureNotSistemaEntity(entity, 'Linea');
-
-    const usuario = await this.usuarioService.findOne(usuarioId);
-    if (!usuario) {
-      throw new NotFoundException(`Usuario con ID ${usuarioId} no encontrado.`);
-    }
-
-    const tieneProductosActivos =
-      await this.validacionesService.tieneProductosActivosParaLinea(id);
-
-    if (tieneProductosActivos) {
-      throw new ConflictException(
-        'No se puede eliminar la marca porque está asociada a productos activos.',
-      );
-    }
-
-    await this.repository.remove(entity, usuario);
-    return MessageFrontUtils.createSimple(
-      `${this.ENTITY_NAME}`,
-      entity.denominacion,
-      'eliminada',
-    );
+    return this.removeLineaUseCase.execute(id, usuarioId);
   }
-
-  private async checkDenominacionExists(denominacion: string, id: number) {
-    const denominacionNormalizada = denominacion.trim().toUpperCase();
-
-    this.logger.log(
-      ` Verificando denominación: "${denominacionNormalizada}" para ID: ${id}`,
-    );
-
-    const exists = await this.repository.findByDenominacionWith(
-      denominacionNormalizada,
-    );
-
-    this.logger.log(
-      `Resultado: ${exists ? `Encontrado ID ${exists.id}` : 'No encontrado'}`,
-    );
-
-    if (exists && exists.id !== id) {
-      this.logger.warn(
-        ` Conflicto: denominación ya está en uso: ${denominacionNormalizada} (ID existente: ${exists.id})`,
-      );
-      throw new ConflictException('Denominación ya en uso o esta eliminada.');
-    }
-
-    this.logger.log(`✅ Denominación disponible`);
-  }
-
 
   async findAllListado(): Promise<Linea[]> {
-    const result = await this.repository.findAllListado();
-    return result;
+    return this.findLineaUseCase.findAllListado();
   }
-
 }

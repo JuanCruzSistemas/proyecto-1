@@ -1,10 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { IProductoRepository } from '../../../producto/domain/interfaces/producto.repository-interface';
+import { IProductoRepository, PRODUCTO_REPOSITORY_TOKEN } from '../../../producto/domain/repositories/producto.repository.interface';
 
 @Injectable()
 export class PoliticaEliminacionMarca {
   constructor(
-    @Inject('IProductoRepository')
+    @Inject(PRODUCTO_REPOSITORY_TOKEN)
     private readonly productoRepository: IProductoRepository,
   ) {}
 

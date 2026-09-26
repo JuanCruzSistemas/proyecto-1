@@ -1,56 +1,151 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-  DeleteDateColumn,
-  OneToMany,
-  Index,
-} from 'typeorm';
+import { LineaCreateParams, LineaReconstituteParams } from "./linea.types";
+import { DenominacionRequeridaException } from "../exceptions/denominacion-requerida.exception";
+import { StockMinimoInvalidoException } from "../exceptions/stock-minimo-invalido.exception";
 
-import { Producto } from '../../../producto/domain/entities/producto.entity';
-import { CantidadColumn } from 'src/modules/common/decorators/cantidad-column.decorator';
-
-@Entity('linea')
-@Index(['denominacion', 'deletedAt'], { unique: true })
 export class Linea {
-  @PrimaryGeneratedColumn()
-  id: number;
+  private constructor(
+    private id: number | null,
+    private denominacion: string,
+    private observacion: string | null,
+    private utilizaStockMinimo: boolean,
+    private stockMinimo: number,
+    private createdAt: Date,
+    private updatedAt: Date,
+    private deletedAt: Date | null,
+    private usuarioCreatedId: number | null,
+    private usuarioUpdatedId: number | null,
+    private usuarioDeletedId: number | null,
+    private superlineaId: number,
+    private sistema: number
+  ) {}
 
-  @Column({ type: 'varchar', length: 255 })
-  denominacion: string;
+  /**
+   * Fábrica para una Línea NUEVA, valida invariantes
+   */
+  public static create(params: LineaCreateParams): Linea {
+    if (!params.denominacion || params.denominacion.trim().length === 0) {
+      throw new DenominacionRequeridaException();
+    }
 
-  @Column({ type: 'text', nullable: true })
-  observacion?: string;
+    if (params.stockMinimo < 0) {
+      throw new StockMinimoInvalidoException(params.stockMinimo);
+    }
 
-  @OneToMany(() => Producto, (producto) => producto.linea)
-  productos: Producto[];
- 
-  @Column('boolean', { default: false })
-  utilizaStockMinimo: boolean;
+    return new Linea(
+      null,
+      params.denominacion,
+      params.observacion,
+      params.utilizaStockMinimo,
+      params.stockMinimo,
+      new Date(),
+      new Date(),
+      null,
+      params.usuarioCreatedId,
+      null,
+      null,
+      params.superlineaId,
+      0
+    );
+  }
 
-  @CantidadColumn()
-  stockMinimo: number;
+  /**
+   * Fábrica para REHIDRATAR desde persistencia, la usa el mapper de infraestructura.
+   */
+  public static reconstitute(params: LineaReconstituteParams): Linea {
+    return new Linea(
+      params.id,
+      params.denominacion,
+      params.observacion,
+      params.utilizaStockMinimo,
+      params.stockMinimo,
+      params.createdAt,
+      params.updatedAt,
+      params.deletedAt,
+      params.usuarioCreatedId,
+      params.usuarioUpdatedId,
+      params.usuarioDeletedId,
+      params.superlineaId,
+      params.sistema
+    );
+  }
 
-  @CreateDateColumn()
-  createdAt: Date;
+  public actualizarDatos(params: {
+    denominacion: string;
+    superlineaId: number;
+    observacion: string | null;
+    utilizaStockMinimo: boolean;
+    stockMinimo: number;
+    usuarioUpdatedId: number;
+  }): void {
+    if (!params.denominacion || params.denominacion.trim().length === 0) {
+      throw new DenominacionRequeridaException();
+    }
 
-  @UpdateDateColumn()
-  updatedAt: Date;
+    if (params.stockMinimo < 0) {
+      throw new StockMinimoInvalidoException(params.stockMinimo);
+    }
 
-  @DeleteDateColumn({ nullable: true })
-  deletedAt?: Date;
+    this.superlineaId = params.superlineaId;
+    this.denominacion = params.denominacion;
+    this.observacion = params.observacion;
+    this.utilizaStockMinimo = params.utilizaStockMinimo;
+    this.stockMinimo = params.stockMinimo;
+    this.usuarioUpdatedId = params.usuarioUpdatedId;
+    this.updatedAt = new Date();
+  }
 
-  @Column({ type: 'int', nullable: true })
-  usuarioCreatedId?: number;
+  public marcarComoEliminado(usuarioDeletedId: number): void {
+    this.deletedAt = new Date();
+    this.usuarioDeletedId = usuarioDeletedId;
+  }
 
-  @Column({ type: 'int', nullable: true })
-  usuarioDeletedId?: number;
+  public getSuperlineaId(): number { return this.superlineaId; }
 
-  @Column({ type: 'int', nullable: true })
-  usuarioUpdatedId?: number;
+  public getId(): number | null {
+    return this.id;
+  }
 
-  @Column({ type: 'int', default: 0 })
-  sistema: number;
+  public getDenominacion(): string {
+    return this.denominacion;
+  }
+
+  public getObservacion(): string | null {
+    return this.observacion;
+  }
+
+  public getUtilizaStockMinimo(): boolean {
+    return this.utilizaStockMinimo;
+  }
+
+  public getStockMinimo(): number {
+    return this.stockMinimo;
+  }
+
+  public getCreatedAt(): Date {
+    return this.createdAt;
+  }
+
+  public getUpdatedAt(): Date {
+    return this.updatedAt;
+  }
+
+  public getDeletedAt(): Date | null {
+    return this.deletedAt;
+  }
+
+  public getUsuarioCreatedId(): number | null {
+    return this.usuarioCreatedId;
+  }
+
+  public getUsuarioUpdatedId(): number | null {
+    return this.usuarioUpdatedId;
+  }
+
+  public getUsuarioDeletedId(): number | null {
+    return this.usuarioDeletedId;
+  }
+
+  public getSistema(): number {
+    return this.sistema;
+  }
 }

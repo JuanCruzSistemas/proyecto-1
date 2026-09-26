@@ -10,7 +10,7 @@ import { ProductoService } from 'src/modules/gestion-productos/producto/applicat
 export class ProductoValidator {
   constructor(
     private readonly productoService: ProductoService,
-    
+
   ) {}
 
 
@@ -22,7 +22,9 @@ export class ProductoValidator {
     }
 
     const productos = await this.productoService.findByIds(productosIds);
-    const productosMap = new Map(productos.map((p) => [p.id, p]));
+    const productosMap = new Map(
+      productos.map((p) => [p.getId() as number, p]),
+    );
 
     // Validar que todos los productos existen
     const productosNoEncontrados = productosIds.filter(

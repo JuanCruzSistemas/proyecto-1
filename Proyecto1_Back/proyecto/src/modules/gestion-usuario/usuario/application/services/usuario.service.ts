@@ -18,7 +18,7 @@ import { PaginacionUtils } from 'src/modules/common/utils/pagination/paginacion-
 import { UpdateContrasenaDto } from '../../dto/updateContrasena.dto';
 import * as bcrypt from 'bcrypt';
 import { Personal } from 'src/modules/organizacion/personal/domain/entities/personal.entity';
-import { IUnitOfWork } from 'src/modules/common/unit-of-work/iunit-of-work.';
+import { IUnitOfWork } from 'src/modules/common/unit-of-work/unit-of-work.interface';
 
 @Injectable()
 export class UsuarioService {

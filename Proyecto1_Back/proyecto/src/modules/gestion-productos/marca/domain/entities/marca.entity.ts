@@ -1,50 +1,117 @@
-import { Usuario } from 'src/modules/gestion-usuario/usuario/domain/entities/usuario.entity';
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
-  DeleteDateColumn,
-  OneToMany,
-  Index,
-} from 'typeorm';
-import { Producto } from '../../../producto/domain/entities/producto.entity';
+import { MarcaCreateParams, MarcaReconstituteParams } from "./marca.types";
+import { DenominacionRequeridaException } from "../exceptions/denominacion-requerida.exception";
 
-@Entity('marca')
-@Index(['denominacion', 'deletedAt'], { unique: true })
 export class Marca {
-  @PrimaryGeneratedColumn()
-  id: number;
+  private constructor(
+    private id: number | null,
+    private denominacion: string,
+    private observacion: string | null,
+    private createdAt: Date,
+    private updatedAt: Date,
+    private deletedAt: Date | null,
+    private usuarioCreatedId: number | null,
+    private usuarioUpdatedId: number | null,
+    private usuarioDeletedId: number | null,
+    private sistema: number
+  ) {}
 
-  @Column({ type: 'varchar', length: 255, })
-  denominacion: string;
+  /**
+   * Fábrica para una Marca NUEVA, valida invariantes.
+   */
+  public static create(params: MarcaCreateParams): Marca {
+    if (!params.denominacion || params.denominacion.trim().length === 0) {
+      throw new DenominacionRequeridaException();
+    }
 
-  @Column({ type: 'text', nullable: true })
-  observacion?: string;
+    return new Marca(
+      null,
+      params.denominacion,
+      params.observacion,
+      new Date(),
+      new Date(),
+      null,
+      params.usuarioCreatedId,
+      null,
+      null,
+      0
+    );
+  }
 
-  @OneToMany(() => Producto, (producto) => producto.marca)
-  productos: Producto[];
+  /**
+   * Fábrica para REHIDRATAR desde persistencia, la usa solamente el mapper de infraestructura.
+   */
+  public static reconstitute(params: MarcaReconstituteParams): Marca {
+    return new Marca(
+      params.id,
+      params.denominacion,
+      params.observacion,
+      params.createdAt,
+      params.updatedAt,
+      params.deletedAt,
+      params.usuarioCreatedId,
+      params.usuarioUpdatedId,
+      params.usuarioDeletedId,
+      params.sistema
+    );
+  }
 
+  public actualizarDatos(params: {
+    denominacion: string;
+    observacion: string | null;
+    usuarioUpdatedId: number;
+  }): void {
+    if (!params.denominacion || params.denominacion.trim().length === 0) {
+      throw new DenominacionRequeridaException();
+    }
 
-  @CreateDateColumn()
-  createdAt: Date;
+    this.denominacion = params.denominacion;
+    this.observacion = params.observacion;
+    this.usuarioUpdatedId = params.usuarioUpdatedId;
+    this.updatedAt = new Date();
+  }
 
-  @UpdateDateColumn()
-  updatedAt: Date;
+  public marcarComoEliminado(usuarioDeletedId: number): void {
+    this.deletedAt = new Date();
+    this.usuarioDeletedId = usuarioDeletedId;
+  }
 
-  @DeleteDateColumn({ nullable: true })
-  deletedAt?: Date;
+  public getId(): number | null {
+    return this.id;
+  }
 
-  @Column({ type: 'int', nullable: true })
-  usuarioCreatedId?: number;
+  public getDenominacion(): string {
+    return this.denominacion;
+  }
 
-  @Column({ type: 'int', nullable: true })
-  usuarioDeletedId?: number;
+  public getObservacion(): string | null {
+    return this.observacion;
+  }
 
-  @Column({ type: 'int', nullable: true })
-  usuarioUpdatedId?: number;
+  public getCreatedAt(): Date {
+    return this.createdAt;
+  }
 
-  @Column({ type: 'int', default: 0 })
-  sistema: number;
+  public getUpdatedAt(): Date {
+    return this.updatedAt;
+  }
+
+  public getDeletedAt(): Date | null {
+    return this.deletedAt;
+  }
+
+  public getUsuarioCreatedId(): number | null {
+    return this.usuarioCreatedId;
+  }
+
+  public getUsuarioUpdatedId(): number | null {
+    return this.usuarioUpdatedId;
+  }
+
+  public getUsuarioDeletedId(): number | null {
+    return this.usuarioDeletedId;
+  }
+
+  public getSistema(): number {
+    return this.sistema;
+  }
 }

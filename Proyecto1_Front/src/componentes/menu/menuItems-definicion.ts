@@ -60,16 +60,24 @@ export const menuItems: MenuItem[] = [
       },
       {
         icon: DollarSign,
+        label: "Actualización Masiva de Precios",
+        path: "cambio-precios-masivo",
+        roles: [Rol.ADMINISTRADOR, Rol.ROOT, Rol.EMPLEADO],
+      },
+      {
+        icon: DollarSign,
         label: "Configuración",
         path: "",
         subMenu: [
           { icon: Tag, label: "Marca", path: "marca" },
+          { icon: Layers, label: "SuperLíneas", path: "superlinea", roles: [Rol.ADMINISTRADOR, Rol.ROOT] },
           { icon: Layers, label: "Líneas", path: "linea" },
+          { icon: Archive, label: "Presentaciones", path: "presentacion" },
         ],
         roles: [Rol.ADMINISTRADOR,Rol.ROOT,Rol.ROOT],
       },
     ],
-    roles: [Rol.ADMINISTRADOR, Rol.VENDEDOR, Rol.REPARTIDOR, Rol.REPOSITOR,Rol.ROOT],
+    roles: [Rol.ADMINISTRADOR, Rol.EMPLEADO, Rol.VENDEDOR, Rol.REPARTIDOR, Rol.REPOSITOR,Rol.ROOT],
   },
 
   
