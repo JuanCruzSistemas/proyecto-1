@@ -200,6 +200,79 @@ describe('ProductoService', () => {
     });
   });
 
+  describe('búsquedas y selectores', () => {
+    it('findByRapido() delega en FindByProductoUseCase', async () => {
+      const resultado = { data: [], total: 0 };
+      findByProductoUseCase.findByRapido.mockResolvedValue(resultado);
+
+      await expect(service.findByRapido('ACE', true, 0, 10)).resolves.toBe(resultado);
+      expect(findByProductoUseCase.findByRapido).toHaveBeenCalledWith('ACE', true, 0, 10);
+    });
+
+    it('findBy() pasa todos los filtros a FindByProductoUseCase', async () => {
+      const resultado = { data: [], total: 3 };
+      findByProductoUseCase.findBy.mockResolvedValue(resultado);
+
+      await expect(
+        service.findBy('ACE', 'P-1', false, 'REF', 1, 2, 3, true, 0, 10, 'ACEITES', 'ALMACEN'),
+      ).resolves.toBe(resultado);
+      expect(findByProductoUseCase.findBy).toHaveBeenCalledWith(
+        'ACE', 'P-1', false, 'REF', 1, 2, 3, true, 0, 10, 'ACEITES', 'ALMACEN',
+      );
+    });
+
+    it('findByDenominacionCodigoProveedorFiltered() usa skip=0 y take=10 por defecto', async () => {
+      findByDenominacionUseCase.execute.mockResolvedValue({ data: [], total: 0 });
+
+      await service.findByDenominacionCodigoProveedorFiltered('ACE');
+
+      expect(findByDenominacionUseCase.execute).toHaveBeenCalledWith('ACE', 0, 10);
+    });
+
+    it('buscarMarcaDesdeProducto() / buscarLineaDesdeProducto() consultan los servicios de Marca y Línea', async () => {
+      marcaService.findEntityById.mockResolvedValue(marca);
+      lineaService.findEntityById.mockResolvedValue(linea);
+
+      await expect(service.buscarMarcaDesdeProducto(4)).resolves.toBe(marca);
+      await expect(service.buscarLineaDesdeProducto(5)).resolves.toBe(linea);
+      expect(marcaService.findEntityById).toHaveBeenCalledWith(4);
+      expect(lineaService.findEntityById).toHaveBeenCalledWith(5);
+    });
+
+    it('findAllFor{Lineas,Marcas,Presentaciones}() delegan en cada servicio', async () => {
+      lineaService.findAllFor.mockResolvedValue({ data: [], total: 1 } as any);
+      marcaService.findAllFor.mockResolvedValue({ data: [], total: 2 } as any);
+      presentacionService.findAllFor.mockResolvedValue({ data: [], total: 3 } as any);
+
+      await expect(service.findAllForLineas('A')).resolves.toEqual({ data: [], total: 1 });
+      await expect(service.findAllForMarcas('B')).resolves.toEqual({ data: [], total: 2 });
+      await expect(service.findAllForPresentaciones('C')).resolves.toEqual({ data: [], total: 3 });
+      expect(lineaService.findAllFor).toHaveBeenCalledWith('A');
+      expect(marcaService.findAllFor).toHaveBeenCalledWith('B');
+      expect(presentacionService.findAllFor).toHaveBeenCalledWith('C');
+    });
+  });
+
+  describe('consultas al repositorio', () => {
+    it('existsProductosActivosByMarca() / ByLinea() responden lo que dice el repositorio', async () => {
+      repository.existsProductosActivosByMarca.mockResolvedValue(true);
+      repository.existsProductosActivosByLinea.mockResolvedValue(false);
+
+      await expect(service.existsProductosActivosByMarca(7)).resolves.toBe(true);
+      await expect(service.existsProductosActivosByLinea(8)).resolves.toBe(false);
+      expect(repository.existsProductosActivosByMarca).toHaveBeenCalledWith(7);
+      expect(repository.existsProductosActivosByLinea).toHaveBeenCalledWith(8);
+    });
+
+    it('findByIds() devuelve los productos del repositorio', async () => {
+      const productos = [crearProducto()];
+      repository.findByIds.mockResolvedValue(productos);
+
+      await expect(service.findByIds([1, 2])).resolves.toBe(productos);
+      expect(repository.findByIds).toHaveBeenCalledWith([1, 2]);
+    });
+  });
+
   describe('incrementarStock / decrementarStock', () => {
     it('ajusta el stock a través del dominio y persiste el producto actualizado', async () => {
       const producto = crearProducto(10);
@@ -221,6 +294,14 @@ describe('ProductoService', () => {
         service.decrementarStock({} as any, 1, 10, 'venta'),
       ).rejects.toThrow();
       expect(repository.updateEntity).not.toHaveBeenCalled();
+    });
+
+    it('decrementarStock() sin origen usa el motivo por defecto y descuenta', async () => {
+      const producto = crearProducto(10);
+      repository.findOne.mockResolvedValue(producto);
+
+      await expect(service.decrementarStock({} as any, 1, 4)).resolves.toBe(6);
+      expect(producto.getStock()).toBe(6);
     });
 
     it('lanza un error si el producto no existe', async () => {
