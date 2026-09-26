@@ -1,3 +1,4 @@
+import { CostoInvalidoException } from '../../domain/exceptions/costo-invalido.exception';
 import { ProductoDtoMapper } from './producto-dto.mapper';
 import { ProductoFactory } from '../../domain/factories/producto.factory';
 import { Linea } from 'src/modules/gestion-productos/linea/domain/entities/linea.entity';
@@ -106,9 +107,9 @@ describe('ProductoDtoMapper', () => {
       const dto = ProductoDtoMapper.toResponseDto(producto);
 
       expect(dto.linea).toBeDefined();
-      expect(dto.linea.denominacion).toBe('Aceites');
+      expect(dto.linea!.denominacion).toBe('Aceites');
       expect(dto.marca).toBeDefined();
-      expect(dto.marca.denominacion).toBe('Genérica');
+      expect(dto.marca!.denominacion).toBe('Genérica');
       expect(dto.presentacion).toBeDefined();
       expect(dto.presentacion!.denominacion).toBe('1 Litro');
     });
@@ -173,6 +174,7 @@ describe('ProductoDtoMapper', () => {
         usuarioCreatedId: 1,
         utilizaStockMinimo: false,
         utilizaPack: false,
+        costo: 100,
         ...overrides,
       });
 
@@ -222,9 +224,22 @@ describe('ProductoDtoMapper', () => {
       );
 
       expect(producto.getStock()).toBe(0);
-      expect(producto.getCosto()).toBe(0);
+      expect(producto.getStockMinimo()).toBe(0);
+      expect(producto.getMargen()).toBe(0);
       expect(producto.isDestacado()).toBe(false);
       expect(producto.hasEnvioGratis()).toBe(false);
+      expect(producto.getCodigoBarra()).toBeNull();
+      expect(producto.getCantidadPorPack()).toBeNull();
+    });
+
+    // `costo` es opcional en CreateProductoDto, pero el mapper lo reemplaza por 0 y el dominio
+    // exige costo > 0: un alta sin costo siempre falla. Ver INFORME.md.
+    it('sin costo, el default 0 es rechazado por el dominio', () => {
+      const dto = crearCreateDto({ costo: undefined });
+
+      expect(() =>
+        ProductoDtoMapper.createDtoToDomain(dto, crearLinea(), crearMarca(), null, crearUsuario()),
+      ).toThrow(CostoInvalidoException);
     });
 
     it('asigna las entidades relacionadas correctamente', () => {

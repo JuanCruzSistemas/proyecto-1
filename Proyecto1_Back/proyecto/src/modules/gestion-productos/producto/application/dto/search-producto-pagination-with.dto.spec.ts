@@ -1,16 +1,19 @@
+import 'reflect-metadata';
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import { SearchProductoPaginationWithDto } from './search-producto-pagination-with.dto';
 
 describe('SearchProductoPaginationWithDto', () => {
-  const crearDto = (overrides: Partial<SearchProductoPaginationWithDto> = {}) =>
-    plainToClass(SearchProductoPaginationWithDto, {
-      skip: 0,
-      take: 10,
-      codProveedorExacto: false,
-      codReferenciaExacto: false,
-      ...overrides,
-    });
+  // Simula lo que llega por query string: los parámetros ausentes no vienen como clave
+  // y los flags llegan como texto ('true'/'false'), que es lo que esperan sus @Transform.
+  const crearDto = (overrides: Partial<SearchProductoPaginationWithDto> = {}) => {
+    const plano: Record<string, unknown> = { skip: 0, take: 10, ...overrides };
+    for (const flag of ['codProveedorExacto', 'codReferenciaExacto', 'conStock']) {
+      if (typeof plano[flag] === 'boolean') plano[flag] = String(plano[flag]);
+    }
+    Object.keys(plano).forEach((k) => plano[k] === undefined && delete plano[k]);
+    return plainToClass(SearchProductoPaginationWithDto, plano);
+  };
 
   describe('validaciones básicas', () => {
     it('acepta un DTO válido con valores por defecto', async () => {
@@ -159,7 +162,7 @@ describe('SearchProductoPaginationWithDto', () => {
       expect(dto.conStock).toBe(true);
     });
 
-    it('acepta conStock como booleano directo', async () => {
+    it('acepta conStock=true', async () => {
       const errors = await validate(crearDto({ conStock: true }));
 
       expect(errors).toHaveLength(0);
@@ -178,6 +181,27 @@ describe('SearchProductoPaginationWithDto', () => {
       );
 
       expect(errors).toHaveLength(0);
+    });
+  });
+
+  describe('flags recibidos como texto', () => {
+    it("'false' se convierte a false en los tres flags", () => {
+      const dto = plainToClass(SearchProductoPaginationWithDto, {
+        codProveedorExacto: 'false',
+        codReferenciaExacto: 'false',
+        conStock: 'false',
+      });
+      expect(dto.codProveedorExacto).toBe(false);
+      expect(dto.codReferenciaExacto).toBe(false);
+      expect(dto.conStock).toBe(false);
+    });
+
+    it('un valor que no es true/false queda undefined y los flags requeridos fallan', async () => {
+      const dto = plainToClass(SearchProductoPaginationWithDto, { codProveedorExacto: 'si', codReferenciaExacto: 'no', conStock: '1' });
+
+      const errores = (await validate(dto)).map((e) => e.property);
+      expect(errores).toEqual(expect.arrayContaining(['codProveedorExacto', 'codReferenciaExacto']));
+      expect(errores).not.toContain('conStock'); // opcional
     });
   });
 });

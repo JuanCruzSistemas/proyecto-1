@@ -1,4 +1,5 @@
 import { validate } from 'class-validator';
+import { plainToInstance } from 'class-transformer';
 import { UpdateProductoDto } from './update-producto.dto';
 
 describe('UpdateProductoDto', () => {
@@ -74,7 +75,8 @@ describe('UpdateProductoDto', () => {
     });
 
     it('transforma denominacion a minúsculas y sin espacios al inicio/final', async () => {
-      const dto = crearDto({ denominacion: '  PRODUCTO MAYÚSCULAS  ' });
+      // Los @Transform solo corren al convertir desde un objeto plano (como hace el ValidationPipe).
+      const dto = plainToInstance(UpdateProductoDto, { usuarioUpdatedId: 1, denominacion: '  PRODUCTO MAYÚSCULAS  ' });
 
       expect(dto.denominacion).toBe('producto mayúsculas');
     });

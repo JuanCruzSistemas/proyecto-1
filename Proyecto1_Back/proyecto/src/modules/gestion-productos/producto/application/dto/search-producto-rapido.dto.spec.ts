@@ -1,15 +1,17 @@
+import 'reflect-metadata';
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import { SearchProductoRapidoDto } from './search-producto-rapido.dto';
 
 describe('SearchProductoRapidoDto', () => {
-  const crearDto = (overrides: Partial<SearchProductoRapidoDto> = {}) =>
-    plainToClass(SearchProductoRapidoDto, {
-      skip: 0,
-      take: 10,
-      exacto: false,
-      ...overrides,
-    });
+  // Simula lo que llega por query string: los parámetros ausentes no vienen como clave
+  // y `exacto` llega como texto ('true'/'false'), que es lo que espera su @Transform.
+  const crearDto = (overrides: Partial<SearchProductoRapidoDto> = {}) => {
+    const plano: Record<string, unknown> = { skip: 0, take: 10, ...overrides };
+    if (typeof plano.exacto === 'boolean') plano.exacto = String(plano.exacto);
+    Object.keys(plano).forEach((k) => plano[k] === undefined && delete plano[k]);
+    return plainToClass(SearchProductoRapidoDto, plano);
+  };
 
   describe('validaciones básicas', () => {
     it('acepta un DTO válido con valores por defecto', async () => {
@@ -58,7 +60,7 @@ describe('SearchProductoRapidoDto', () => {
       expect(dto.exacto).toBe(false);
     });
 
-    it('acepta booleano directo', async () => {
+    it('acepta exacto=true', async () => {
       const errors = await validate(crearDto({ exacto: true }));
 
       expect(errors).toHaveLength(0);

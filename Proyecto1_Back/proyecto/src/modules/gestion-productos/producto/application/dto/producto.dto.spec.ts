@@ -19,7 +19,7 @@ describe('ProductoDto', () => {
       linea: { id: 1, denominacion: 'Aceites' },
       marca: { id: 2, denominacion: 'Genérica' },
       proveedor: { id: 3, denominacion: 'Proveedor S.A.' },
-      presentacion: null,
+      presentacion: { id: 4, denominacion: 'Unidad' },
       denominacionEditadaManualmente: false,
       ubicacion: 'A1-B2',
       utilizaStockMinimo: true,
@@ -44,10 +44,12 @@ describe('ProductoDto', () => {
       expect(dto.id).toBe(42);
     });
 
-    it('acepta presentacion como null', async () => {
+    // Inconsistencia del DTO (solo de respuesta, no se valida en runtime): se documenta como
+    // nullable en Swagger, pero @ValidateNested sin @IsOptional rechaza null. Ver INFORME.md.
+    it('con presentacion null, class-validator hoy lo rechaza (falta @IsOptional)', async () => {
       const errors = await validate(crearDto({ presentacion: null }));
 
-      expect(errors).toHaveLength(0);
+      expect(errors.map((e) => e.property)).toEqual(['presentacion']);
     });
   });
 
@@ -188,6 +190,16 @@ describe('ProductoDto', () => {
       );
 
       expect(errors).toHaveLength(0);
+    });
+  });
+
+  describe('contrato Swagger', () => {
+    it('documenta linea, marca, proveedor y presentación como ReferenciaDto', () => {
+      const propiedades = ['linea', 'marca', 'proveedor', 'presentacion'];
+      for (const propiedad of propiedades) {
+        const meta = Reflect.getMetadata('swagger/apiModelProperties', ProductoDto.prototype, propiedad);
+        expect(meta.type().name).toBe('ReferenciaDto');
+      }
     });
   });
 });

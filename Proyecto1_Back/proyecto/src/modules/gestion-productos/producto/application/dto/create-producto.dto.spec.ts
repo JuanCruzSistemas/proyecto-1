@@ -1,3 +1,4 @@
+import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { CreateProductoDto } from './create-producto.dto';
 
@@ -124,6 +125,28 @@ describe('CreateProductoDto', () => {
       const errors = await validate(dto);
 
       expect(errors.some((e) => e.property === 'usuarioCreatedId')).toBe(true);
+    });
+  });
+
+  describe('transformaciones (como las aplica el ValidationPipe)', () => {
+    const desdePlano = (plano: object) =>
+      plainToInstance(CreateProductoDto, { lineaId: 1, marcaId: 1, usuarioCreatedId: 1, utilizaStockMinimo: false, utilizaPack: false, ...plano });
+
+    it('recorta y pasa a minúsculas la denominación; sin denominación queda undefined', () => {
+      expect(desdePlano({ denominacion: '  ACEITE  ' }).denominacion).toBe('aceite');
+      expect(desdePlano({}).denominacion).toBeUndefined();
+    });
+
+    it.each([
+      ['true', true],
+      [true, true],
+      ['false', false],
+      [false, false],
+      ['cualquier cosa', false],
+    ])('destacado / envioGratis: %p → %p', (entrada, esperado) => {
+      const dto = desdePlano({ destacado: entrada, envioGratis: entrada });
+      expect(dto.destacado).toBe(esperado);
+      expect(dto.envioGratis).toBe(esperado);
     });
   });
 });
