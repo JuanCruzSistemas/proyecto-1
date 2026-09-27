@@ -55,3 +55,26 @@ Ahora la tabla de productos (escritorio) tiene dos botones nuevos por fila:
 - **Notificar en escritorio:** `onNotificar` solo existe en la vista móvil (card).
 - **Tests con `localStorage`:** hay que configurar el entorno de `vitest` (por ejemplo `environment: "jsdom"` o un setup file) para arreglar los 12 tests que fallan.
 - **Tipos en el build:** conviene sumar `tsc --noEmit` al build o al lint para que estos errores no vuelvan a pasar desapercibidos. Antes hay que resolver los ~122 errores que ya existen.
+
+---
+
+## Corrección 2: los cambios masivos no aparecían en el historial
+
+**Rama:** `fix/historial-precio-masivo`
+
+**Problema:** el guardado masivo (`PATCH /cambio-precios/guardar-cambios`, en `guardar-cambio-masivo.use-case.ts`) actualizaba los precios pero **no creaba ningún registro de historial**. Solo el cambio individual lo hacía. El test e2e CR-006 **CA4** ya lo marcaba como hallazgo.
+
+**Solución (solo backend):**
+
+| Archivo | Cambio |
+|---|---|
+| `producto/application/use-cases/guardar-cambio-masivo.use-case.ts` | Por cada producto se crea un `HistorialPrecio` con los valores anteriores y nuevos, y se guarda **en la misma transacción** que el precio: si algo falla, no se guarda nada. El motivo es fijo: *"Actualización masiva de precios"*. |
+| `guardar-cambio-masivo.use-case.spec.ts` | Nuevo test: se registra un historial por producto, con el motivo y los valores anteriores correctos. |
+| `test/cr-006-cambio-masivo.e2e-spec.ts` | Se adaptó la parte de mocks a la nueva dependencia y ahora verifica que se guardan los historiales. |
+
+**Qué muestra el historial en un cambio masivo:** cambian el precio y el margen; **el costo queda igual**, porque el cambio masivo no lo modifica.
+
+**Verificación:**
+- **Tests unitarios del módulo producto:** 515 pasan (1 nuevo) y 4 fallan. Esos 4 **ya fallaban antes** (`update-precio.use-case.spec.ts` y `find-historial-precio.use-case.spec.ts`).
+- **Tests con mocks del e2e CR-006:** pasan.
+- **Pendiente:** correr el CA4 contra la base de datos y probarlo en el navegador.

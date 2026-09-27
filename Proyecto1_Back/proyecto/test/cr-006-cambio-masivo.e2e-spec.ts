@@ -133,8 +133,9 @@ describe('CR-006 — casos de uso (unitario)', () => {
     };
     const dataSource = { createQueryRunner: jest.fn(() => queryRunner) };
     const repository = { findOne: jest.fn(), updateEntity: jest.fn() };
+    const historialPrecioRepository = { save: jest.fn() };
     const usuarioValidator = { validarUsuarioExiste: jest.fn().mockResolvedValue(usuario) };
-    const useCase = new GuardarCambioMasivoUseCase(repository as any, usuarioValidator as any, dataSource as any);
+    const useCase = new GuardarCambioMasivoUseCase(repository as any, historialPrecioRepository as any, usuarioValidator as any, dataSource as any);
 
     const productos = new Map<number, Producto>();
     beforeEach(() => {
@@ -153,6 +154,7 @@ describe('CR-006 — casos de uso (unitario)', () => {
       expect(queryRunner.commitTransaction).toHaveBeenCalledTimes(1);
       expect(productos.get(1)!.getPrecio()).toBe(140);
       expect(productos.get(2)!.getPrecio()).toBe(250);
+      expect(historialPrecioRepository.save).toHaveBeenCalledTimes(2);
     });
 
     it('CA3: un precio negativo en el lote rechaza todo antes de persistir nada', async () => {
