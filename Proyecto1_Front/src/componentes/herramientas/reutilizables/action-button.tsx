@@ -1,8 +1,8 @@
-import { Info, Pencil, Trash } from "lucide-react";
+import { History, Info, Pencil, Tag, Trash } from "lucide-react";
 import { Button } from "../../ui/Button";
 import { JSX, ReactNode } from "react";
 
-type ActionVariant = "info" | "edit" | "delete";
+type ActionVariant = "info" | "edit" | "delete" | "price" | "history";
 
 interface ActionButtonProps {
   variant: ActionVariant;
@@ -27,6 +27,14 @@ const variantConfig: Record<
   delete: {
     className: "bg-red-500 hover:bg-red-600 text-white",
     icon: <Trash size={16} />,
+  },
+  price: {
+    className: "bg-amber-500 hover:bg-amber-600 text-white",
+    icon: <Tag size={16} />,
+  },
+  history: {
+    className: "bg-purple-500 hover:bg-purple-600 text-white",
+    icon: <History size={16} />,
   },
 };
 

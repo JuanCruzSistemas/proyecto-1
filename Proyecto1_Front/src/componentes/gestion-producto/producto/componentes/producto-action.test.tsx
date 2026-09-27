@@ -18,6 +18,21 @@ describe("ProductoActions", () => {
     expect(onDelete).toHaveBeenCalledWith(12);
   });
 
+  it("muestra cambio de precio e historial solo si reciben handler", () => {
+    const onCambioPrecios = vi.fn();
+    const onHistorial = vi.fn();
+    const { rerender } = render(<ProductoActions producto={{ id: 5 } as never} onEditar={vi.fn()} onInfo={vi.fn()} onDelete={vi.fn()} />);
+    expect(screen.queryByTitle("Cambiar precio")).not.toBeInTheDocument();
+    expect(screen.queryByTitle("Historial de precios")).not.toBeInTheDocument();
+
+    rerender(<ProductoActions producto={{ id: 5 } as never} onEditar={vi.fn()} onInfo={vi.fn()} onDelete={vi.fn()} onCambioPrecios={onCambioPrecios} onHistorial={onHistorial} />);
+    fireEvent.click(screen.getByTitle("Cambiar precio"));
+    fireEvent.click(screen.getByTitle("Historial de precios"));
+
+    expect(onCambioPrecios).toHaveBeenCalledWith(5);
+    expect(onHistorial).toHaveBeenCalledWith(5);
+  });
+
   it("aplica alineación compacta cuando se solicita", () => {
     const { container } = render(<ProductoActions producto={{ id: 2 } as never} onEditar={vi.fn()} onInfo={vi.fn()} onDelete={vi.fn()} compact />);
     expect(container.firstElementChild?.className).toContain("justify-end");

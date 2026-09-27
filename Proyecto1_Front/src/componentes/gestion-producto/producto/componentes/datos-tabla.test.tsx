@@ -23,6 +23,16 @@ describe("DatosTabla", () => {
     expect(screen.getByTitle("Ver información")).toBeInTheDocument();
   });
 
+  it("conecta cambio de precio e historial con las acciones de la fila", () => {
+    const onCambioPrecios = vi.fn();
+    const onHistorial = vi.fn();
+    render(<DatosTabla productos={[producto]} columns={[]} puedeAccionar {...callbacks()} onCambioPrecios={onCambioPrecios} onHistorial={onHistorial} />);
+    fireEvent.click(screen.getByTitle("Cambiar precio"));
+    fireEvent.click(screen.getByTitle("Historial de precios"));
+    expect(onCambioPrecios).toHaveBeenCalledWith(2);
+    expect(onHistorial).toHaveBeenCalledWith(2);
+  });
+
   it("no expone acciones si el usuario no puede accionar", () => {
     render(<DatosTabla productos={[producto]} columns={[]} puedeAccionar={false} {...callbacks()} />);
     expect(screen.getByText("Sin acciones")).toBeInTheDocument();
