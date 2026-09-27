@@ -1,6 +1,8 @@
 import { Producto } from "../../../../interfaces/gestion-producto/producto/interfaces-producto";
 import InformacionAuditoria from "../../../herramientas/reutilizables/informacion-auditoria";
 import RegistrarActualizarProductoForm from "../utils/registrar-actualizar-producto";
+import ModalCambiarPrecio from "./modal-cambiar-precio";
+import ModalHistorialPrecios from "./modal-historial-precios";
 
 interface Props {
   isAltaOpen: boolean;
@@ -78,7 +80,28 @@ export function ProductosModales({
         </div>
       )}
 
+      {mostrarCambioPrecios && productoInfo?.id && (
+        <ModalCambiarPrecio
+          isOpen={mostrarCambioPrecios}
+          productoId={productoInfo.id}
+          costoActual={productoInfo.costo || 0}
+          porcentajeActual={productoInfo.porcentaje || 0}
+          onClose={onCloseCambioPrecios}
+          onSuccess={() => {
+            onRefetch();
+            onSuccessActualizar("Precio actualizado con éxito");
+          }}
+        />
+      )}
 
+      {mostrarHistorialPrecios && productoInfo?.id && (
+        <ModalHistorialPrecios
+          isOpen={mostrarHistorialPrecios}
+          productoId={productoInfo.id}
+          nombreProducto={productoInfo.denominacion}
+          onClose={onCloseHistorialPrecios}
+        />
+      )}
     </>
   );
 }

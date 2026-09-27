@@ -9,6 +9,13 @@ vi.mock("../../../herramientas/reutilizables/informacion-auditoria", () => ({
   default: () => <div>Modal auditoría</div>,
 }));
 
+vi.mock("./modal-cambiar-precio", () => ({
+  default: ({ productoId }: any) => <div>Modal cambio precio {productoId}</div>,
+}));
+vi.mock("./modal-historial-precios", () => ({
+  default: ({ productoId }: any) => <div>Modal historial {productoId}</div>,
+}));
+
 const baseProps = {
   isAltaOpen: false,
   mostrarActualizarProducto: false,
@@ -58,5 +65,27 @@ describe("ProductosModales", () => {
   it("no muestra formulario de edición si no hay producto seleccionado", () => {
     render(<ProductosModales {...baseProps} mostrarActualizarProducto />);
     expect(screen.queryByText("Formulario edición")).not.toBeInTheDocument();
+  });
+
+  it("muestra una sola vez cambio de precio e historial usando productoInfo", () => {
+    render(<ProductosModales
+      {...baseProps}
+      mostrarCambioPrecios
+      mostrarHistorialPrecios
+      productoInfo={{ id: 9, costo: 100, porcentaje: 30, denominacion: "Cola" }}
+    />);
+
+    expect(screen.getAllByText("Modal cambio precio 9")).toHaveLength(1);
+    expect(screen.getAllByText("Modal historial 9")).toHaveLength(1);
+  });
+
+  it("no abre historial ni cambio de precio sin producto cargado", () => {
+    const { container } = render(<ProductosModales
+      {...baseProps}
+      mostrarCambioPrecios
+      mostrarHistorialPrecios
+      productoInfo={{}}
+    />);
+    expect(container).toBeEmptyDOMElement();
   });
 });

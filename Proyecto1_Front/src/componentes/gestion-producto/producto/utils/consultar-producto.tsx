@@ -310,8 +310,6 @@ export default function ConsultarProductos() {
   };
 
   const handleCerrarHistorialPrecios = () => {
-    setBuscar({ cont: 0, componente: "consultar-producto" });
-    limpiarFiltros();
     setMostrarHistorialPrecios(false);
     setProductoInfo({} as Producto);
   };
@@ -585,10 +583,8 @@ export default function ConsultarProductos() {
                   onEditar={handleAbrirActualizarProducto}
                   onInfo={handleMostrarInfo}
                   onDelete={handleDelete}
-                  onMovimientos={handleMostrarMovimientosStock}
                   onCambioPrecios={handleMostrarCambioPrecios}
                   onHistorial={handleMostrarHistorialPrecios}
-                  onNotificar={handleNotificar}
                 />
                   
                 <div className="lg:hidden space-y-3">

@@ -3,9 +3,7 @@ import {
   Pencil,
   Trash,
   Tag,
-  Layers,
   History,
-  Bell,
 } from "lucide-react";
 import type { ConsultarProducto } from "../../../../interfaces/gestion-producto/producto/interfaces-producto";
 import { ActionButton } from "../../../herramientas/reutilizables/action-button";
@@ -17,6 +15,8 @@ interface Props {
   onEditar: (id: number) => void;
   onInfo: (id: number) => void;
   onDelete: (id: number) => void;
+  onCambioPrecios?: (id: number) => void;
+  onHistorial?: (id: number) => void;
 
   compact?: boolean;
 }
@@ -26,7 +26,8 @@ export function ProductoActions({
   onEditar,
   onInfo,
   onDelete,
- 
+  onCambioPrecios,
+  onHistorial,
   compact = false,
 }: Props) {
   return (
@@ -55,7 +56,25 @@ export function ProductoActions({
       <Trash size={16} />
       </ActionButton>
 
-     
+      {onCambioPrecios && (
+        <ActionButton
+          variant="price"
+          title="Cambiar precio"
+          onClick={() => onCambioPrecios(producto.id)}
+        >
+          <Tag size={16} />
+        </ActionButton>
+      )}
+
+      {onHistorial && (
+        <ActionButton
+          variant="history"
+          title="Historial de precios"
+          onClick={() => onHistorial(producto.id)}
+        >
+          <History size={16} />
+        </ActionButton>
+      )}
     </div>
   );
 }
