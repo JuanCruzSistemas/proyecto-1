@@ -310,8 +310,6 @@ export default function ConsultarProductos() {
   };
 
   const handleCerrarHistorialPrecios = () => {
-    setBuscar({ cont: 0, componente: "consultar-producto" });
-    limpiarFiltros();
     setMostrarHistorialPrecios(false);
     setProductoInfo({} as Producto);
   };
