@@ -1,12 +1,9 @@
 import React, { useEffect, useState } from "react";
 import ProductoService from "../services/producto-service";
-import { Producto } from "../../../../interfaces/gestion-producto/producto/interfaces-producto";
-import { Usuario } from "../../../../interfaces/gestion-usuario/interfaces-usuario";
 
 
 export interface HistorialPrecioItem {
   id?: number;
-  fechaCreacion?: string;
   fecha?: string;
   precioAnterior: number;
   precioNuevo: number;
@@ -15,9 +12,13 @@ export interface HistorialPrecioItem {
   margenAnterior: number;
   margenNuevo: number;
   motivo: string;
-  producto?: Producto;
-  usuario?: Usuario;
+  usuarioNombre?: string;
+  usuarioId?: number;
 }
+
+// El backend envía el margen como fracción (0.46 = 46%)
+const formatearMargen = (margen?: number | null) =>
+  margen != null ? `${Number((Number(margen) * 100).toFixed(2))}%` : "-";
 
 interface Props {
   productoId: number;
@@ -92,7 +93,7 @@ export const TablaHistorialPrecio: React.FC<Props> = ({ productoId }) => {
         </thead>
         <tbody className="divide-y divide-gray-200">
           {historial.map((item, idx) => {
-            const fechaVal = item.fechaCreacion || item.fecha;
+            const fechaVal = item.fecha;
             const fechaFormateada = fechaVal
               ? new Date(fechaVal).toLocaleDateString() +
                 " " +
@@ -102,11 +103,7 @@ export const TablaHistorialPrecio: React.FC<Props> = ({ productoId }) => {
                 })
               : "-";
 
-            const nombreUsuario =
-              item.usuario?.mail
-                ? `${item.usuario.mail}`.trim()
-                :item.usuario?.mail ||
-                  "Sistema";
+            const nombreUsuario = item.usuarioNombre?.trim() || "Sistema";
 
             return (
               <tr key={item.id ?? idx} className="hover:bg-gray-50">
@@ -128,10 +125,10 @@ export const TablaHistorialPrecio: React.FC<Props> = ({ productoId }) => {
                 {/* Margen: Anterior -> Nuevo */}
                 <td className="px-3 py-2 border text-center whitespace-nowrap">
                   <span className="text-gray-400 mr-1">
-                    {item.margenAnterior != null ? `${item.margenAnterior}%` : "-"} →
+                    {formatearMargen(item.margenAnterior)} →
                   </span>
                   <span className="font-semibold text-blue-700">
-                    {item.margenNuevo != null ? `${item.margenNuevo}%` : "-"}
+                    {formatearMargen(item.margenNuevo)}
                   </span>
                 </td>
 
